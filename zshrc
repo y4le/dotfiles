@@ -1,66 +1,64 @@
-# Path to your oh-my-zsh installation.
-export ZSH=$HOME/.oh-my-zsh
+# antigen setup
+source "$HOME/.antigen/antigen.zsh"
 
-# Set name of the theme to load.  # Look in ~/.oh-my-zsh/themes/
-ZSH_THEME="yale"
+# dat oh-my-zsh + theme
+antigen use oh-my-zsh
+antigen theme S1cK94/minimal minimal
 
-COMPLETION_WAITING_DOTS="true"
-export HISTSIZE=32768;
-export HISTFILESIZE=$HISTSIZE;
-export HISTCONTROL=ignoredups;
-export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help";
-export EDITOR='vim'
-bindkey -v
+# antigen plugins
+antigen bundle git
+antigen bundle pip
+antigen bundle python
+antigen bundle node
+antigen bundle npm
+antigen bundle common-aliases
+antigen bundle command-not-found
+antigen bundle autojump
+antigen bundle brew
+antigen bundle compleat
+antigen bundle osx
+antigen bundle zsh-users/zsh-syntax-highlighting
+antigen bundle zsh-users/zsh-history-substring-search ./zsh-history-substring-search.zsh
+antigen bundle zsh-users/zsh-completions src
+antigen bundle tarruda/zsh-autosuggestions
 
-source $ZSH/oh-my-zsh.sh
-source /opt/boxen/env.sh
+antigen apply
 
-plugins=(git z brew catimg git-extras nyan)
+# bind shortcuts
+bindkey -s '^k' 'ranger\n'
 
-export PATH="/opt/boxen/bin:$PATH"
-export PATH="/opt/boxen/nodenv/bin:$PATH"
-export PATH="/opt/boxen/homebrew/share/python:$PATH"
-export PATH="/opt/boxen/homebrew/sbin:$PATH"
-export PATH="/opt/X11/bin:$PATH"
-export PATH="/Users/ythomas/src/arcanist/arcanist/bin:$PATH"
-export PATH="node_modules/.bin:$PATH"
-export PATH="/opt/boxen/nodenv/shims:$PATH"
-export PATH="/opt/boxen/homebrew/bin/:$PATH"
-export PATH="/opt/boxen/homebrew/bin:$PATH"
-export PATH="/usr/bin:$PATH"
-export PATH="/usr/sbin:$PATH"
-export PATH="/bin:$PATH"
-export PATH="/sbin:$PATH"
-export PATH="~/bin:$PATH"
-export PATH="/opt/local/bin:$PATH"
-export PATH="/usr/local/bin:$PATH"
-export PATH="/usr/local/bin/:$PATH"
 
-alias ss="workon rdio && ./manage.py superserver"
-alias rdio="cd ~/src/rdio/rdio/"
-alias flux="cd ~/src/rdio/rdio/web/client/flux"
-alias re-ss="cd ~/src/rdio/rdio/web/client && make reset && ss"
+# set up fuzzy find
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-d() {
-  if test "$#" = 0; then
-    (
-    git diff --color
-    git ls-files --others --exclude-standard |
-    while read -r i; do git diff --color -- /dev/null "$i"; done
-    ) | `git config --get core.pager`
-  else
-    git diff "$@"
-  fi
-}
+# aliases
+alias cdwrd="cd ~/dev/main-web-redesign/Savagebeast/Engineering/projects/"
+alias openwrd="open ~/dev/main-web-redesign/Savagebeast/Engineering/projects/sb.ipr"
+alias crawl="/Users/ythomas/games/Dungeon\ Crawl\ Stone\ Soup\ -\ Console.app/Contents/Resources/crawl"
+alias cdweb="cd /Users/ythomas/dev/web-client"
+alias gitd="git --no-pager diff HEAD^ --name-only"
 
-subd() {
-  git diff master --name-only | xargs subl -a
-}
+# environment variables
+export EDITOR="vim"
 
-ip() {
-  if test "$1" = "copy"; then (
-    ifconfig en0 inet | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -1 | pbcopy
-  ) fi
-  ifconfig en0 inet | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -1
-}
+# - Pandora
+# export P4CONFIG=~/.p4config
+export P4PORT="ssl:perforce.savagebeast.com:1666"
+export P4CLIENT="ythomas-laptop"
+export P4EDITOR="vim"
+export P4MERGE="p4merge"
+export PANDORA_DEV_ENV_DEPS_DIR=~/local
+export VM_ROOT=/Users/ythomas/vm_localhost
+export VMPYTHON=~/local/python/bin/python
+export PYTHON_PATH=~/local/python/lib/python2.7/site-packages
+
+# - Path
+export PATH=~/vagrant/bin:$PATH
+export PATH=/local/pgsql/bin:$PATH
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:${PATH}
+export PATH=${HOME}/local/python/bin:${PATH}
+export PATH=${HOME}/local/coreutils/bin:${PATH}
+export PATH=${HOME}/local/postgres/bin:${PATH}
+export PATH=${HOME}/local/jython2.2.1:${PATH}
+export PATH=~/local/python/bin:${PATH}
 
