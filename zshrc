@@ -37,6 +37,7 @@ alias openwrd="open ~/dev/main-web-redesign/Savagebeast/Engineering/projects/sb.
 alias crawl="/Users/ythomas/games/Dungeon\ Crawl\ Stone\ Soup\ -\ Console.app/Contents/Resources/crawl"
 alias cdweb="cd /Users/ythomas/dev/web-client"
 alias gitd="git --no-pager diff HEAD^ --name-only"
+alias recentbranches="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
 
 # environment variables
 export EDITOR="vim"
