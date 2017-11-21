@@ -1,5 +1,5 @@
 # antigen setup
-source "$HOME/.antigen/antigen.zsh"
+source /usr/local/share/antigen/antigen.zsh
 
 # dat oh-my-zsh + theme
 antigen use oh-my-zsh
@@ -24,42 +24,41 @@ antigen bundle tarruda/zsh-autosuggestions
 
 antigen apply
 
+# vi mode :D
+bindkey -v
+export KEYTIMEOUT=1
+bindkey -M viins '^r' history-incremental-search-backward
+bindkey -M vicmd '^r' history-incremental-search-backward
+
 # bind shortcuts
 bindkey -s '^k' 'ranger\n'
-
 
 # set up fuzzy find
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # aliases
-alias cdwrd="cd ~/dev/main-web-redesign/Savagebeast/Engineering/projects/"
-alias openwrd="open ~/dev/main-web-redesign/Savagebeast/Engineering/projects/sb.ipr"
-alias crawl="/Users/ythomas/games/Dungeon\ Crawl\ Stone\ Soup\ -\ Console.app/Contents/Resources/crawl"
-alias cdweb="cd /Users/ythomas/dev/web-client"
 alias gitd="git --no-pager diff HEAD^ --name-only"
 alias recentbranches="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
+
+# tophatter aliases
+alias migrate="bin/rake db:migrate"
+alias reset="bin/rake tmp:clear tophatter:reset"
+alias restart="touch ~/.pow/restart.txt"
+alias auctioneer="bin/rails r lib/tasks/auctioneer.rb"
+alias commit!="OVERCOMMIT_DISABLE=1 git commit"
+alias push!="OVERCOMMIT_DISABLE=1 git push"
+alias hkl="HEROKU_ORGANIZATION=tophatter heroku login --sso"
+alias t="cd ~/Documents/tophatter"
+alias airflow_ec2_dev="ssh ubuntu@52.55.71.237 -i ~/ubuntu-lucid-lynx.pem"
 
 # environment variables
 export EDITOR="vim"
 
-# - Pandora
-# export P4CONFIG=~/.p4config
-export P4PORT="ssl:perforce.savagebeast.com:1666"
-export P4CLIENT="ythomas-laptop"
-export P4EDITOR="vim"
-export P4MERGE="p4merge"
-export PANDORA_DEV_ENV_DEPS_DIR=~/local
-export VM_ROOT=/Users/ythomas/vm_localhost
-export VMPYTHON=~/local/python/bin/python
-export PYTHON_PATH=~/local/python/lib/python2.7/site-packages
-
 # - Path
-export PATH=~/vagrant/bin:$PATH
-export PATH=/local/pgsql/bin:$PATH
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:${PATH}
 export PATH=${HOME}/local/python/bin:${PATH}
-export PATH=${HOME}/local/coreutils/bin:${PATH}
-export PATH=${HOME}/local/postgres/bin:${PATH}
-export PATH=${HOME}/local/jython2.2.1:${PATH}
 export PATH=~/local/python/bin:${PATH}
 
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+export PATH="/usr/local/opt/scala@2.11/bin:$PATH"
