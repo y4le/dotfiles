@@ -35,6 +35,7 @@ bindkey -s '^k' 'ranger\n'
 
 # set up fuzzy find
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+alias v="fzf | xargs -o vim"
 
 # aliases
 alias gitd="git --no-pager diff HEAD^ --name-only"
