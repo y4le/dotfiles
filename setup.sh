@@ -6,6 +6,7 @@ brew install fzf
 brew install ranger
 brew install fpp
 
+brew install antigen
 
 rm -f ~/.vimrc
 ln -s `pwd`/vimrc ~/.vimrc
