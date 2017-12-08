@@ -35,7 +35,9 @@ bindkey -s '^k' 'ranger\n'
 
 # set up fuzzy find
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-alias v="fzf | xargs -o vim"
+alias v="fzf -m | xargs -o vim"
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
 # aliases
 alias gitd="git --no-pager diff HEAD^ --name-only"
@@ -63,3 +65,6 @@ export PATH=~/local/python/bin:${PATH}
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
 export PATH="/usr/local/opt/scala@2.11/bin:$PATH"
+
+alias airflow_ec2="ssh ubuntu@54.172.11.24 -i ~/.ssh/ubuntu-lucid-lynx.pem"
+alias airflow_ec2_dev="ssh ubuntu@52.55.71.237 -i ~/.ssh/ubuntu-lucid-lynx.pem"
