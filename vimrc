@@ -16,6 +16,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'easymotion/vim-easymotion'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'vim-airline/vim-airline'
 
 call plug#end()
 
@@ -35,7 +36,6 @@ filetype plugin on
 filetype indent on
 
 " set up command pane
-set cmdheight=2
 set wildmenu
 
 
