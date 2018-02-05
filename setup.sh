@@ -1,4 +1,3 @@
-
 brew install tmux
 brew install zsh
 brew install antigen
