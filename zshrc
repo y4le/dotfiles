@@ -44,3 +44,8 @@ alias recentbranches="git for-each-ref --sort=committerdate refs/heads/ --format
 
 # environment variables
 export EDITOR="vim"
+
+# include .aliases if it exists
+if [ -f $HOME/.aliases ]; then
+  . $HOME/.aliases
+fi
