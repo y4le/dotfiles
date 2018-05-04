@@ -1,9 +1,20 @@
+" auto-install vim-plug
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-call plug#begin('~/.vim/plugged')
+if has('nvim') && empty(glob('~/.config/nvim/autoload/plug.vim'))
+  silent !mkdir -p ~/.config/nvim/autoload
+  silent !ln -s ~/.vim/autoload/plug.vim ~/.config/nvim/autoload/plug.vim
+  autocmd VimEnter * PlugInstall
+endif
+
+if has('nvim')
+  call plug#begin('~/.config/nvim/plugged')
+else
+  call plug#begin('~/.vim/plugged')
+endif
 
 Plug 'altercation/vim-colors-solarized'
 Plug 'tpope/vim-rails'
@@ -61,7 +72,8 @@ set tabstop=2
 
 
 " SEARCH
-set smartcase " intelligent case handling while searching
+set ignorecase " ignore case while searching
+set smartcase " stop ignoring case if there is >0 caps
 set hlsearch  " highlight search results
 set incsearch " search as you type
 set magic     " better regex

@@ -7,12 +7,12 @@ brew install fzf
 brew install ranger
 brew install fpp
 
-rm -f ~/.vimrc
-ln -s `pwd`/vimrc ~/.vimrc
+ln -sf `pwd`/vimrc ~/.vimrc
 
-rm -f ~/.zshrc
-ln -s `pwd`/zshrc ~/.zshrc
+mkdir -p ~/.config/nvim
+ln -sf `pwd`/vimrc ~/.config/nvim/init.vim
 
-rm -f ~/.tmux.conf
-ln -s `pwd`/tmux.conf ~/.tmux.conf
+ln -sf `pwd`/zshrc ~/.zshrc
+
+ln -sf `pwd`/tmux.conf ~/.tmux.conf
 
