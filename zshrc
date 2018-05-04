@@ -41,6 +41,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 # aliases
 alias gitd="git --no-pager diff HEAD^ --name-only"
 alias recentbranches="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
+alias tt="tmux attach -t"
 
 # environment variables
 export EDITOR="vim"
@@ -51,3 +52,9 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 if [ -f $HOME/.aliases ]; then
   . $HOME/.aliases
 fi
+
+# use powerline if we got it
+#if [ -f /usr/local/lib/python2.7/site-packages/powerline/bindings/zsh/powerline.zsh ]; then
+#  . /usr/local/lib/python2.7/site-packages/powerline/bindings/zsh/powerline.zsh
+#fi
+
