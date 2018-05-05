@@ -1,4 +1,4 @@
-" auto-install vim-plug
+" Auto-Install vim-plug
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
@@ -16,7 +16,7 @@ else
   call plug#begin('~/.vim/plugged')
 endif
 
-Plug 'altercation/vim-colors-solarized'
+Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
 Plug 'vim-scripts/YankRing.vim'
@@ -51,6 +51,7 @@ set wildmenu
 
 
 " LOOK & FEEL
+colorscheme sublimemonokai
 syntax on   " enable syntax highlighting
 set nu      " line numbers
 set ruler   " row/col readout in the bottom right command bar
