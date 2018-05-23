@@ -26,6 +26,8 @@ antigen apply
 # vi mode :D
 bindkey -v
 export KEYTIMEOUT=1
+
+# ctrl-R history search
 bindkey -M viins '^r' history-incremental-search-backward
 bindkey -M vicmd '^r' history-incremental-search-backward
 
@@ -48,7 +50,7 @@ export EDITOR="vim"
 
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
-# include .aliases if it exists
+# include ~/.aliases if it exists
 if [ -f $HOME/.aliases ]; then
   . $HOME/.aliases
 fi
