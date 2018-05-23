@@ -34,6 +34,11 @@ bindkey -M vicmd '^r' history-incremental-search-backward
 # bind shortcuts
 bindkey -s '^k' 'ranger\n'
 
+# ctrl-X ctrl-e edit current command in vim
+autoload -z edit-command-line
+zle -N edit-command-line
+bindkey "^X^E" edit-command-line
+
 # set up fuzzy find
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 alias v="fzf -m | xargs -o vim"
