@@ -82,34 +82,31 @@ set magic     " better regex
 
 
 " MAPS
-" set up leader
-let mapleader = "\<Space>"
-let g:mapleader = "\<Space>"
-
-" close buffer with leader-x
-nnoremap <leader>x :bd<cr>
-
-" new buffer with leader-N
-nnoremap <leader>N :enew<cr>
-
 " ctrl+directin moves panes
 nnoremap <C-j> <C-W>j
 nnoremap <C-k> <C-W>k
 nnoremap <C-h> <C-W>h
 nnoremap <C-l> <C-W>l
 
+" j/k move down/up visible lines instead of file lines
+nnoremap j gj
+nnoremap k gk
+
+" set up leader
+let mapleader = "\<Space>"
+let g:mapleader = "\<Space>"
+
+" close buffer with leader-x
+nnoremap <leader>x :bp\|bd #<cr>
+
+" new buffer with leader-N
+nnoremap <leader>N :enew<cr>
+
 " t commands for tab management
 nnoremap <leader>tn :tabnew<cr>
 nnoremap <leader>to :tabonly<cr>
 nnoremap <leader>tc :tabclose<cr>
 nnoremap <leader>tm :tabmove
-
-" j/k move down/up visible lines instead of file lines
-nnoremap j gj
-nnoremap k gk
-
-" jk map for esc
-inoremap jk <ESC>
 
 " shift-j/k moves buffers
 nnoremap <S-j> :bprevious<cr>
