@@ -36,6 +36,7 @@ call plug#end()
 set autoread     " auto read external changes made to file
 set hid          " buffers get hidden when they are abandoned
 set history=1000 " increase vim history a bit
+set clipboard=unnamed " allow for osx system copy paste
 
 " turn off backup, we use version control round here
 set nobackup
