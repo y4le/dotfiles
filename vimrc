@@ -97,7 +97,8 @@ let mapleader = "\<Space>"
 let g:mapleader = "\<Space>"
 
 " close buffer with leader-x
-nnoremap <leader>x :bp\|bd #<cr>
+nnoremap <leader>x :bd<cr>
+nnoremap <leader>X :bp\|bd #<cr>
 
 " new buffer with leader-N
 nnoremap <leader>N :enew<cr>
