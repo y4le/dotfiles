@@ -109,10 +109,6 @@ nnoremap <leader>to :tabonly<cr>
 nnoremap <leader>tc :tabclose<cr>
 nnoremap <leader>tm :tabmove
 
-" shift-j/k moves buffers
-nnoremap <S-j> :bprevious<cr>
-nnoremap <S-k> :bnext<cr>
-
 
 " PLUGINS
 " set up easymotion plugin
