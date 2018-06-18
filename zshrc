@@ -55,15 +55,7 @@ alias tt="tmux attach -t"
 # environment variables
 export EDITOR="vim"
 
-export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-
-# include ~/.aliases if it exists
-if [ -f $HOME/.aliases ]; then
-  . $HOME/.aliases
+if [ -f $HOME/.profile ]; then
+  . $HOME/.profile
 fi
-
-# use powerline if we got it
-#if [ -f /usr/local/lib/python2.7/site-packages/powerline/bindings/zsh/powerline.zsh ]; then
-#  . /usr/local/lib/python2.7/site-packages/powerline/bindings/zsh/powerline.zsh
-#fi
 
