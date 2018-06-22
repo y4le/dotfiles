@@ -23,9 +23,10 @@ antigen bundle tarruda/zsh-autosuggestions
 
 antigen apply
 
-# vi mode :D
+# vim mode + vim editor
 bindkey -v
 export KEYTIMEOUT=1
+export EDITOR="vim"
 
 # ctrl-R history search
 bindkey -M viins '^r' history-incremental-search-backward
@@ -45,15 +46,22 @@ alias v="fzf -m | xargs -o vim"
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
-# aliases
-alias g="git"
-alias gitp="git --no-pager"
-alias gitd="git --no-pager diff HEAD^ --name-only"
-alias recentbranches="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
+# force git to print inline
+alias gip="git --no-pager" 
+# show recent git branches
+alias branch="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
+# quick attach
 alias tt="tmux attach -t"
+# recursive disk usage of current directory contents
+alias dus="du -sckx * | sort -nr"
+# navigate to previous direcory
+alias bk='cd $OLDPWD'
+# ls hidden files
+alias lh='ls -a | egrep "^\."'
 
-# environment variables
-export EDITOR="vim"
+# turn hidden files on/off in Finder
+function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
+function hiddenOff() { defaults write com.apple.Finder AppleShowAllFiles NO ; }
 
 if [ -f $HOME/.profile ]; then
   . $HOME/.profile
