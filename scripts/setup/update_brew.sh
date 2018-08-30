@@ -16,9 +16,9 @@ qol_packages=(
   ripgrep # rg - better cli search - used by fzf
   ranger # cli file system browser - start with ^k
   fpp # facebook path picker - pipe in txt, pick files, do thing
-  fd # better `find`
   jq # json cli
-  bat # better `cat`
+  fd # better `find`
+  bat # better `less`
   htop # better `top`
   ncdu # better `du`
   tldr # better `man`

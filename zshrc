@@ -58,7 +58,6 @@ function hiddenOff() { defaults write com.apple.Finder AppleShowAllFiles NO ; }
 
 # better replacements for builtins
 alias top='sudo htop' # replace `top` with better alternative
-alias cat='bat' # replace `cat` with better alternative
 alias ping='prettyping --nolegend' # replace `ping` with better alternative
 alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
 
