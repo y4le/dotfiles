@@ -28,6 +28,13 @@ qol_packages=(
 
 packages=(${core_packages[@]} ${editor_packages[@]} ${qol_packages[@]})
 
+echo 'About to install and upgrade these packages:'
+echo ${packages[@]}
+read -p "Continue? " -n 1 -r
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then # if reply is not y/Y
+  [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 # handle exits from shell or function but don't exit interactive shell
+fi
+
 brew install ${packages[@]}
 brew upgrade ${packages[@]}
 
