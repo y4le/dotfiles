@@ -58,6 +58,8 @@ alias dus="du -sckx * | sort -nr"
 alias bk='cd $OLDPWD'
 # ls hidden files
 alias lh='ls -a | egrep "^\."'
+# git pull/rebase on master
+function gbase() { git checkout master && git pull && git checkout $(git rev-parse --abbrev-ref HEAD) && git rebase master }
 
 # turn hidden files on/off in Finder
 function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
