@@ -1,0 +1,7 @@
+[pull]
+	rebase = true
+[user]
+	name = Yale Thomas
+	email = lordchair@gmail.com
+[core]
+  pager = diff-so-fancy | less -FXRi
