@@ -1,9 +1,9 @@
 #!/bin/bash
 
 core_packages=(
-  tmux    # terminal multiplexer
-  zsh     # e.g. `git status | fpp` -> pick files -> `c` -> `git checkout master`bash replacement
-  antigen # zsh plugin management
+  tmux # terminal multiplexer
+  zsh # e.g. `git status | fpp` -> pick files -> `c` -> `git checkout master`bash replacement
+  zplug # zsh plugin management
 )
 
 editor_packages=(
@@ -12,12 +12,11 @@ editor_packages=(
 )
 
 qol_packages=(
-  fzf # fuzzy finder - uses ripgrep to search - used by vim plugin
+  fzf # fuzzy finder
   ripgrep # rg - better cli search - used by fzf
   ranger # cli file system browser - start with ^k
   fpp # facebook path picker - pipe in txt, pick files, do thing
   parallel # GNU parallel - better `xargs`
-  jq # json cli
   fd # better `find`
   bat # better `less`
   htop # better `top`
