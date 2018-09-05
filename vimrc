@@ -16,18 +16,33 @@ else
   call plug#begin('~/.vim/plugged')
 endif
 
+" theme plugins
 Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
+
+" general plugins
+Plug 'Xuyuanp/nerdtree-git-plugin' " git indicators for nerdtree
+Plug 'Yggdroot/indentLine' " show indentation with vertical lines like sublime
+Plug 'andymass/vim-matchup' " better % motion
+Plug 'dhruvasagar/vim-table-mode' " table mode
+Plug 'easymotion/vim-easymotion' " jump around with `Space j/k`
+Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
+Plug 'itchyny/lightline.vim' " status line
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
+Plug 'junegunn/fzf.vim' " fuzzy finder integration
+Plug 'maralla/completor.vim' " code completion
+Plug 'markonm/traces.vim' " preview substitute commands
+Plug 'mhinz/vim-signify' " git gutter
+Plug 'mhinz/vim-startify' " pretty start screen
+Plug 'rhysd/clever-f.vim' " repeaded f keeps going forward
+Plug 'romainl/vim-cool' " stop highlighting after searching
+Plug 'scrooloose/nerdtree' " file navigator sidebar
+Plug 'tomtom/tcomment_vim' " commenting plugin
+Plug 'w0rp/ale' " async linting engine
+Plug 'wellle/targets.vim' " di' -> delete inside '
+
+" language plugins
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
-Plug 'vim-scripts/YankRing.vim'
-Plug 'w0ng/vim-hybrid'
-Plug 'tpope/vim-surround'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'easymotion/vim-easymotion'
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'vim-airline/vim-airline'
 
 call plug#end()
 
