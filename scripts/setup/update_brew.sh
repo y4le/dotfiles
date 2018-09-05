@@ -2,28 +2,30 @@
 
 core_packages=(
   tmux # terminal multiplexer
-  zsh # e.g. `git status | fpp` -> pick files -> `c` -> `git checkout master`bash replacement
   zplug # zsh plugin management
+  zsh # e.g. `git status | fpp` -> pick files -> `c` -> `git checkout master`bash replacement
 )
 
 editor_packages=(
-  vim # vim 4 life
   neovim
+  vim # vim 4 life
 )
 
 qol_packages=(
-  fzf # fuzzy finder
-  ripgrep # rg - better cli search - used by fzf
-  ranger # cli file system browser - start with ^k
-  fpp # facebook path picker - pipe in txt, pick files, do thing
-  parallel # GNU parallel - better `xargs`
-  fd # better `find`
   bat # better `less`
+  diff-so-fancy # better `diff`
+  exa # better `ls`
+  fd # better `find`
+  fpp # facebook path picker - pipe in txt, pick files, do thing
+  fzf # fuzzy finder
   htop # better `top`
   ncdu # better `du`
-  tldr # better `man`
+  parallel # GNU parallel - better `xargs`
   prettyping # better `ping`
-  diff-so-fancy # better `diff`
+  ranger # cli file system browser - start with ^k
+  ripgrep # rg - better cli search - used by fzf
+  tldr # better `man`
+  youtube-dl # download youtube
 )
 
 packages=(${core_packages[@]} ${editor_packages[@]} ${qol_packages[@]})
