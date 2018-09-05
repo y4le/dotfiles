@@ -25,6 +25,7 @@ zplug changyuheng/zsh-interactive-cd # interactive fzf powered `cd`
 zplug peterhurford/git-it-on.zsh # open dir in github `cd ~/dev/dotfiles && gitit`
 zplug so-fancy/diff-so-fancy # pretty diffs
 zplug wfxr/forgit, defer:1 # fzf + git: ga(dd) glo(g) gi(gnore) gd(iff) gcf(ile)
+zplug ytet5uy4/fzf-widgets # fzf widgets - used to get fzf-insert-history
 zplug zdharma/fast-syntax-highlighting, defer:2 # fast cli syntax highlighting
 zplug zlsun/solarized-man # colorful man pages
 
@@ -61,8 +62,8 @@ export EDITOR="vim" # vim 4 life
 bindkey -s '^k' 'ranger\n' # ctrl-k ranger
 
 # ctrl-R history search
-bindkey -M viins '^r' history-incremental-search-backward
-bindkey -M vicmd '^r' history-incremental-search-backward
+bindkey -M viins '^r' fzf-insert-history
+bindkey -M vicmd '^r' fzf-insert-history
 
 # ctrl-X ctrl-e edit current command in vim
 autoload -z edit-command-line
