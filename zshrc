@@ -46,8 +46,8 @@ zplug load
 
 export CLICOLOR=1 # ANSI colors in iterm2
 
-export SAVEHIST=10000         # keep history longer
-export HISTSIZE=10000         # ditto
+export SAVEHIST=100000        # keep history longer
+export HISTSIZE=100000        # ditto
 export HISTFILE=~/.history    # potentially share history with other shells
 setopt extended_history       # record timestamp of command in HISTFILE
 setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
@@ -85,7 +85,7 @@ alias preview="fzf --preview 'bat --color \"always\" {}'"
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
-# turn hidden files on/off in Finder
+# turn hidden files on/off in OSX Finder
 function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
 function hiddenOff() { defaults write com.apple.Finder AppleShowAllFiles NO ; }
 
