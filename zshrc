@@ -28,6 +28,7 @@ zplug wfxr/forgit, defer:1                      # fzf + git: ga(dd) glo(g) gi(gn
 zplug ytet5uy4/fzf-widgets                      # fzf widgets - used to get fzf-insert-history
 zplug zdharma/fast-syntax-highlighting, defer:2 # fast cli syntax highlighting
 zplug zlsun/solarized-man                       # colorful man pages
+zplug zsh-users/zsh-autosuggestions             # typeahead command suggestions from history
 
 # if necessary, install plugins
 if ! zplug check --verbose; then
