@@ -80,10 +80,11 @@ zle -N edit-command-line
 bindkey "^X^E" edit-command-line
 
 # set up fuzzy find
-alias v="fzf -m | xargs -o vim"
-alias preview="fzf --preview 'bat --color \"always\" {}'"
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+alias v="fzf -m | xargs -o vim" # alias to open files in vim
+alias preview="fzf --preview 'bat --color \"always\" {}'" # preview contents of files
+function briff() { git branch | cut -c 3- | fzf --preview "git diff --color master...{}" } # e.g. > git checkout `briff`
 
 # turn hidden files on/off in OSX Finder
 function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
