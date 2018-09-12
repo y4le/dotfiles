@@ -68,7 +68,7 @@ export EDITOR="vim" # vim 4 life
 
 # SHORTCUTS
 
-bindkey -s '^k' 'ranger\n' # ctrl-k ranger
+bindkey -s '^t' 'ranger\n' # ctrl-t ranger
 
 # ctrl-R history search
 bindkey -M viins '^r' fzf-insert-history
