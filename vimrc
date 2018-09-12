@@ -136,14 +136,13 @@ nnoremap <C-t> :FZF<cr>
 nnoremap <leader>b :Buffers<cr>
 nnoremap <leader>n :Files<cr>
 nnoremap <leader>l :Lines<cr>
-nnoremap <leader>a :Ag<space>
+nnoremap <leader>r :Rg<space>
 
+" use rg to power fzf
 let g:rg_command = '
   \ rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
   \ -g "*.{js,json,php,md,styl,jade,html,config,py,cpp,c,go,hs,rb,conf}"
   \ -g "!{.git,node_modules,vendor}/*" '
-
-command! -bang -nargs=* F call fzf#vim#grep(g:rg_command .shellescape(<q-args>), 1, <bang>0)
 
 " set up nerdtree plugin
 nnoremap <leader>t :NERDTreeToggle<CR>
