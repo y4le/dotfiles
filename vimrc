@@ -43,6 +43,7 @@ Plug 'tomtom/tcomment_vim' " commenting plugin
 Plug 'w0rp/ale' " async linting engine
 Plug 'wellle/targets.vim' " di' -> delete inside '
 Plug 'mbbill/undotree' " access full undo history
+Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
 
 " language plugins
 Plug 'tpope/vim-rails'
