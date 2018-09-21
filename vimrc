@@ -23,9 +23,10 @@ Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
 
 " general plugins
 Plug 'Xuyuanp/nerdtree-git-plugin' " git indicators for nerdtree
-Plug 'Yggdroot/indentLine' " show indentation with vertical lines like sublime
 Plug 'andymass/vim-matchup' " better % motion
-Plug 'dhruvasagar/vim-table-mode' " table mode
+Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
+Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
+" Plug 'dhruvasagar/vim-table-mode' " table mode
 Plug 'easymotion/vim-easymotion' " jump around with `Space j/k`
 Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
 Plug 'itchyny/lightline.vim' " status line
@@ -34,18 +35,26 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
 Plug 'junegunn/fzf.vim' " fuzzy finder integration
 Plug 'maralla/completor.vim' " code completion
 Plug 'markonm/traces.vim' " %s/live preview/substitute commands/
+Plug 'mbbill/undotree' " access full undo history
 Plug 'mhinz/vim-signify' " git gutter
+Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
 Plug 'rhysd/clever-f.vim' " repeaded f keeps going forward
+Plug 'rizzatti/dash.vim' " dash docs browser integration
 Plug 'romainl/vim-cool' " stop highlighting after searching
 Plug 'scrooloose/nerdtree' " file navigator sidebar
+Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
+Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 Plug 'takac/vim-hardtime' " rate limit h/j/k/l to get better with :HardTimeToggle
 Plug 'tomtom/tcomment_vim' " commenting plugin
 Plug 'w0rp/ale' " async linting engine
 Plug 'wellle/targets.vim' " di' -> delete inside '
-Plug 'mbbill/undotree' " access full undo history
-Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
+Plug 'wesQ3/vim-windowswap' " leader+ww on source/destination panes to swap
+Plug 'wincent/ferret' " multi file search -> quickfix pane
 
-" language plugins
+" ruby plugins
+Plug 'AndrewRadev/splitjoin.vim' " gS single->multiline  gJ multi->singleline
+Plug 'ecomba/vim-ruby-refactoring'
+Plug 'itmammoth/run-rspec.vim'
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
 
@@ -65,6 +74,7 @@ set undodir=~/.vim/.undo// " move undo history to one place
 set history=1000 " increase vim history a bit
 set wildmenu " command mode tab-completion
 set cmdheight=2 " command bar is 2 lines high
+set re=1 " use old regex engine - faster syntax highlighting - relativenumber lags otherwise
 
 " LOOK
 syntax on " enable syntax highlighting
@@ -110,28 +120,46 @@ nnoremap k gk|" k moves up visible instead of file lines
 let mapleader = "\<Space>" " set leader to Space
 let g:mapleader = "\<Space>" " repeat leader mapping globally
 
-nnoremap <leader>x :bd<cr>|" close buffer and close window/split
-nnoremap <leader>X :bp\|bd #<cr>|" close buffer and preserve window/split
-nnoremap <leader>N :enew<cr>|" new buffer
+nnoremap <leader>bx :bd<cr>|" close buffer and close window/split
+nnoremap <leader>bX :bp\|bd #<cr>|" close buffer and preserve window/split
+nnoremap <leader>bN :enew<cr>|" new buffer
 
-" FZF! use these `Space r`
-nnoremap <leader>b :Buffers<cr>|" pick open buffers by id/filename
-nnoremap <leader>n :Files<cr>|  " pick from all files in vim's root dir by filename
-nnoremap <leader>l :Lines<cr>|  " find line in any open buffer
-nnoremap <leader>r :Rg<cr>| " fzf+rg full text through the whole working directory
+" fzf so good! use these
+nnoremap <leader>bb :Buffers<cr>|" pick open buffers by id/filename
+nnoremap <leader>f :GFiles<cr>|" pick from all files in git project by filename
+nnoremap <leader>n :Files<cr>|" pick from all files in vim's root dir by filename
+nnoremap <leader>l :Lines<cr>|" find line in any open buffer
+nnoremap <leader>r :Rg<cr>|" fulltext find in all files in the base dir
 
-" sidebar plugins
-nnoremap <leader>t :NERDTreeToggle<CR>|" toggle NERDTree directory sidebar
-nnoremap <leader>u :UndotreeToggle<CR>|" toggle UndoTree undo history sidebar
+" toggles
+nnoremap <leader>tt :NERDTreeToggle<CR>|" toggle NERDTree directory sidebar
+nnoremap <leader>tu :UndotreeToggle<CR>|" toggle UndoTree undo history sidebar
+nnoremap <leader>tn :set relativenumber!<CR>|" toggle relative line ##s
 
-" easymotion plugin
-let g:EasyMotion_smartcase = 1
-map <Leader>j <Plug>(easymotion-j)|" quick jump to line below
-map <Leader>k <Plug>(easymotion-k)|" quick jump to line above
+" quickfix
+nnoremap <leader>qq :call asyncrun#quickfix_toggle(8)<CR>|" toggle quickfix pane
+nnoremap <leader>qn :cn<CR>|" quickfix next
+nnoremap <leader>qp :cp<CR>|" quickfix prev
+
+" run-rspec plugin
+let g:run_rspec_result_lines = 20
+nnoremap <leader>sl :RunSpecLine<CR>|" run nearest rspec test
+nnoremap <leader>sf :RunSpec<CR>|" run current rspec file
+nnoremap <leader>sr :RunSpecLastRun<CR>|" re-run last specs
+nnoremap <leader>sc :RunSpecCloseResult<CR>| " close rspec result
+
+let g:EasyMotion_smartcase = 1 " easymotion plugin ignore case if nocaps
+let g:signify_vcs_list = ['git', 'hg'] " vim-signify plugin - only check these VCS
+let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
 
 " set global default rg command
 let g:rg_command = '
   \ rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
   \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,,go,hs,rb,conf}"
-  \ -g "!{.git,node_modules,vendor}/*" '
+  \ -g "!{.git,node_modules,vendor,.venv}/*" '
+
+" auto open quickfix pane when it gets new text
+augroup vimrc
+  autocmd QuickFixCmdPost * call asyncrun#quickfix_toggle(8, 1)
+augroup END
 
