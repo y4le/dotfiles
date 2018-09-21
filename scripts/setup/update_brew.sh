@@ -18,6 +18,7 @@ qol_packages=(
   fd # better `find`
   fpp # facebook path picker - pipe in txt, pick files, do thing
   fzf # fuzzy finder
+  fzy # rust fuzzy finder
   htop # better `top`
   ncdu # better `du`
   parallel # GNU parallel - better `xargs`
@@ -39,4 +40,7 @@ fi
 
 brew install ${packages[@]}
 brew upgrade ${packages[@]}
+
+# temporary until universal-ctags gets a v1.0, then it will be a normal package
+brew install --HEAD universal-ctags/universal-ctags/universal-ctags
 

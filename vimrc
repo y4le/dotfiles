@@ -26,13 +26,14 @@ Plug 'Xuyuanp/nerdtree-git-plugin' " git indicators for nerdtree
 Plug 'andymass/vim-matchup' " better % motion
 Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
 Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
-" Plug 'dhruvasagar/vim-table-mode' " table mode
 Plug 'easymotion/vim-easymotion' " jump around with `Space j/k`
 Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
 Plug 'itchyny/lightline.vim' " status line
 Plug 'jeffkreeftmeijer/vim-numbertoggle' " hybrid to static line #s on un/focus
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
 Plug 'junegunn/fzf.vim' " fuzzy finder integration
+Plug 'ludovicchabant/vim-gutentags' " auto manage ctags
+Plug 'majutsushi/tagbar' " sidebar that shows structure by using ctags
 Plug 'maralla/completor.vim' " code completion
 Plug 'markonm/traces.vim' " %s/live preview/substitute commands/
 Plug 'mbbill/undotree' " access full undo history
@@ -84,6 +85,7 @@ filetype indent on " enable filetype indentation
 set number relativenumber " hybrid-relative line numbering
 set ruler " row/col readout in the bottom right command bar
 set colorcolumn=80 " highlight col 80
+set scrolloff=5 " keep buffer of lines above and below cursor
 
 set showmatch " show matching brackets (nice with %)
 set matchtime=2 " for 0.2 seconds
@@ -132,14 +134,10 @@ nnoremap <leader>l :Lines<cr>|" find line in any open buffer
 nnoremap <leader>r :Rg<cr>|" fulltext find in all files in the base dir
 
 " toggles
-nnoremap <leader>tt :NERDTreeToggle<CR>|" toggle NERDTree directory sidebar
+nnoremap <leader>tt :TagbarToggle<CR>|"   toggle tagbar ctags browser sidebar
+nnoremap <leader>tn :NERDTreeToggle<CR>|" toggle NERDTree directory sidebar
 nnoremap <leader>tu :UndotreeToggle<CR>|" toggle UndoTree undo history sidebar
-nnoremap <leader>tn :set relativenumber!<CR>|" toggle relative line ##s
-
-" quickfix
-nnoremap <leader>qq :call asyncrun#quickfix_toggle(8)<CR>|" toggle quickfix pane
-nnoremap <leader>qn :cn<CR>|" quickfix next
-nnoremap <leader>qp :cp<CR>|" quickfix prev
+nnoremap <leader>tr :set relativenumber!<CR>|" toggle relative line ##s
 
 " run-rspec plugin
 let g:run_rspec_result_lines = 20
@@ -148,18 +146,26 @@ nnoremap <leader>sf :RunSpec<CR>|" run current rspec file
 nnoremap <leader>sr :RunSpecLastRun<CR>|" re-run last specs
 nnoremap <leader>sc :RunSpecCloseResult<CR>| " close rspec result
 
-let g:EasyMotion_smartcase = 1 " easymotion plugin ignore case if nocaps
-let g:signify_vcs_list = ['git', 'hg'] " vim-signify plugin - only check these VCS
-let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
-
-" set global default rg command
-let g:rg_command = '
-  \ rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
-  \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,,go,hs,rb,conf}"
-  \ -g "!{.git,node_modules,vendor,.venv}/*" '
+" quickfix
+nnoremap <leader>qq :call asyncrun#quickfix_toggle(8)<CR>|" toggle quickfix pane
+nnoremap <leader>qn :cn<CR>|" quickfix next
+nnoremap <leader>qp :cp<CR>|" quickfix prev
 
 " auto open quickfix pane when it gets new text
 augroup vimrc
   autocmd QuickFixCmdPost * call asyncrun#quickfix_toggle(8, 1)
 augroup END
+
+let g:EasyMotion_smartcase = 1 " easymotion plugin ignore case if nocaps
+let g:signify_vcs_list = ['git', 'hg'] " vim-signify plugin - only check these VCS
+let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
+let g:gutentags_cache_dir='~/vim/.tags' " keep ctags in one place
+
+" setup rg
+set grepprg=rg\ --vimgrep\ --no-heading\ -S
+set grepformat=%f:%l:%c:%m,%f:%l:%m
+let g:rg_command = '
+  \ rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
+  \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,,go,hs,rb,conf}"
+  \ -g "!{.git,node_modules,vendor,.venv}/*" '
 
