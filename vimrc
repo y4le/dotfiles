@@ -21,41 +21,53 @@ endif
 " theme plugins
 Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
 
-" general plugins
-Plug 'Xuyuanp/nerdtree-git-plugin' " git indicators for nerdtree
-Plug 'andymass/vim-matchup' " better % motion
-Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
-Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
-Plug 'easymotion/vim-easymotion' " jump around with `Space j/k`
-Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
+" status line plugins
 Plug 'itchyny/lightline.vim' " status line
-Plug 'jeffkreeftmeijer/vim-numbertoggle' " hybrid to static line #s on un/focus
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
-Plug 'junegunn/fzf.vim' " fuzzy finder integration
-Plug 'ludovicchabant/vim-gutentags' " auto manage ctags
-Plug 'majutsushi/tagbar' " sidebar that shows structure by using ctags
-Plug 'maralla/completor.vim' " code completion
+
+" ui navigation plugins
+Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
+Plug 'wesQ3/vim-windowswap' " leader+ww on source/destination panes to swap
+Plug 'talek/obvious-resize' " allow ctrl+up/down/left/right to resize
+
+" motion / target plugins
+Plug 'andymass/vim-matchup' " better % motion
+Plug 'easymotion/vim-easymotion' " space space motion -> jumps as if ## motion
+Plug 'rhysd/clever-f.vim' " repeaded f keeps going forward
+Plug 'wellle/targets.vim' " di' -> delete inside '
+
+" search plugins
+Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
 Plug 'markonm/traces.vim' " %s/live preview/substitute commands/
+Plug 'wincent/ferret' " :Ack -> multi file search | quickfix pane
+Plug 'wincent/loupe' " better within file search results
+
+" sidebar / gutter plugins
+Plug 'Xuyuanp/nerdtree-git-plugin' " git indicators for nerdtree
+Plug 'jeffkreeftmeijer/vim-numbertoggle' " hybrid to static line #s on un/focus
+Plug 'majutsushi/tagbar' " sidebar that shows structure by using ctags
 Plug 'mbbill/undotree' " access full undo history
 Plug 'mhinz/vim-signify' " git gutter
-Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
-Plug 'rhysd/clever-f.vim' " repeaded f keeps going forward
-Plug 'rizzatti/dash.vim' " dash docs browser integration
-Plug 'romainl/vim-cool' " stop highlighting after searching
 Plug 'scrooloose/nerdtree' " file navigator sidebar
-Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
-Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
-Plug 'takac/vim-hardtime' " rate limit h/j/k/l to get better with :HardTimeToggle
+
+" ctags / completion / linting plugins
+Plug 'ludovicchabant/vim-gutentags' " auto manage ctags
+Plug 'maralla/completor.vim' " code completion
+Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
 Plug 'tomtom/tcomment_vim' " commenting plugin
 Plug 'w0rp/ale' " async linting engine
-Plug 'wellle/targets.vim' " di' -> delete inside '
-Plug 'wesQ3/vim-windowswap' " leader+ww on source/destination panes to swap
-Plug 'wincent/ferret' " multi file search -> quickfix pane
+
+" fzf plugins
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
+Plug 'junegunn/fzf.vim' " fuzzy finder integration
+
+" other plugins
+Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
+Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
+Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 
 " ruby plugins
 Plug 'AndrewRadev/splitjoin.vim' " gS single->multiline  gJ multi->singleline
-Plug 'ecomba/vim-ruby-refactoring'
-Plug 'itmammoth/run-rspec.vim'
+Plug 'itmammoth/run-rspec.vim' " run ruby specs e.g. ' sl' -> run spec on line
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
 
@@ -66,6 +78,7 @@ call plug#end()
 colorscheme sublimemonokai " the apple of my monokeye
 
 " SYSTEM
+set nocompatible " not vi compatible
 set autoread " auto read external changes made to file
 set hidden " buffers hidden when abandoned, editor survives buffer close
 set nobackup " version control has arrived
@@ -111,6 +124,8 @@ set shiftwidth=2 " always 2 spaces
 set tabstop=2 " I said always
 
 " MAPS
+nnoremap ; :|" easier command mode access
+
 nnoremap <C-j> <C-W>j|" move
 nnoremap <C-k> <C-W>k|" panes
 nnoremap <C-h> <C-W>h|" with
@@ -132,6 +147,8 @@ nnoremap <leader>f :GFiles<cr>|" pick from all files in git project by filename
 nnoremap <leader>n :Files<cr>|" pick from all files in vim's root dir by filename
 nnoremap <leader>l :Lines<cr>|" find line in any open buffer
 nnoremap <leader>r :Rg<cr>|" fulltext find in all files in the base dir
+nnoremap <leader>g :Tags<cr>|" tags in project
+nnoremap <leader>G :BTags<cr>|" tags in current buffer
 
 " toggles
 nnoremap <leader>tt :TagbarToggle<CR>|"   toggle tagbar ctags browser sidebar
@@ -166,6 +183,6 @@ set grepprg=rg\ --vimgrep\ --no-heading\ -S
 set grepformat=%f:%l:%c:%m,%f:%l:%m
 let g:rg_command = '
   \ rg --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
-  \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,,go,hs,rb,conf}"
+  \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,go,hs,rb,conf}"
   \ -g "!{.git,node_modules,vendor,.venv}/*" '
 
