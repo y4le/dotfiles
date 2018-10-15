@@ -131,11 +131,6 @@ nnoremap <C-k> <C-W>k|" panes
 nnoremap <C-h> <C-W>h|" with
 nnoremap <C-l> <C-W>l|" ctrl+h/j/k/l
 
-noremap <silent> <C-Up> :ObviousResizeUp<CR>|"      resize
-noremap <silent> <C-Down> :ObviousResizeDown<CR>|"  panes
-noremap <silent> <C-Left> :ObviousResizeLeft<CR>|"  with
-noremap <silent> <C-Right> :ObviousResizeRight<CR>|"ctrl + u/d/l/r
-
 nnoremap j gj|" j moves down visible instead of file lines
 nnoremap k gk|" k moves up visible instead of file lines
 
