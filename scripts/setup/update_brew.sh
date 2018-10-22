@@ -19,6 +19,7 @@ qol_packages=(
   fpp # facebook path picker - pipe in txt, pick files, do thing
   fzf # fuzzy finder
   fzy # rust fuzzy finder
+  highlight # syntax highlighter
   htop # better `top`
   ncdu # better `du`
   parallel # GNU parallel - better `xargs`
