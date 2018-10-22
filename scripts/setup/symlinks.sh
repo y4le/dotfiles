@@ -16,3 +16,5 @@ ln -sf `pwd`/vimrc ~/.vimrc
 mkdir -p ~/.config/nvim
 ln -sf `pwd`/vimrc ~/.config/nvim/init.vim
 
+# taskwarrior
+ln -sf `pwd`/taskrc ~/.taskrc
