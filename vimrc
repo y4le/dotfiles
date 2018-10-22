@@ -26,8 +26,7 @@ Plug 'itchyny/lightline.vim' " status line
 
 " ui navigation plugins
 Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
-Plug 'wesQ3/vim-windowswap' " leader+ww on source/destination panes to swap
-Plug 'talek/obvious-resize' " allow ctrl+up/down/left/right to resize
+Plug 'ton/vim-bufsurf' " :bp/:bn prev/next buffers LRU, not opening time based
 
 " motion / target plugins
 Plug 'andymass/vim-matchup' " better % motion
@@ -56,8 +55,13 @@ Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
 Plug 'tomtom/tcomment_vim' " commenting plugin
 Plug 'w0rp/ale' " async linting engine
 
+" productivity plugins
+Plug 'vimwiki/vimwiki' " personal wiki: leader w w -> wiki
+Plug 'tbabej/taskwiki' " taskwarrior vimwiki integration
+Plug 'powerman/vim-plugin-AnsiEsc' " colors in taskwiki
+
 " fzf plugins
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
+" Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
 Plug 'junegunn/fzf.vim' " fuzzy finder integration
 
 " other plugins
@@ -143,7 +147,7 @@ nnoremap <leader>bN :enew<cr>|" new buffer
 
 " fzf so good! use these
 nnoremap <leader>bb :Buffers<cr>|" pick open buffers by id/filename
-nnoremap <leader>f :GFiles<cr>|" pick from all files in git project by filename
+nnoremap <leader>j :GFiles<cr>|" pick from all files in git project by filename
 nnoremap <leader>n :Files<cr>|" pick from all files in vim's root dir by filename
 nnoremap <leader>l :Lines<cr>|" find line in any open buffer
 nnoremap <leader>r :Rg<cr>|" fulltext find in all files in the base dir
@@ -186,3 +190,22 @@ let g:rg_command = '
   \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,go,hs,rb,conf}"
   \ -g "!{.git,node_modules,vendor,.venv}/*" '
 
+" setup fzf
+set rtp+=/usr/local/opt/fzf
+
+" An action can be a reference to a function that processes selected lines
+function! s:build_quickfix_list(lines)
+  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+  copen
+  cc
+endfunction
+
+nnoremap <leader>f :FZF<cr>|" pick from all files, actions below
+let g:fzf_action = {
+  \ 'ctrl-q': function('s:build_quickfix_list'),
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+" setup vimwiki
+let g:vimwiki_list = [{'path':'~/vimwiki/wiki', 'path_html':'~/vimwiki/html'}]
