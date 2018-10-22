@@ -68,7 +68,7 @@ export EDITOR="vim" # vim 4 life
 
 # SHORTCUTS
 
-bindkey -s '^t' 'ranger\n' # ctrl-t ranger
+bindkey -s '^f' 'ranger\n' # ctrl-f ranger
 
 # ctrl-R history search
 bindkey -M viins '^r' fzf-insert-history
@@ -80,6 +80,8 @@ zle -N edit-command-line
 bindkey "^X^E" edit-command-line
 
 # set up fuzzy find
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -C {}) 2> /dev/null | head -200'"
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules}/*" 2> /dev/null'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 alias v="fzf -m | xargs -o vim" # alias to open files in vim
@@ -99,4 +101,5 @@ alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
 if [ -f $HOME/.profile ]; then
   . $HOME/.profile
 fi
+
 
