@@ -102,4 +102,4 @@ if [ -f $HOME/.profile ]; then
   . $HOME/.profile
 fi
 
-
+fortune # a bit of fun

@@ -16,6 +16,7 @@ qol_packages=(
   diff-so-fancy # better `diff`
   exa # better `ls`
   fd # better `find`
+  fortune # fortune cookie phrases - very important :p
   fpp # facebook path picker - pipe in txt, pick files, do thing
   fzf # fuzzy finder
   fzy # rust fuzzy finder
