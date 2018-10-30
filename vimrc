@@ -160,6 +160,7 @@ nnoremap <leader>G :BTags<cr>|" tags in current buffer
 " toggles
 nnoremap <leader>tt :TagbarToggle<CR>|"   toggle tagbar ctags browser sidebar
 nnoremap <leader>tn :NERDTreeToggle<CR>|" toggle NERDTree directory sidebar
+nnoremap <leader>tN :NERDTreeFind<CR>|" locate current file in NERDTree
 nnoremap <leader>tu :UndotreeToggle<CR>|" toggle UndoTree undo history sidebar
 nnoremap <leader>tr :set relativenumber!<CR>|" toggle relative line ##s
 
