@@ -75,6 +75,9 @@ Plug 'itmammoth/run-rspec.vim' " run ruby specs e.g. ' sl' -> run spec on line
 Plug 'tpope/vim-rails'
 Plug 'vim-ruby/vim-ruby'
 
+" web plugins
+Plug 'kchmck/vim-coffee-script' " coffeescript support
+
 call plug#end()
 
 
