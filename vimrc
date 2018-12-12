@@ -64,6 +64,9 @@ Plug 'powerman/vim-plugin-AnsiEsc' " colors in taskwiki
 " Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
 Plug 'junegunn/fzf.vim' " fuzzy finder integration
 
+" VCS plugins
+Plug 'tpope/vim-fugitive' " git integration
+
 " other plugins
 Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
 Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
