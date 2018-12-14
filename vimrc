@@ -72,6 +72,9 @@ Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
 Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
 Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 
+" lisp plugins
+Plug 'kovisoft/slimv' " slime mode for vim: interactive lisp
+
 " ruby plugins
 Plug 'AndrewRadev/splitjoin.vim' " gS single->multiline  gJ multi->singleline
 Plug 'itmammoth/run-rspec.vim' " run ruby specs e.g. ' sl' -> run spec on line
