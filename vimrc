@@ -73,7 +73,7 @@ Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
 Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 
 " lisp plugins
-Plug 'kovisoft/slimv' " slime mode for vim: interactive lisp
+Plug 'l04m33/vlime', { 'rtp': 'vim' } " common lisp environment
 
 " ruby plugins
 Plug 'AndrewRadev/splitjoin.vim' " gS single->multiline  gJ multi->singleline
@@ -156,10 +156,10 @@ nnoremap <leader>bN :enew<cr>|" new buffer
 
 " fzf so good! use these
 nnoremap <leader>bb :Buffers<cr>|" pick open buffers by id/filename
-nnoremap <leader>j :GFiles<cr>|" pick from all files in git project by filename
+nnoremap <leader>bl :Lines<cr>|" find line in any open buffer
 nnoremap <leader>n :Files<cr>|" pick from all files in vim's root dir by filename
-nnoremap <leader>l :Lines<cr>|" find line in any open buffer
-nnoremap <leader>r :Rg<cr>|" fulltext find in all files in the base dir
+nnoremap <leader>N :GFiles<cr>|" pick from all files in git project by filename
+nnoremap <leader>j :Rg<cr>|" fulltext find in all files in the base dir
 nnoremap <leader>g :Tags<cr>|" tags in project
 nnoremap <leader>G :BTags<cr>|" tags in current buffer
 
