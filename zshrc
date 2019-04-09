@@ -1,3 +1,8 @@
+# source machine specific env/aliases that need to run before the rest of this file
+if [ -f $HOME/.pre_profile ]; then
+  . $HOME/.pre_profile
+fi
+
 # ZPLUG
 
 # install zplug if missing
