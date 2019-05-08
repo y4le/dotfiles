@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# grab the actual fzf_src function
+. ~/.bash_functions/fzf_sources
+
+
+# store the parameters in env vars to pass fzf_src
+root_file=`pwd`
+color=false
+hidden=false
+debug=false
+
+while [ "$1" != "" ]; do
+  case $1 in
+    -r | --root )
+      shift
+      root_file=$1
+      ;;
+    -c | --color )
+      color=true
+      ;;
+    -h | --hidden )
+      hidden=true
+      ;;
+    -d | --debug )
+      debug=true
+      ;;
+  esac
+  shift
+done
+
+fzf_src
+
+

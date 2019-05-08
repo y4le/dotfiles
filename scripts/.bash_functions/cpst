@@ -1,0 +1,34 @@
+#!/bin/bash
+
+command_exists () {
+  type "$1" &> /dev/null;
+}
+
+function cpy() {
+  export DISPLAY=:0
+
+  if command_exists pbcopy; then
+    cat | pbcopy
+  fi
+
+  if command_exists xclip; then
+    export DISPLAY=:0
+    # copy to selection buffer AND clipboard
+    cat | xclip -i -sel c -f | xclip -i -sel p
+  fi
+}
+
+function pst() {
+  if command_exists pbpaste; then
+    pbpaste
+  fi
+
+  if command_exists xclip; then
+    export DISPLAY=:0
+    xclip -selection clipboard -o
+  fi
+}
+
+function foobar() {
+  echo "foobar"
+}

@@ -28,10 +28,10 @@ zplug MisterRios/stashy                         # `git stash pop stash@{2}` -> `
 zplug b4b4r07/zsh-vimode-visual, defer:3        # add visual vim mode to the cli
 zplug changyuheng/zsh-interactive-cd            # interactive fzf powered `cd`
 zplug peterhurford/git-it-on.zsh                # open dir in github `cd ~/dev/dotfiles && gitit`
-zplug so-fancy/diff-so-fancy                    # pretty diffs
 zplug wfxr/forgit, defer:1                      # fzf + git: ga(dd) glo(g) gi(gnore) gd(iff) gcf(ile)
 zplug ytet5uy4/fzf-widgets                      # fzf widgets - used to get fzf-insert-history
 zplug zdharma/fast-syntax-highlighting, defer:2 # fast cli syntax highlighting
+zplug zdharma/zsh-diff-so-fancy, as:command, use:bin/git-dsf # pretty diffs
 zplug zlsun/solarized-man                       # colorful man pages
 zplug zsh-users/zsh-autosuggestions             # typeahead command suggestions from history
 
@@ -45,6 +45,18 @@ fi
 
 # load plugins into PATH
 zplug load
+
+# source our functions
+if [[ -d ~/.bash_functions ]]; then
+  for f in ~/.bash_functions/*; do
+    . $f
+  done
+fi
+
+# load scripts into PATH
+if [[ -d ~/bin ]]; then
+  export PATH=~/bin:$PATH
+fi
 
 
 # TERMINAL OPTIONS
@@ -73,7 +85,18 @@ export EDITOR="vim" # vim 4 life
 
 # SHORTCUTS
 
-bindkey -s '^f' 'ranger\n' # ctrl-f ranger
+# quick re-source this file
+alias src="source ~/.zshrc"
+
+bindkey -s '^k' 'ranger\n' # ctrl-k ranger
+
+# fasd: quick frecency dirs
+eval "$(fasd --init auto)"
+unalias zz
+function zz() {
+  local dir
+  dir="$(fasd -Rdl "$1" | fzf --query="$1" -1 -0 --no-sort +m)" && cd "${dir}" || return 1
+}
 
 # ctrl-R history search
 bindkey -M viins '^r' fzf-insert-history
@@ -84,27 +107,18 @@ autoload -z edit-command-line
 zle -N edit-command-line
 bindkey "^X^E" edit-command-line
 
-# set up fuzzy find
+# fzf: fuzzy finder
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -C {}) 2> /dev/null | head -200'"
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules,.venv}/*" 2> /dev/null'
+type filez &>/dev/null && export FZF_DEFAULT_COMMAND='filez 2> /dev/null'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-alias v="fzf -m | xargs -o vim" # alias to open files in vim
-alias preview="fzf --preview 'bat --color \"always\" {}'" # preview contents of files
-function briff() { git branch | cut -c 3- | fzf --preview "git diff --color master...{}" } # e.g. > git checkout `briff`
 
 # turn hidden files on/off in OSX Finder
 function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
 function hiddenOff() { defaults write com.apple.Finder AppleShowAllFiles NO ; }
 
-# better replacements for builtins
-alias top='sudo htop' # replace `top` with better alternative
-alias ping='prettyping --nolegend' # replace `ping` with better alternative
-alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
-
 # source machine specific env/aliases
-if [ -f $HOME/.profile ]; then
-  . $HOME/.profile
+if [ -f $HOME/.post_profile ]; then
+  . $HOME/.post_profile
 fi
-
-fortune # a bit of fun

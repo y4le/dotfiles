@@ -1,0 +1,102 @@
+#!/bin/bash
+
+command_exists () {
+  type "$1" &> /dev/null;
+}
+
+
+# SOURCES
+# these provide a list of files based on $root_file
+# they should return 1 if they cannot provide results
+# print results and return 0 if they can
+
+fasd_source () {
+  command_exists fasd || return 1
+
+  fasd -Rlf
+}
+
+hg_source () {
+  command_exists hg || return 1
+
+  # check that we are in a hg repo
+  hg root &> /dev/null || return 1
+
+  hg files
+}
+
+git_source () {
+  command_exists git || return 1
+
+  # check that we are in a git repo
+  git rev-parse --is-inside-work-tree &> /dev/null || return 1
+
+  git ls-files
+}
+
+fd_source () {
+  command_exists fd || return 1
+
+  declare -a args=(--type f)
+  [[ $hidden = true ]] && args+=(--hidden)
+  [[ $color = true ]] && args+=(--color always)
+
+  fd "${args[@]}"
+}
+
+find_source () {
+  command_exists find || return 1
+
+  declare -a args=(-type f -prune)
+  [[ $hidden = true ]] || args+=(-not -path "*/\.*")
+
+  find "${args[@]}"
+}
+
+rg_source () {
+  command_exists rg || return 1
+
+  declare -a args=(--files)
+  [[ $hidden = true ]] && args+=(--hidden)
+  [[ $color = true ]] && args+=(--color always)
+
+  rg "${args[@]}"
+}
+
+
+# FUNCTIONS
+
+sources=(
+  hg_source
+  git_source
+  rg_source
+  fasd_source
+  fd_source
+  find_source
+)
+
+# terminal colors
+red=`tput setaf 1`
+grn=`tput setaf 2`
+rst=`tput sgr0`
+
+fzf_src () {
+  for source in "${sources[@]}"; do
+    # run function
+    $source
+
+    # if we exited function successfully
+    if [[ $? = 0 ]]; then
+      if [[ $debug = true ]]; then # debug print, success case
+        echo -e "\n${grn}source: $source  r: $root_file  c: $color  h: $hidden${rst}"
+      fi
+
+      return 0
+    fi
+  done
+
+  if [[ $debug = true ]]; then # debug print, failure case
+    echo -e "\n${red}r: $root_file  c: $color  h: $hidden${rst}"
+  fi
+  return 1
+}
