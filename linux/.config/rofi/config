@@ -1,0 +1,8 @@
+rofi.modi: window,run,combi
+rofi.font: mono 10
+rofi.lines: 8
+rofi.bw: 1
+rofi.width: 30
+rofi.hide-scrollbar: false
+rofi.fuzzy: true
+rofi.theme: Monokai

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-. ~/.bash_functions/cpst
+. ~/.funcs/cpst
 
 pst

@@ -1,0 +1,114 @@
+set history=10000 " increase vim history a bit
+set incsearch " search as you type
+set hlsearch " highlight search results
+set ignorecase " case insensitive search
+set surround " vim surround plugin
+set NERDTree " nerd tree plugin
+set easymotion " easymotion plugin
+
+let mapleader=" "
+
+" put unnamed register in clipboard (you can C-v anything you can `p`)
+set clipboard+=unnamed
+
+" goto
+nnoremap gi :action GotoImplementation<cr>
+nnoremap gs :action GotoSuperMethod<cr>
+nnoremap gr :action ShowUsages<cr>
+
+" important/single char maps
+nnoremap <leader>f :action GotoFile<cr>
+nnoremap <leader>j :action RecentFiles<cr>
+nnoremap <leader>k :action FileStructurePopup<cr>
+nnoremap <leader>J :action Switcher<cr>
+nnoremap <leader><Space> :action GotoAction<cr>
+nnoremap <leader>/ :nohlsearch<cr>
+
+" goto (F)iles
+nnoremap <leader>Ff :action GotoFile<cr>
+nnoremap <leader>Fc :action GotoClass<cr>
+nnoremap <leader>Fs :action GotoSymbol<cr>
+
+" (r)elated files
+nnoremap <leader>rb :action Blaze.OpenCorrespondingBuildFile<cr>
+nnoremap <leader>rt :action GotoTest<cr>
+nnoremap <leader>rr :action GotoRelated<cr>
+nnoremap <leader>rc :action Blaze.CopyGoogle3RelativePath<cr>
+
+" (c)ommands
+nnoremap <leader>cs :action Blaze.PartialSync<cr>
+nnoremap <leader>cf :action Blaze.FixFile<cr>
+nnoremap <leader>cd :action Blaze.FixDepsForFile<cr>
+nnoremap <leader>cr :action Run<cr>
+nnoremap <leader>ct :action RunClass<cr>
+
+" (d)ebug
+nnoremap <leader>dr :action Debug<cr>
+nnoremap <leader>df :action Debugger.FocusOnBreakpoint<cr>
+nnoremap <leader>db :action ToggleLineBreakpoint<cr>
+nnoremap <leader>dB :action ToggleBreakpointEnabled<cr>
+nnoremap <leader>dx :action Debugger.RemoveAllBreakpointsInFile<cr>
+nnoremap <leader>dX :action Debugger.RemoveAllBreakpoints<cr>
+nnoremap <leader>dl :action StepOver<cr>
+nnoremap <leader>dj :action StepInto<cr>
+nnoremap <leader>dJ :action SmartStepInto<cr>
+nnoremap <leader>dk :action StepOut<cr>
+nnoremap <leader>dd :action Debugger.EvaluateInConsole<cr>
+nnoremap <leader>dD :action Debugger.EvaluationDialogPopup<cr>
+
+" (e)rrors
+nnoremap <leader>en :action GotoNextError<cr>
+nnoremap <leader>ep :action GotoPreviousError<cr>
+nnoremap <leader>es :action ShowErrorDescription<cr>
+
+" UI (s)witches
+nnoremap <leader>ss :action HideAllWindows<cr>
+nnoremap <leader>sd :action ToggleDistractionFreeMode<cr>
+nnoremap <leader>sz :action TogglePresentationMode<cr>
+nnoremap <leader>sn :action ActivateProjectToolWindow<cr>
+nnoremap <leader>sN :action SelectInProjectView<cr>
+nnoremap <leader>sg :action CodeGlance.toggle<cr>
+nnoremap <leader>sl :action ActivateLogcatToolWindow<cr>
+nnoremap <leader>sp :action ActivateStructureToolWindow<cr>
+nnoremap <leader>so :action FileStructurePopup<cr>
+
+" tab navigation
+nnoremap <C-w> :action CloseContent<cr>
+nnoremap <leader>x :action CloseContent<cr>
+nnoremap H :action PreviousTab<cr>
+nnoremap L :action NextTab<cr>
+
+" pane navigation
+nnoremap <C-j> <C-W>j|" navigate
+nnoremap <C-k> <C-W>k|" panes
+nnoremap <C-h> <C-W>h|" with
+nnoremap <C-l> <C-W>l|" ctrl+h/j/k/l
+nnoremap g<C-h> :action MoveEditorToOppositeTabGroup<cr>
+nnoremap g<C-l> :action MoveEditorToOppositeTabGroup<cr>
+
+" other
+nnoremap g= :action ReformatCode<cr>|" format whole file
+nnoremap g<leader>r :action RenameElement<cr>|" rename symbol under cursor
+nnoremap g<leader>e :action EvaluateExpression<cr>|" eval an expression in the debugger
+
+" tweaks to defaults
+nnoremap j gj|" j moves down visible instead of file lines
+nnoremap k gk|" k moves up visible instead of file lines
+nnoremap Y y$|" make Y consistant with C/D
+
+" find defaults
+nnoremap n nzz|" next search result and center
+nnoremap N Nzz|" prev search result and center
+nnoremap * *zz|" next search result and center
+nnoremap # #zz|" prev search result and center
+
+" fold defaults
+nnoremap za :action CollapseRegionRecursively<cr>
+nnoremap zC :action CollapseRegionRecursively<cr>
+nnoremap zO :action ExpandRegionRecursively<cr>
+nnoremap zm :action CollapseAllRegions<cr>
+nnoremap zr :action ExpandAllRegions<cr>
+
+" trade off within-file-jump-nav for the ability to jump back after e.g. gd
+nnoremap <C-o> :action Back<cr>
+nnoremap <C-i> :action Forward<cr>

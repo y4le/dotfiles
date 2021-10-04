@@ -1,0 +1,223 @@
+###############################################################################
+# VARIABLES
+###############################################################################
+set $meta Mod4
+set $alt Mod1
+set $mod Mod1
+set $ctl Control
+
+
+###############################################################################
+# MAPS
+###############################################################################
+bindsym $mod+Return exec kitty # start a terminal
+bindsym $mod+i reload # reload i3 config
+bindsym $mod+Shift+i restart # restart i3
+
+# start rofi, launch stuff
+bindsym $mod+semicolon exec rofi -show combi
+
+# emoji picker
+bindsym $mod+e exec ~/.zplug/bin/rofimoji
+
+# kill focused window
+bindsym $mod+q kill
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# focus the parent/child container
+bindsym $mod+a focus parent
+bindsym $mod+d focus child
+
+# vim style hjkl to navigate
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# move focused window
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+# change container layout (stacked, tabbed, toggle split)
+bindsym $mod+Shift+c layout tabbed
+bindsym $mod+Control+c layout stacking
+bindsym $mod+c layout toggle split
+bindsym $mod+x split horizontal
+bindsym $mod+v split vertical
+
+# volume keys
+bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5% && killall -SIGUSR1 i3status
+bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5% && killall -SIGUSR1 i3status
+bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle && killall -SIGUSR1 i3status
+
+# media keys
+bindsym XF86AudioPlay exec playerctl play
+bindsym XF86AudioPause exec playerctl pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+###############################################################################
+# RESIZE MODE
+###############################################################################
+mode "resize" {
+  # allow alt+h/j/k/l to still move focus
+  bindsym $mod+h focus left
+  bindsym $mod+j focus down
+  bindsym $mod+k focus up
+  bindsym $mod+l focus right
+
+  # h/j/k/l: top-left shrinks,  bottom-right grows,  ctrl=small nomod=mid shift=large
+  bindsym Control+h resize shrink width 1 px or 1 ppt
+  bindsym h resize shrink width 5 px or 5 ppt
+  bindsym Shift+H resize shrink width 25 px or 25 ppt
+
+  bindsym Control+j resize grow height 1 px or 1 ppt
+  bindsym j resize grow height 5 px or 5 ppt
+  bindsym Shift+J resize grow height 25 px or 25 ppt
+
+  bindsym Control+k resize shrink height 1 px or 1 ppt
+  bindsym k resize shrink height 5 px or 5 ppt
+  bindsym Shift+K resize shrink height 25 px or 25 ppt
+
+  bindsym Control+l resize grow width 1 px or 1 ppt
+  bindsym l resize grow width 5 px or 5 ppt
+  bindsym Shift+L resize grow width 25 px or 25 ppt
+
+  # quick select for n windows
+  bindsym 1 resize set 20ppt; mode "default";
+  bindsym 2 resize set 25ppt; mode "default";
+  bindsym 3 resize set 33ppt; mode "default";
+  bindsym 4 resize set 40ppt; mode "default";
+  bindsym 5 resize set 50ppt; mode "default";
+  bindsym 6 resize set 66ppt; mode "default";
+  bindsym 7 resize set 70ppt; mode "default";
+  bindsym 8 resize set 75ppt; mode "default";
+  bindsym 9 resize set 80ppt; mode "default";
+
+  bindsym Shift+percent [workspace="__focused__" tiling] resize set 50 ppt; resize set 50 ppt; mode "default"
+
+  # back to normal: Enter or Escape or $mod+r
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+  bindsym $mod+r mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+
+###############################################################################
+# BAR SETUP
+###############################################################################
+bar {
+  status_command i3blocks
+}
+# Toggle bar between hide state and show state
+bindsym $mod+Shift+m bar hidden_state toggle
+
+
+###############################################################################
+# WORKSPACES
+###############################################################################
+# Define names for default workspaces for which we configure key bindings later on.
+# We use variables to avoid repeating the names in multiple places.
+set $ws1 "1 - Term"
+set $ws2 "2 - Dev"
+set $ws3 "3 - Studio"
+set $ws4 "4 - Browser"
+set $ws5 "5 - Chat"
+set $ws6 "6 - Music"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+# switch to workspace
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+# move next/previous workspace
+bindsym Control+$mod+Left workspace prev
+bindsym Control+$mod+Right workspace next
+bindsym Shift+Control+$mod+Left move container to workspace prev
+bindsym Shift+Control+&mod+Right move container to workspace next
+
+# show workspace switcher
+bindsym $mod+b exec rofi -show workspace -modi workspace:~/bin/i3_switch_workspaces.sh
+bindsym Control+Up exec rofi -show workspace -modi workspace:~/bin/i3_switch_workspaces.sh
+
+
+###############################################################################
+# FLOATING / SCRATCHPAD
+###############################################################################
+# use to drag floating windows to their wanted position
+floating_modifier $meta
+
+mode "scratchpad" {
+  # use to toggle floating mode
+  bindsym f floating toggle; mode "default"
+
+  # hide/show windows with scratchpad
+  bindsym $mod+s [title="."] scratchpad show; mode "default"
+  bindsym s scratchpad show; mode "default"
+
+  bindsym Shift+s [workspace=__focused__ floating] move scratchpad; mode "default"
+  bindsym $mod+Shift+s move scratchpad; mode "default"
+
+  # change focus between tiling / floating windows
+  bindsym Return focus mode_toggle
+
+  # switch window between floating and normal mode
+  bindsym Space floating toggle
+
+  # back to normal: Enter or Escape or $mod+r
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+  bindsym $mod+s mode "default"
+}
+
+bindsym $mod+s mode "scratchpad"
+
+
+###############################################################################
+# MISC SETUP
+###############################################################################
+# Define font for window titles
+font pango:Inconsolata 12
+
+# only change focus on click, not hover (stop stealing focus from intellij)
+focus_follows_mouse no
+
+# The middle button over a titlebar kills the window
+bindsym --release button2 kill
+
+# lock screen
+bindsym $meta+l exec /usr/share/goobuntu-desktop-files/xsecurelock.sh
+# autolock
+exec --no-startup-id env LOCKED_BY_SESSION_IDLE=true xautolock -time 3 -locker /usr/share/goobuntu-desktop-files/xsecurelock.sh
+
+# auto start system services
+exec dex -ae i3

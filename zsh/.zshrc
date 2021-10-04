@@ -1,39 +1,65 @@
-# source machine specific env/aliases that need to run before the rest of this file
-if [ -f $HOME/.pre_profile ]; then
-  . $HOME/.pre_profile
-fi
+# this file should be symlinked to ~/.zshrc
+# ~/.zshrc is only sourced for interactive shells
+# use ~/.zshenv if you always want to source
+
+# source ~/.pre_profile if present
+[[ -f $HOME/.pre_profile ]] && source $HOME/.pre_profile
 
 # ZPLUG
 
 # install zplug if missing
-if [[ ! -d ~/.zplug ]]; then
-  git clone https://github.com/b4b4r07/zplug ~/.zplug
-fi
+[[ -d ~/.zplug ]] || git clone https://github.com/b4b4r07/zplug ~/.zplug
 
 # set home
 export ZPLUG_HOME=~/.zplug
 source $ZPLUG_HOME/init.zsh
 
-# clear old packages
-zplug clear
+zplug clear # clear old packages
+zplug zplug/zplug, hook-build:"zplug --self-manage" # self manage
 
-# self manage
-zplug zplug/zplug, hook-build:"zplug --self-manage"
+zplug "~/.config/zsh/themes/", use:"minimal.zsh-theme", from:local, as:theme
 
-# theme
-zplug subnixr/minimal
+# helpers for the `use:` tag for zplug commands
+a6='amd64' && x8='x86_64' && tz='.tar.gz'
+os='darwin' && [[ $OSTYPE == *linux* ]] && os='linux'
+
+# commands
+zplug "clvv/fasd", as:command, use:fasd
+zplug "facebook/PathPicker", as:command, use:fpp
+zplug "junegunn/fzf", use:"shell/*.zsh", defer:2
+zplug "junegunn/fzf-bin", from:gh-r, as:command, rename-to:fzf
+zplug "knqyf263/pet", from:gh-r, as:command, rename-to:pet, use:"*$os*$a6*$tz"
+zplug "ranger/ranger", as:command, rename-to:ranger, use:ranger.py
+zplug "raylee/tldr", as:command, use:tldr
+zplug "sharkdp/bat", from:gh-r, as:command, rename-to:bat, use:"*$x8*$os*$tz"
+zplug "sharkdp/fd", from:gh-r, as:command, rename-to:fd
+zplug "zdharma/zsh-diff-so-fancy", as:command, use:bin/git-dsf
+zplug "rkitover/vimpager", as:command
+zplug "fdw/rofimoji", as:command, rename-to:rofimoji, use:rofimoji.py
+zplug "wustho/epr", as:command, rename-to:epr, use:epr.py
 
 # plugins
-zplug MisterRios/stashy                         # `git stash pop stash@{2}` -> `stashy pop 2`
-zplug b4b4r07/zsh-vimode-visual, defer:3        # add visual vim mode to the cli
-zplug changyuheng/zsh-interactive-cd            # interactive fzf powered `cd`
-zplug peterhurford/git-it-on.zsh                # open dir in github `cd ~/dev/dotfiles && gitit`
-zplug wfxr/forgit, defer:1                      # fzf + git: ga(dd) glo(g) gi(gnore) gd(iff) gcf(ile)
-zplug ytet5uy4/fzf-widgets                      # fzf widgets - used to get fzf-insert-history
-zplug zdharma/fast-syntax-highlighting, defer:2 # fast cli syntax highlighting
-zplug zdharma/zsh-diff-so-fancy, as:command, use:bin/git-dsf # pretty diffs
-zplug zlsun/solarized-man                       # colorful man pages
-zplug zsh-users/zsh-autosuggestions             # typeahead command suggestions from history
+zplug "b4b4r07/zsh-vimode-visual", defer:3        # add visual vim mode to the cli
+zplug "plugins/fasd", from:oh-my-zsh, if:"(( $+commands[fasd] ))", on:"clvv/fasd"
+zplug "wfxr/forgit", defer:1                      # fzf + git: ga(dd) glo(g) gi(gnore) gd(iff) gcf(ile)
+zplug "ytet5uy4/fzf-widgets"                      # fzf widgets - used to get fzf-insert-history
+zplug "zdharma/fast-syntax-highlighting", defer:2 # fast cli syntax highlighting
+zplug "zlsun/solarized-man"                       # colorful man pages
+zplug "zsh-users/zsh-autosuggestions"             # typeahead command suggestions from history
+
+# source all files in these dirs
+source_dirs=(
+  ~/.funcs
+  ~/.config/zsh/sources
+)
+
+for source_dir in $source_dirs; do
+  if [[ -d "$source_dir" ]]; then
+    for src in $source_dir/**/*(N); do
+      source $src
+    done
+  fi
+done
 
 # if necessary, install plugins
 if ! zplug check --verbose; then
@@ -46,20 +72,11 @@ fi
 # load plugins into PATH
 zplug load
 
-# source our functions
-if [[ -d ~/.bash_functions ]]; then
-  for f in ~/.bash_functions/*; do
-    . $f
-  done
-fi
-
-# load scripts into PATH
-if [[ -d ~/bin ]]; then
-  export PATH=~/bin:$PATH
-fi
-
 
 # TERMINAL OPTIONS
+
+bindkey -v # vim mode
+export KEYTIMEOUT=1 # vim mode timeout 1ms instead of .4s
 
 export CLICOLOR=1 # ANSI colors in iterm2
 
@@ -74,24 +91,21 @@ setopt hist_verify            # show command with history expansion to user befo
 setopt inc_append_history     # add commands to HISTFILE in order of execution
 setopt share_history          # share history data
 
-setopt share_history    # share between shells
-setopt append_history   # append, don't overwrite
-setopt extended_history # timestamps
-
-bindkey -v # vim mode
-export KEYTIMEOUT=1 # vim mode timeout 1ms instead of .4s
-export EDITOR="vim" # vim 4 life
-
 
 # SHORTCUTS
 
 # quick re-source this file
 alias src="source ~/.zshrc"
 
-bindkey -s '^k' 'ranger\n' # ctrl-k ranger
+# ctrl-g ranger: file system navigator
+function rangernav() {
+  source ranger < $TTY # source so when we move we cd
+  zle reset-prompt; zle redisplay
+}
+zle -N rangernav
+bindkey '^g' rangernav
 
 # fasd: quick frecency dirs
-eval "$(fasd --init auto)"
 unalias zz
 function zz() {
   local dir
@@ -108,10 +122,23 @@ zle -N edit-command-line
 bindkey "^X^E" edit-command-line
 
 # fzf: fuzzy finder
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-export FZF_CTRL_T_OPTS="--preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -C {}) 2> /dev/null | head -200'"
-export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules,.venv}/*" 2> /dev/null'
-type filez &>/dev/null && export FZF_DEFAULT_COMMAND='filez 2> /dev/null'
+fzf_action_list=()
+for k v (
+  "ctrl-l" "execute(bat --color=always {} | less -Rf || less -f {})" # quick preview file
+  "ctrl-f" "execute(vimpager --no-passthrough {} || less -f {})" # serious preview file
+  "ctrl-y" "execute-silent(echo -n {} | cpy)" # copy selected line to clipboard
+); do
+  fzf_action_list+=("$k:$v")
+done
+export FZF_DEFAULT_OPTS="--bind '${(j.,.)fzf_action_list}'"
+export fzf_preview_opt="--preview-window down:50% --preview '(bat {} || highlight -O ansi -l {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
+export FZF_CTRL_T_OPTS="$fzf_preview_opt"
+
+export FZF_TMUX=1
+export FZF_TMUX_HEIGHT=80
+
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules,.venv}/*"'
+type filez &>/dev/null && export FZF_DEFAULT_COMMAND='filez'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
 # turn hidden files on/off in OSX Finder
@@ -119,6 +146,4 @@ function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
 function hiddenOff() { defaults write com.apple.Finder AppleShowAllFiles NO ; }
 
 # source machine specific env/aliases
-if [ -f $HOME/.post_profile ]; then
-  . $HOME/.post_profile
-fi
+[[ -f $HOME/.post_profile ]] && source $HOME/.post_profile

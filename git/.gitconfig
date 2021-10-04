@@ -3,8 +3,6 @@
 [user]
 	name = Yale Thomas
 	email = lordchair@gmail.com
-[core]
-  pager = diff-so-fancy | less --tabs=2 -RFXi
 [color]
 	ui = true
 [color "diff-highlight"]
@@ -19,3 +17,11 @@
 	old = red bold
 	new = green bold
 	whitespace = red reverse
+[merge]
+    tool = vimdiff
+[diff]
+    tool = vimdiff
+[difftool]
+    prompt = false
+[alias]
+    d = difftool

@@ -1,129 +1,145 @@
 " VIM-PLUG
 " Auto-Install vim-plug if missing
-if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+if empty(glob($VIMHOME . '/autoload/plug.vim'))
+  silent !curl -fLo $VIMHOME/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
 " set up nvim vim-plug access
 if has('nvim') && empty(glob('~/.config/nvim/autoload/plug.vim'))
   silent !mkdir -p ~/.config/nvim/autoload
-  silent !ln -s ~/.vim/autoload/plug.vim ~/.config/nvim/autoload/plug.vim
+  silent !ln -s $VIMHOME/autoload/plug.vim ~/.config/nvim/autoload/plug.vim
   autocmd VimEnter * PlugInstall
 endif
 
 if has('nvim')
   call plug#begin('~/.config/nvim/plugged')
 else
-  call plug#begin('~/.vim/plugged')
+  call plug#begin($VIMHOME . '/plugged')
+  Plug 'gpanders/vim-man' " :Man pages in vim, nvim builtin
 endif
 
 " theme plugins
 Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
-
-" status line plugins
-Plug 'itchyny/lightline.vim' " status line
+Plug 'vim-airline/vim-airline' " status line replacement
 
 " ui navigation plugins
-Plug 'christoomey/vim-tmux-navigator' " ctrl+h/j/k/l navigates vim and tmux panes
-Plug 'ton/vim-bufsurf' " :bp/:bn prev/next buffers LRU, not opening time based
+Plug 'christoomey/vim-tmux-navigator' " C-h/j/k/l moves vim/tmux panes
+Plug 'dhruvasagar/vim-zoom' " <leader>z zooms pane like tmux
+Plug 'francoiscabrol/ranger.vim' " G-g file system navigator
+Plug 'gcmt/taboo.vim' " better tabline / rename tabs
+Plug 'chrisbra/unicode.vim' " unicode search / completion
+
+" command plugins
+Plug 'chrisbra/NrrwRgn' " <leader>n - selection is opened in temp buffer to edit
+Plug 'junegunn/goyo.vim' " minimal distraction writing
+Plug 'junegunn/vim-peekaboo' " show registers when about to use
+Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
 
 " motion / target plugins
-Plug 'andymass/vim-matchup' " better % motion
-Plug 'easymotion/vim-easymotion' " space space motion -> jumps as if ## motion
-Plug 'rhysd/clever-f.vim' " repeaded f keeps going forward
+Plug 'tpope/vim-surround' " surround nouns, e.g. ysiw[ -> put [ around word
 Plug 'wellle/targets.vim' " di' -> delete inside '
+Plug 'jeetsukumaran/vim-indentwise' " [= / ]= -> prev/next equal indent
 
 " search plugins
 Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
 Plug 'markonm/traces.vim' " %s/live preview/substitute commands/
 Plug 'wincent/ferret' " :Ack -> multi file search | quickfix pane
-Plug 'wincent/loupe' " better within file search results
 
 " sidebar / gutter plugins
-Plug 'Xuyuanp/nerdtree-git-plugin' " git indicators for nerdtree
+Plug 'jeetsukumaran/vim-buffergator' " sidebar showing buffer list
 Plug 'jeffkreeftmeijer/vim-numbertoggle' " hybrid to static line #s on un/focus
-Plug 'majutsushi/tagbar' " sidebar that shows structure by using ctags
-Plug 'mbbill/undotree' " access full undo history
 Plug 'mhinz/vim-signify' " git gutter
-Plug 'scrooloose/nerdtree' " file navigator sidebar
+Plug 'scrooloose/nerdtree' " sidebar showing file navigator
+Plug 'sjl/gundo.vim' " sidebar showing full undo history
 
-" ctags / completion / linting plugins
+" " ctags
 " Plug 'ludovicchabant/vim-gutentags' " auto manage ctags
-Plug 'maralla/completor.vim' " code completion
+Plug 'majutsushi/tagbar' " sidebar showing structure using ctags
+
+" completion / linting plugins
+" Plug 'maralla/completor.vim' " code completion
+" Plug 'Valloric/YouCompleteMe' " code completion
 Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
 Plug 'tomtom/tcomment_vim' " commenting plugin
 Plug 'w0rp/ale' " async linting engine
 
-" productivity plugins
-Plug 'vimwiki/vimwiki' " personal wiki: leader w w -> wiki
-Plug 'tbabej/taskwiki' " taskwarrior vimwiki integration
+" vimwiki - see $VIMHOME/plugin/wiki.vim
+" Plug 'tbabej/taskwiki' " taskwarrior vimwiki integration
 Plug 'powerman/vim-plugin-AnsiEsc' " colors in taskwiki
+Plug 'vimwiki/vimwiki' " personal wiki: leader w w -> wiki
+Plug 'mattn/calendar-vim' " what is said on the tin, calendar in vim
+Plug 'junegunn/vim-easy-align' " align columns
 
 " fzf plugins
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } " fzf setup
+Plug '~/.zplug/repos/junegunn/fzf' " fzf setup
 Plug 'junegunn/fzf.vim' " fuzzy finder integration
 
 " VCS plugins
 Plug 'tpope/vim-fugitive' " git integration
+Plug 'ludovicchabant/vim-lawrencium' " mercurial integration
 
-" other plugins
-Plug 'chrisbra/NrrwRgn' " emacs narrowregion - open new buffer to edit selection
-Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
+" system plugins
+Plug 'HerringtonDarkholme/w3m.vim' " w3m cli browser plugin
+Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
+Plug 'kana/vim-submode' " define modes that temporarily override maps
+Plug 'rkitover/vimpager' " use vim as terminal $PAGER
 Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
+Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
+Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
 
-" " lisp plugins
-" Plug 'l04m33/vlime', { 'rtp': 'vim' } " common lisp environment
-"
-" " ruby plugins
-" Plug 'AndrewRadev/splitjoin.vim' " gS single->multiline  gJ multi->singleline
-" Plug 'itmammoth/run-rspec.vim' " run ruby specs e.g. ' sl' -> run spec on line
-" Plug 'tpope/vim-rails'
-" Plug 'vim-ruby/vim-ruby'
-"
-" " web plugins
-" Plug 'kchmck/vim-coffee-script' " coffeescript support
+" language specific plugins
+Plug 'l04m33/vlime', { 'rtp': 'vim', 'for': ['clojure', 'lisp'] }
+Plug 'tpope/vim-rails', { 'for': 'ruby' }
+Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
+Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
+Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 
-" source locally specific vimrc if present
-call SourceIfExists("~/.vim/config/plugins.local.vim")
+" source local overrides if present; inside init block so you can Plug 'eg.vim'
+call util#SourceIfExists($VIMHOME . "/config/plugins.local.vim")
 
 call plug#end()
 
 
-" LOCAL PLUGINS
-call SourceIfExists("~/.vim/plugins/cpst.vim")
-
 
 " PLUGIN CONFIG
 
-" auto open quickfix pane when it gets new text
-augroup vimrc
-  autocmd QuickFixCmdPost * call asyncrun#quickfix_toggle(8, 1)
-augroup END
-
+let g:peekaboo_prefix = '<leader>'
 let g:EasyMotion_smartcase = 1 " easymotion plugin ignore case if nocaps
 let g:signify_vcs_list = ['git', 'hg'] " vim-signify plugin - only check these VCS
 let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
 let g:gutentags_cache_dir='~/vim/.tags' " keep ctags in one place
-nmap <leader>A <Plug>(FerretAcks)
+let g:ycm_filetype_blacklist=extend(get(g:, 'ycm_filetype_blacklist', {}),
+  \ {'cpp': 1, 'c': 1, 'md': 1, 'markdown':1, 'tar':1, 'vimwiki':1})
+let g:better_whitespace_filetypes_blacklist=
+  \ ['diff', 'gitcommit', 'hgcommit', 'unite', 'qf', 'help', 'markdown', 'w3m']
 
-" setup rg
-set grepprg=rg\ --vimgrep\ --no-heading\ -S
-set grepformat=%f:%l:%c:%m,%f:%l:%m
-let g:rg_command = '
-  \ rg --hidden --column --line-number --no-heading --fixed-strings --ignore-case --no-ignore --hidden --follow --color "always"
-  \ -g "*.{js,json,php,md,styl,jade,html,haml,config,py,cpp,c,coffee,go,hs,rb,conf,java}"
-  \ -g "!{.git,node_modules,vendor,.venv}/*" '
+" prevent plugin maps
+let g:buffergator_suppress_keymaps = 1
+let g:ranger_map_keys = 0
+let g:FerretMap = 0
+let g:lawrencium_define_mappings = 0
+let g:w3m#disable_default_keymap = 1
 
-" setup fzf
-set rtp+=/usr/bin/fzf
+" airline - tab/status line
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 
-nnoremap <leader>f :FZF<cr>|" pick from all files, actions below
-let g:fzf_action = {
-  \ 'ctrl-q': function('BuildQuickfix'),
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-x': 'split',
-  \ 'ctrl-v': 'vsplit' }
+" submodes
+" see $VIMHOME/plugin/resize_mode
+" setup airline to show submode
+let g:airline_section_y = '%{submode#current()}'
+let g:submode_always_show_submode = 1 " make submode status available to airline
 
-" setup vimwiki
-let g:vimwiki_list = [{'path':'~/vimwiki/wiki', 'path_html':'~/vimwiki/html'}]
+" setup goyo
+let g:goyo_height='100%'
+let g:goyo_margin_top = 0
+let g:goyo_margin_bottom = 0
+
+" setup mru
+let MRU_File = $VIMHOME . '/mru_files'
+let MRU_Max_Entries = 1000
+
+" setup vimpager
+let g:vimpager = { 'ansiesc': 1 } " parse ansi color codes
+let g:less = { 'enabled': 0 } " disable less keymaps
