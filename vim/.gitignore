@@ -1,0 +1,6 @@
+mru_files
+plug.vim
+plugged/
+tmp/
+undo/
+view/
