@@ -52,4 +52,14 @@ if [[ -f $HOME/.ghcup/env ]]; then
   path+="$HOME/.ghcup/bin"
 fi
 
+# add packages controlled by brew to PATH if present
+if [[ -d /opt/homebrew/bin ]]; then
+  path=('/opt/homebrew/bin' $path)
+fi
+
+# source rust package manager if present
+if [[ -f $HOME/.cargo/env ]]; then
+  source $HOME/.cargo/env
+fi
+
 export PATH
