@@ -67,7 +67,9 @@ call abbreviate#Cnoreabbr('tr', 'TabooRename', 'rename current tab')
 call abbreviate#Cnoreabbr('tR', 'TabooReset', 'reset tab name to default')
 
 " diff
-" see $VIMHOME/plugin/diff.vim
+nnoremap <leader>Dn ]c|" d(iff) n(ext)
+nnoremap <leader>Dp [c|" d(iff) p(revious)
+nnoremap <leader>Dg :diffget |" d(iff) g(et)
 
 " navigation
 nnoremap <leader>gf :call nav#OpenInPrevSplit()<cr>
