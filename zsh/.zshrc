@@ -33,7 +33,7 @@ zplug "ranger/ranger", as:command, rename-to:ranger, use:ranger.py
 zplug "raylee/tldr", as:command, use:tldr
 zplug "sharkdp/bat", from:gh-r, as:command, rename-to:bat, use:"*$x8*$os*$tz"
 zplug "sharkdp/fd", from:gh-r, as:command, rename-to:fd
-zplug "zdharma/zsh-diff-so-fancy", as:command, use:bin/git-dsf
+zplug "zdharma-continuum/zsh-diff-so-fancy", as:command, use:bin/git-dsf
 zplug "rkitover/vimpager", as:command
 zplug "fdw/rofimoji", as:command, rename-to:rofimoji, use:rofimoji.py
 zplug "wustho/epr", as:command, rename-to:epr, use:epr.py
