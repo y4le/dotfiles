@@ -92,6 +92,8 @@ Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
 Plug 'l04m33/vlime', { 'rtp': 'vim', 'for': ['clojure', 'lisp'] }
 Plug 'tpope/vim-rails', { 'for': 'ruby' }
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
+Plug 'psf/black', { 'for': 'python' }
+Plug 'leafgarland/typescript-vim', { 'for': 'typescript' }
 Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
 Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 
