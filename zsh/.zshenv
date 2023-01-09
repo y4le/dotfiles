@@ -25,10 +25,10 @@ typeset -U path
 
  #set up $PATH
 path=(
-  '/bin'
-  '/usr/bin'
-  '/usr/local/bin'
   "$HOME/bin"
+  '/usr/local/bin'
+  '/usr/bin'
+  '/bin'
   $path
 )
 
