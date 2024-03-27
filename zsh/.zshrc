@@ -105,9 +105,5 @@ export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,
 type filez &>/dev/null && export FZF_DEFAULT_COMMAND='filez'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
-# turn hidden files on/off in OSX Finder
-function hiddenOn() { defaults write com.apple.Finder AppleShowAllFiles YES ; }
-function hiddenOff() { defaults write com.apple.Finder AppleShowAllFiles NO ; }
-
 # source machine specific env/aliases
 [[ -f $HOME/.post_profile ]] && source $HOME/.post_profile
