@@ -80,7 +80,6 @@ Plug 'tpope/vim-fugitive' " git integration
 Plug 'ludovicchabant/vim-lawrencium' " mercurial integration
 
 " system plugins
-Plug 'HerringtonDarkholme/w3m.vim' " w3m cli browser plugin
 Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
 Plug 'kana/vim-submode' " define modes that temporarily override maps
 Plug 'rkitover/vimpager' " use vim as terminal $PAGER

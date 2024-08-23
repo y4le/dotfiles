@@ -24,24 +24,13 @@ a6='amd64' && x8='x86_64' && tz='.tar.gz'
 os='darwin' && [[ $OSTYPE == *linux* ]] && os='linux'
 
 # commands
-zplug "clvv/fasd", as:command, use:fasd
-zplug "facebook/PathPicker", as:command, use:fpp
 zplug "junegunn/fzf", use:"shell/*.zsh", defer:2
-zplug "junegunn/fzf-bin", from:gh-r, as:command, rename-to:fzf
-zplug "knqyf263/pet", from:gh-r, as:command, rename-to:pet, use:"*$os*$a6*$tz"
 zplug "ranger/ranger", as:command, rename-to:ranger, use:ranger.py
 zplug "raylee/tldr", as:command, use:tldr
-zplug "sharkdp/bat", from:gh-r, as:command, rename-to:bat, use:"*$x8*$os*$tz"
-zplug "sharkdp/fd", from:gh-r, as:command, rename-to:fd
-zplug "zdharma-continuum/zsh-diff-so-fancy", as:command, use:bin/git-dsf
 zplug "rkitover/vimpager", as:command
-zplug "fdw/rofimoji", as:command, rename-to:rofimoji, use:rofimoji.py
-zplug "wustho/epr", as:command, rename-to:epr, use:epr.py
 
 # plugins
 zplug "b4b4r07/zsh-vimode-visual", defer:3        # add visual vim mode to the cli
-zplug "plugins/fasd", from:oh-my-zsh, if:"(( $+commands[fasd] ))", on:"clvv/fasd"
-zplug "wfxr/forgit", defer:1                      # fzf + git: ga(dd) glo(g) gi(gnore) gd(iff) gcf(ile)
 zplug "ytet5uy4/fzf-widgets"                      # fzf widgets - used to get fzf-insert-history
 zplug "zdharma/fast-syntax-highlighting", defer:2 # fast cli syntax highlighting
 zplug "zlsun/solarized-man"                       # colorful man pages
@@ -104,13 +93,6 @@ function rangernav() {
 }
 zle -N rangernav
 bindkey '^g' rangernav
-
-# fasd: quick frecency dirs
-unalias zz
-function zz() {
-  local dir
-  dir="$(fasd -Rdl "$1" | fzf --query="$1" -1 -0 --no-sort +m)" && cd "${dir}" || return 1
-}
 
 # ctrl-R history search
 bindkey -M viins '^r' fzf-insert-history
