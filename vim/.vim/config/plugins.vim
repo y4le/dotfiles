@@ -28,11 +28,11 @@ Plug 'christoomey/vim-tmux-navigator' " C-h/j/k/l moves vim/tmux panes
 Plug 'dhruvasagar/vim-zoom' " <leader>z zooms pane like tmux
 Plug 'francoiscabrol/ranger.vim' " G-g file system navigator
 Plug 'gcmt/taboo.vim' " better tabline / rename tabs
-Plug 'chrisbra/unicode.vim' " unicode search / completion
+" Plug 'chrisbra/unicode.vim' " unicode search / completion
 
 " command plugins
 Plug 'chrisbra/NrrwRgn' " <leader>n - selection is opened in temp buffer to edit
-Plug 'junegunn/goyo.vim' " minimal distraction writing
+" Plug 'junegunn/goyo.vim' " minimal distraction writing
 Plug 'junegunn/vim-peekaboo' " show registers when about to use
 Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
 
@@ -66,9 +66,9 @@ Plug 'w0rp/ale' " async linting engine
 
 " vimwiki - see $VIMHOME/plugin/wiki.vim
 " Plug 'tbabej/taskwiki' " taskwarrior vimwiki integration
-Plug 'powerman/vim-plugin-AnsiEsc' " colors in taskwiki
-Plug 'vimwiki/vimwiki' " personal wiki: leader w w -> wiki
-Plug 'mattn/calendar-vim' " what is said on the tin, calendar in vim
+" Plug 'powerman/vim-plugin-AnsiEsc' " colors in taskwiki
+" Plug 'vimwiki/vimwiki' " personal wiki: leader w w -> wiki
+" Plug 'mattn/calendar-vim' " what is said on the tin, calendar in vim
 Plug 'junegunn/vim-easy-align' " align columns
 
 " fzf plugins
@@ -83,9 +83,9 @@ Plug 'ludovicchabant/vim-lawrencium' " mercurial integration
 Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
 Plug 'kana/vim-submode' " define modes that temporarily override maps
 Plug 'rkitover/vimpager' " use vim as terminal $PAGER
-Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
-Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
-Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
+" Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
+" Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
+" Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
 
 " language specific plugins
 Plug 'l04m33/vlime', { 'rtp': 'vim', 'for': ['clojure', 'lisp'] }
