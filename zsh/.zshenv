@@ -26,6 +26,7 @@ typeset -U path
  #set up $PATH
 path=(
   "$HOME/bin"
+  "$HOME/.local/bin"
   '/usr/local/bin'
   '/usr/bin'
   '/bin'
@@ -33,7 +34,8 @@ path=(
 )
 
 # set up (n)ode (p)ackage (m)anager for js packages
-if type npm &>/dev/null; then
+# Leave npm prefix alone when npm is managed by nvm.
+if type npm &>/dev/null && [[ "$(command -v npm)" != "$HOME/.nvm/"* ]]; then
   export NPM_PREFIX="$HOME/.config/npm"
   export NPM_GLOBALS="$NPM_PREFIX/globals"
   mkdir -p $NPM_GLOBALS
