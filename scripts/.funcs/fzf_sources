@@ -20,18 +20,18 @@ hg_source () {
   command_exists hg || return 1
 
   # check that we are in a hg repo
-  hg root &> /dev/null || return 1
+  hg --cwd "$root_file" root &> /dev/null || return 1
 
-  hg files
+  hg --cwd "$root_file" files
 }
 
 git_source () {
   command_exists git || return 1
 
   # check that we are in a git repo
-  git rev-parse --is-inside-work-tree &> /dev/null || return 1
+  git -C "$root_file" rev-parse --is-inside-work-tree &> /dev/null || return 1
 
-  git ls-files
+  git -C "$root_file" ls-files
 }
 
 fd_source () {
@@ -41,7 +41,7 @@ fd_source () {
   [[ $hidden = true ]] && args+=(--hidden)
   [[ $color = true ]] && args+=(--color always)
 
-  fd "${args[@]}"
+  fd "${args[@]}" . "$root_file"
 }
 
 find_source () {
@@ -50,7 +50,7 @@ find_source () {
   declare -a args=(-type f -prune)
   [[ $hidden = true ]] || args+=(-not -path "*/\.*")
 
-  find "${args[@]}"
+  find "$root_file" "${args[@]}"
 }
 
 rg_source () {
@@ -60,7 +60,7 @@ rg_source () {
   [[ $hidden = true ]] && args+=(--hidden)
   [[ $color = true ]] && args+=(--color always)
 
-  rg "${args[@]}"
+  rg "${args[@]}" "$root_file"
 }
 
 

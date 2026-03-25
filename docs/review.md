@@ -28,7 +28,7 @@ These are actual runtime breakages or logic errors.
 | ~~B7~~ | ~~`alacritty/.config/alacritty/alacritty.yml`~~ | ~~289-295~~ | ~~Tmux shortcut key bindings send `\x02` (Ctrl-B prefix), but tmux is configured to use `C-Space` prefix. All Alacritty-tmux shortcuts are broken.~~ |
 | ~~B8~~ | ~~`tmux/.tmux.conf`~~ | ~~50~~ | ~~Copy binding hardcodes `reattach-to-user-namespace cpy` — macOS-specific and will fail on Linux. Should conditionally check for the binary.~~ |
 | ~~B9~~ | ~~`scripts/.funcs/cpst`~~ | ~~10-18~~ | ~~`cpy()` runs both `pbcopy` and `xclip` paths sequentially (not `elif`). On a system with both installed, input gets consumed by the first and the second gets empty stdin.~~ |
-| B10 | `scripts/bin/compair.sh` | — | No shebang line. Behavior depends on whatever shell invokes it. Also uses `eval $cmd` which is fragile with special characters in filenames. |
+| ~~B10~~ | ~~`scripts/bin/compair.sh`~~ | ~~—~~ | ~~No shebang line. Behavior depends on whatever shell invokes it. Also uses `eval $cmd` which is fragile with special characters in filenames.~~ |
 | ~~B11~~ | ~~`linux/bin/i3_switch_workspaces.sh`~~ | ~~3~~ | ~~`[ -z $@ ]` — unquoted `$@` in test. Should be `[ -z "$*" ]`.~~ |
 | ~~B12~~ | ~~`linux/bin/i3_switch_workspaces.sh`~~ | ~~17~~ | ~~Calls `i3_empty_workspace.sh` which doesn't exist anywhere in the repo.~~ (inlined logic) |
 | ~~B13~~ | ~~`taskwarrior/.config/taskwarrior/info/setup_taskd_client.sh`~~ | ~~1, 9~~ | ~~Declares `#!/bin/sh` but uses `[[ ]]` on line 9, which is a bashism. Will fail under dash or strict POSIX sh.~~ (file deleted) |
@@ -37,9 +37,9 @@ These are actual runtime breakages or logic errors.
 
 | # | File | Line | Issue |
 |---|------|------|-------|
-| B14 | `zsh/.zshrc` | 109 | `unalias zz` will error if the fasd oh-my-zsh plugin didn't create the alias (e.g., fasd not installed). Wrap in `(( $+aliases[zz] ))` guard. |
-| B15 | `zsh/.zshrc` | 23-24 | `a6='amd64'` and `x8='x86_64'` are hardcoded for x86. Breaks on Apple Silicon (`arm64`/`aarch64`). |
-| B16 | `scripts/bin/filez` | 8-29 | `--root` flag sets `root_file` but `fzf_sources` never uses it (only in debug output). The flag is effectively dead. |
+| ~~B14~~ | ~~`zsh/.zshrc`~~ | ~~109~~ | ~~`unalias zz` will error if the fasd oh-my-zsh plugin didn't create the alias (e.g., fasd not installed). Wrap in `(( $+aliases[zz] ))` guard.~~ |
+| ~~B15~~ | ~~`zsh/.zshrc`~~ | ~~23-24~~ | ~~`a6='amd64'` and `x8='x86_64'` are hardcoded for x86. Breaks on Apple Silicon (`arm64`/`aarch64`).~~ |
+| ~~B16~~ | ~~`scripts/bin/filez`~~ | ~~8-29~~ | ~~`--root` flag sets `root_file` but `fzf_sources` never uses it (only in debug output). The flag is effectively dead.~~ (wired up) |
 
 ---
 
@@ -108,7 +108,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 | D4 | `vim/.vim/config/plugins.vim` | 114-115 | `ycm_filetype_blacklist` config for YouCompleteMe, but YCM is commented out (line 62). |
 | D5 | `vim/.vim/config/plugins.vim` | 113 | `gutentags_cache_dir` setting, but vim-gutentags is commented out (line 57). |
 | D6 | `vim/.vim/config/plugins.vim` | 92-97 | Language plugins for CoffeeScript, Ruby, Lisp — assess if still used. |
-| D7 | `scripts/bin/filez` | `--root` flag | Accepted but never functionally used by `fzf_sources`. |
+| ~~D7~~ | ~~`scripts/bin/filez`~~ | ~~`--root` flag~~ | ~~Accepted but never functionally used by `fzf_sources`.~~ (wired up) |
 | ~~D8~~ | ~~`taskwarrior/.config/zsh/sources/taskwarrior-aliases.zsh`~~ | ~~3~~ | ~~Unreachable `echo` after `return 0`.~~ |
 
 ---

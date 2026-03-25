@@ -1,23 +1,26 @@
+#!/bin/bash
 # open vimdiffs comparing pairs of files
 # input is list of files, first compared to second, third to fourth...
 # `vim_compair a b c d` opens vimdiff tabs for a/b and c/d
 function vim_compair {
-	last=""
-	cmd=""
+	local last=""
+	local -a args=()
+	local first_pair=true
 	for file in "$@"; do
-		if [ -z "$last" ]; then
-			last=$file
+		if [[ -z "$last" ]]; then
+			last="$file"
 		else
-			if [ -z "$cmd" ]; then
-				cmd="vim -c 'set diffopt=filler,vertical' -c 'edit $last' -c 'diffsplit $file' "
+			if $first_pair; then
+				args=(-c 'set diffopt=filler,vertical' -c "edit $last" -c "diffsplit $file")
+				first_pair=false
 			else
-				cmd="${cmd} -c 'tabe $last' -c 'diffsplit $file' "
+				args+=(-c "tabe $last" -c "diffsplit $file")
 			fi
 			last=""
 		fi
 	done
 
-	eval $cmd
+	vim "${args[@]}"
 }
 
-vim_compair $@
+vim_compair "$@"

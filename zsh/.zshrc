@@ -20,7 +20,12 @@ zplug zplug/zplug, hook-build:"zplug --self-manage" # self manage
 zplug "~/.config/zsh/themes/", use:"minimal.zsh-theme", from:local, as:theme
 
 # helpers for the `use:` tag for zplug commands
-a6='amd64' && x8='x86_64' && tz='.tar.gz'
+case "$(uname -m)" in
+  x86_64)        a6='amd64'  x8='x86_64'  ;;
+  arm64|aarch64) a6='arm64'  x8='aarch64' ;;
+  *)             a6='amd64'  x8='x86_64'  ;;
+esac
+tz='.tar.gz'
 os='darwin' && [[ $OSTYPE == *linux* ]] && os='linux'
 
 # commands
@@ -106,7 +111,7 @@ zle -N rangernav
 bindkey '^g' rangernav
 
 # fasd: quick frecency dirs
-unalias zz
+(( $+aliases[zz] )) && unalias zz
 function zz() {
   local dir
   dir="$(fasd -Rdl "$1" | fzf --query="$1" -1 -0 --no-sort +m)" && cd "${dir}" || return 1
