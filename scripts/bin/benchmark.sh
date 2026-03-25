@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # use like `benchmark.sh -n 50 ./testscript.sh`
 
@@ -19,9 +19,9 @@ while [ "$1" != "" ]; do
 done
 
 # validate params
-if [ -z cmd ]; then
+if [ -z "$cmd" ]; then
   echo "Must provide command to benchmark"
-  return 1
+  exit 1
 fi
 
 echo "N: $N  cmd: $cmd"

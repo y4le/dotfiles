@@ -14,9 +14,9 @@ These are actual runtime breakages or logic errors.
 
 | # | File | Line | Issue |
 |---|------|------|-------|
-| B1 | `scripts/bin/benchmark.sh` | 1 | Shebang is `#/bin/bash` — missing `!`. Script won't execute with the intended interpreter. |
-| B2 | `scripts/bin/benchmark.sh` | 22 | `[ -z cmd ]` should be `[ -z "$cmd" ]`. Always evaluates false (tests the literal string "cmd"). |
-| B3 | `scripts/bin/benchmark.sh` | 25 | `return 1` at top-level in a script — should be `exit 1`. `return` only works inside functions or sourced scripts. |
+| ~~B1~~ | ~~`scripts/bin/benchmark.sh`~~ | ~~1~~ | ~~Shebang is `#/bin/bash` — missing `!`. Script won't execute with the intended interpreter.~~ |
+| ~~B2~~ | ~~`scripts/bin/benchmark.sh`~~ | ~~22~~ | ~~`[ -z cmd ]` should be `[ -z "$cmd" ]`. Always evaluates false (tests the literal string "cmd").~~ |
+| ~~B3~~ | ~~`scripts/bin/benchmark.sh`~~ | ~~25~~ | ~~`return 1` at top-level in a script — should be `exit 1`. `return` only works inside functions or sourced scripts.~~ |
 | B4 | `linux/.config/i3/config` | 166 | `Shift+Control+&mod+Right` — `&mod` is a typo for `$mod`. This keybinding silently does nothing. |
 | ~~B5~~ | ~~`taskwarrior/.config/zsh/sources/taskwarrior-aliases.zsh`~~ | ~~2-3~~ | ~~`return 0` followed by `echo` — the echo is unreachable dead code.~~ |
 | ~~B6~~ | ~~`taskwarrior/.config/zsh/sources/taskwarrior-aliases.zsh`~~ | ~~24-25~~ | ~~Inverted retry logic: `$?` is checked after `command task "$@"` on line 22 already overwrites it. The `$? == 0` check means it retries when sync *succeeded*, not when it failed.~~ |
@@ -174,7 +174,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 ### Fix Now (bugs affecting daily use)
 - B4: i3 `&mod` typo
 - B7: Alacritty/tmux prefix mismatch
-- B1-B3: benchmark.sh shebang and logic errors
+- ~~B1-B3: benchmark.sh shebang and logic errors~~
 - ~~B6: Taskwarrior inverted retry logic~~
 - B9: cpy/pst double-execution
 
