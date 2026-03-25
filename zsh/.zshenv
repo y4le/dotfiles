@@ -7,7 +7,6 @@
 
 export SHELL=$(which zsh)
 
-export BROWSER='chromium-browser'
 
 export EDITOR=vim # vim 4 life
 export VISUAL=vim
