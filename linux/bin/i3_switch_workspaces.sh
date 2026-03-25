@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z $@ ]
+if [ -z "$*" ]
 then
 function gen_workspaces()
 {
@@ -10,11 +10,18 @@ function gen_workspaces()
 
 echo empty; gen_workspaces
 else
-    WORKSPACE=$@
+    WORKSPACE="$*"
 
     if [ x"empty" = x"${WORKSPACE}" ]
     then
-        i3_empty_workspace.sh >/dev/null
+        # Find the first unused workspace number (1-10)
+        USED=$(i3-msg -t get_workspaces | tr ',' '\n' | grep '"num"' | sed 's/.*:\([0-9]*\)/\1/g')
+        for i in $(seq 1 10); do
+            if ! echo "${USED}" | grep -qx "${i}"; then
+                i3-msg workspace "${i}" >/dev/null
+                break
+            fi
+        done
     elif [ -n "${WORKSPACE}" ]
     then
         i3-msg workspace "${WORKSPACE}" >/dev/null

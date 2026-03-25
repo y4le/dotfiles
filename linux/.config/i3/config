@@ -163,7 +163,7 @@ bindsym $mod+Shift+0 move container to workspace $ws10
 bindsym Control+$mod+Left workspace prev
 bindsym Control+$mod+Right workspace next
 bindsym Shift+Control+$mod+Left move container to workspace prev
-bindsym Shift+Control+&mod+Right move container to workspace next
+bindsym Shift+Control+$mod+Right move container to workspace next
 
 # show workspace switcher
 bindsym $mod+b exec rofi -show workspace -modi workspace:~/bin/i3_switch_workspaces.sh
