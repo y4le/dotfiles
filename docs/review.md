@@ -25,9 +25,9 @@ These are actual runtime breakages or logic errors.
 
 | # | File | Line | Issue |
 |---|------|------|-------|
-| B7 | `alacritty/.config/alacritty/alacritty.yml` | 289-295 | Tmux shortcut key bindings send `\x02` (Ctrl-B prefix), but tmux is configured to use `C-Space` prefix. All Alacritty-tmux shortcuts are broken. |
-| B8 | `tmux/.tmux.conf` | 50 | Copy binding hardcodes `reattach-to-user-namespace cpy` — macOS-specific and will fail on Linux. Should conditionally check for the binary. |
-| B9 | `scripts/.funcs/cpst` | 10-18 | `cpy()` runs both `pbcopy` and `xclip` paths sequentially (not `elif`). On a system with both installed, input gets consumed by the first and the second gets empty stdin. |
+| ~~B7~~ | ~~`alacritty/.config/alacritty/alacritty.yml`~~ | ~~289-295~~ | ~~Tmux shortcut key bindings send `\x02` (Ctrl-B prefix), but tmux is configured to use `C-Space` prefix. All Alacritty-tmux shortcuts are broken.~~ |
+| ~~B8~~ | ~~`tmux/.tmux.conf`~~ | ~~50~~ | ~~Copy binding hardcodes `reattach-to-user-namespace cpy` — macOS-specific and will fail on Linux. Should conditionally check for the binary.~~ |
+| ~~B9~~ | ~~`scripts/.funcs/cpst`~~ | ~~10-18~~ | ~~`cpy()` runs both `pbcopy` and `xclip` paths sequentially (not `elif`). On a system with both installed, input gets consumed by the first and the second gets empty stdin.~~ |
 | B10 | `scripts/bin/compair.sh` | — | No shebang line. Behavior depends on whatever shell invokes it. Also uses `eval $cmd` which is fragile with special characters in filenames. |
 | ~~B11~~ | ~~`linux/bin/i3_switch_workspaces.sh`~~ | ~~3~~ | ~~`[ -z $@ ]` — unquoted `$@` in test. Should be `[ -z "$*" ]`.~~ |
 | ~~B12~~ | ~~`linux/bin/i3_switch_workspaces.sh`~~ | ~~17~~ | ~~Calls `i3_empty_workspace.sh` which doesn't exist anywhere in the repo.~~ (inlined logic) |
@@ -103,7 +103,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 | # | File | Line | Description |
 |---|------|------|-------------|
 | D1 | `vim/.vim/plugin/resize_mode.vim` | 1-53 | Entire file is commented out except for a 2-line header. ~50 lines of dead code. |
-| D2 | `scripts/.funcs/cpst` | 32-34 | Leftover `foobar()` test function. |
+| ~~D2~~ | ~~`scripts/.funcs/cpst`~~ | ~~32-34~~ | ~~Leftover `foobar()` test function.~~ |
 | D3 | `setup.sh` | 9-10 | Commented-out brew install/update lines. |
 | D4 | `vim/.vim/config/plugins.vim` | 114-115 | `ycm_filetype_blacklist` config for YouCompleteMe, but YCM is commented out (line 62). |
 | D5 | `vim/.vim/config/plugins.vim` | 113 | `gutentags_cache_dir` setting, but vim-gutentags is commented out (line 57). |
@@ -173,10 +173,10 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 ### Fix Now (bugs affecting daily use)
 - ~~B4: i3 `&mod` typo~~
-- B7: Alacritty/tmux prefix mismatch
+- ~~B7: Alacritty/tmux prefix mismatch~~
 - ~~B1-B3: benchmark.sh shebang and logic errors~~
 - ~~B6: Taskwarrior inverted retry logic~~
-- B9: cpy/pst double-execution
+- ~~B9: cpy/pst double-execution~~
 
 ### Clean Up Soon (security/privacy)
 - ~~S1-S13: Remove or gitignore all Google-internal references~~

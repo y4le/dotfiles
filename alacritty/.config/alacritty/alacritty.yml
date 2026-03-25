@@ -285,14 +285,14 @@ key_bindings:
     # Open a new alacritty window
   - { key: N,        mods: Command,       command: { program: "/usr/bin/open", args: [ "-n", "/Applications/Alacritty.app" ]} }
 
-    # shortcuts for tmux. the leader key is control-b (0x02)
-  - { key: W,        mods: Command,       chars: "\x02&"                       }  # close tab (kill)
-  - { key: T,        mods: Command,       chars: "\x02c"                       }  # new tab
-  - { key: RBracket, mods: Command|Shift, chars: "\x02n"                       }  # select next tab
-  - { key: LBracket, mods: Command|Shift, chars: "\x02p"                       }  # select previous tab
-  - { key: RBracket, mods: Command,       chars: "\x02o"                       }  # select next pane
-  - { key: LBracket, mods: Command,       chars: "\x02;"                       }  # select last (previously used) pane
-  - { key: F,        mods: Command,       chars: "\x02/"                       }  # search (upwards) (see tmux.conf)
+    # shortcuts for tmux. the leader key is C-Space (0x00)
+  - { key: W,        mods: Command,       chars: "\x00&"                       }  # close tab (kill)
+  - { key: T,        mods: Command,       chars: "\x00c"                       }  # new tab
+  - { key: RBracket, mods: Command|Shift, chars: "\x00n"                       }  # select next tab
+  - { key: LBracket, mods: Command|Shift, chars: "\x00p"                       }  # select previous tab
+  - { key: RBracket, mods: Command,       chars: "\x00o"                       }  # select next pane
+  - { key: LBracket, mods: Command,       chars: "\x00;"                       }  # select last (previously used) pane
+  - { key: F,        mods: Command,       chars: "\x00/"                       }  # search (upwards) (see tmux.conf)
 
 mouse:
   # Click settings

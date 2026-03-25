@@ -5,30 +5,29 @@ command_exists () {
 }
 
 function cpy() {
-  export DISPLAY=:0
-
   if command_exists pbcopy; then
-    cat | pbcopy
-  fi
-
-  if command_exists xclip; then
-    export DISPLAY=:0
-    # copy to selection buffer AND clipboard
-    cat | xclip -i -sel c -f | xclip -i -sel p
+    pbcopy
+  elif command_exists wl-copy; then
+    wl-copy
+  elif command_exists xclip; then
+    export DISPLAY="${DISPLAY:-:0}"
+    xclip -i -sel c -f | xclip -i -sel p
+  else
+    echo "cpy: no clipboard command found (pbcopy, wl-copy, xclip)" >&2
+    return 1
   fi
 }
 
 function pst() {
   if command_exists pbpaste; then
     pbpaste
-  fi
-
-  if command_exists xclip; then
-    export DISPLAY=:0
+  elif command_exists wl-paste; then
+    wl-paste
+  elif command_exists xclip; then
+    export DISPLAY="${DISPLAY:-:0}"
     xclip -selection clipboard -o
+  else
+    echo "pst: no clipboard command found (pbpaste, wl-paste, xclip)" >&2
+    return 1
   fi
-}
-
-function foobar() {
-  echo "foobar"
 }
