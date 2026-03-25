@@ -215,9 +215,9 @@ focus_follows_mouse no
 bindsym --release button2 kill
 
 # lock screen
-bindsym $meta+l exec /usr/share/goobuntu-desktop-files/xsecurelock.sh
+bindsym $meta+l exec xsecurelock
 # autolock
-exec --no-startup-id env LOCKED_BY_SESSION_IDLE=true xautolock -time 3 -locker /usr/share/goobuntu-desktop-files/xsecurelock.sh
+exec --no-startup-id env LOCKED_BY_SESSION_IDLE=true xautolock -time 3 -locker xsecurelock
 
 # auto start system services
 exec dex -ae i3

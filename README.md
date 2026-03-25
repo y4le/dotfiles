@@ -1,4 +1,4 @@
-# [loyale@](https://goto.google.com/who/loyale)'s Dotfiles
+# Dotfiles
 
 This is my dotfiles.
 

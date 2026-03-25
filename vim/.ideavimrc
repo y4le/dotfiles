@@ -30,15 +30,10 @@ nnoremap <leader>Fc :action GotoClass<cr>
 nnoremap <leader>Fs :action GotoSymbol<cr>
 
 " (r)elated files
-nnoremap <leader>rb :action Blaze.OpenCorrespondingBuildFile<cr>
 nnoremap <leader>rt :action GotoTest<cr>
 nnoremap <leader>rr :action GotoRelated<cr>
-nnoremap <leader>rc :action Blaze.CopyGoogle3RelativePath<cr>
 
 " (c)ommands
-nnoremap <leader>cs :action Blaze.PartialSync<cr>
-nnoremap <leader>cf :action Blaze.FixFile<cr>
-nnoremap <leader>cd :action Blaze.FixDepsForFile<cr>
 nnoremap <leader>cr :action Run<cr>
 nnoremap <leader>ct :action RunClass<cr>
 

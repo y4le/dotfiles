@@ -1,4 +1,0 @@
-[[snippets]]
-  description = "fzf for a citc workspace"
-  command = "cd $(p4 g4d $(ls /google/src/cloud/$USER | fzf --height 20% --reverse))"
-  output = ""
