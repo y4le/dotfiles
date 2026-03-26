@@ -4,17 +4,29 @@ command_exists () {
   type "$1" &> /dev/null;
 }
 
+function _osc52_copy() {
+  local data
+  data=$(base64 | tr -d '\n')
+  local seq
+  seq=$(printf '\e]52;c;%s\a' "$data")
+  # inside tmux: wrap in passthrough sequence
+  if [ -n "$TMUX" ]; then
+    seq=$(printf '\ePtmux;\e%s\e\\' "$seq")
+  fi
+  printf '%s' "$seq" > /dev/tty
+}
+
 function cpy() {
-  if command_exists pbcopy; then
+  if [ -n "$SSH_TTY" ] || [ -n "$SSH_CONNECTION" ]; then
+    _osc52_copy
+  elif command_exists pbcopy; then
     pbcopy
   elif command_exists wl-copy; then
     wl-copy
-  elif command_exists xclip; then
-    export DISPLAY="${DISPLAY:-:0}"
+  elif command_exists xclip && [ -n "$DISPLAY" ]; then
     xclip -i -sel c -f | xclip -i -sel p
   else
-    echo "cpy: no clipboard command found (pbcopy, wl-copy, xclip)" >&2
-    return 1
+    _osc52_copy
   fi
 }
 
