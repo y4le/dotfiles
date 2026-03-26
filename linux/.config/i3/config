@@ -18,7 +18,7 @@ bindsym $mod+Shift+i restart # restart i3
 bindsym $mod+semicolon exec rofi -show combi
 
 # emoji picker
-bindsym $mod+e exec ~/.zplug/bin/rofimoji
+bindsym $mod+e exec rofimoji
 
 # kill focused window
 bindsym $mod+q kill

@@ -5,52 +5,13 @@
 # source ~/.pre_profile if present
 [[ -f $HOME/.pre_profile ]] && source $HOME/.pre_profile
 
-# ZPLUG
-
-# install zplug if missing
-[[ -d ~/.zplug ]] || git clone https://github.com/b4b4r07/zplug ~/.zplug
-
-# set home
-export ZPLUG_HOME=~/.zplug
-source $ZPLUG_HOME/init.zsh
-
-zplug clear # clear old packages
-zplug zplug/zplug, hook-build:"zplug --self-manage" # self manage
-
-zplug "~/.config/zsh/themes/", use:"minimal.zsh-theme", from:local, as:theme
-
-# helpers for the `use:` tag for zplug commands
-case "$(uname -m)" in
-  x86_64)        a6='amd64'  x8='x86_64'  ;;
-  arm64|aarch64) a6='arm64'  x8='aarch64' ;;
-  *)             a6='amd64'  x8='x86_64'  ;;
-esac
-tz='.tar.gz'
-os='darwin' && [[ $OSTYPE == *linux* ]] && os='linux'
-
-# commands
-zplug "clvv/fasd", as:command, use:fasd
-zplug "facebook/PathPicker", as:command, use:fpp
-zplug "junegunn/fzf", use:"shell/*.zsh", defer:2
-zplug "junegunn/fzf-bin", from:gh-r, as:command, rename-to:fzf
-zplug "knqyf263/pet", from:gh-r, as:command, rename-to:pet, use:"*$os*$a6*$tz"
-zplug "ranger/ranger", as:command, rename-to:ranger, use:ranger.py
-zplug "raylee/tldr", as:command, use:tldr
-zplug "sharkdp/bat", from:gh-r, as:command, rename-to:bat, use:"*$x8*$os*$tz"
-zplug "sharkdp/fd", from:gh-r, as:command, rename-to:fd
-zplug "zdharma-continuum/zsh-diff-so-fancy", as:command, use:bin/git-dsf
-zplug "rkitover/vimpager", as:command
-zplug "fdw/rofimoji", as:command, rename-to:rofimoji, use:rofimoji.py
-zplug "wustho/epr", as:command, rename-to:epr, use:epr.py
-
-# plugins
-zplug "b4b4r07/zsh-vimode-visual", defer:3        # add visual vim mode to the cli
-zplug "plugins/fasd", from:oh-my-zsh, if:"(( $+commands[fasd] ))", on:"clvv/fasd"
-zplug "wfxr/forgit", defer:1                      # fzf + git: ga(dd) glo(g) gi(gnore) gd(iff) gcf(ile)
-zplug "ytet5uy4/fzf-widgets"                      # fzf widgets - used to get fzf-insert-history
-zplug "zdharma/fast-syntax-highlighting", defer:2 # fast cli syntax highlighting
-zplug "zlsun/solarized-man"                       # colorful man pages
-zplug "zsh-users/zsh-autosuggestions"             # typeahead command suggestions from history
+# SHELDON — zsh plugin manager
+if ! command -v sheldon &>/dev/null; then
+  echo "sheldon not found — installing from prebuilt binary..."
+  curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
+    | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
+fi
+eval "$(sheldon source)"
 
 # source all files in these dirs
 source_dirs=(
@@ -65,17 +26,6 @@ for source_dir in $source_dirs; do
     done
   fi
 done
-
-# if necessary, install plugins
-if ! zplug check --verbose; then
-  printf "Install zplug plugins? [y/N]: "
-  if read -q; then
-    echo; zplug install
-  fi
-fi
-
-# load plugins into PATH
-zplug load
 
 
 # TERMINAL OPTIONS

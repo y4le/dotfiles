@@ -1,0 +1,52 @@
+shell = "zsh"
+
+[templates]
+defer = "{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}"
+
+# -- deferred loading support ------------------------------------------------
+
+[plugins.zsh-defer]
+github = "romkatv/zsh-defer"
+apply = ["source"]
+
+# -- theme -------------------------------------------------------------------
+
+[plugins.minimal-theme]
+local = "~/.config/zsh/themes"
+use = ["minimal.zsh-theme"]
+
+# -- plugins (immediate) -----------------------------------------------------
+
+[plugins.solarized-man]
+github = "zlsun/solarized-man"
+
+[plugins.fzf-widgets]
+github = "ytet5uy4/fzf-widgets"
+
+[plugins.oh-my-zsh-fasd]
+github = "ohmyzsh/ohmyzsh"
+dir = "plugins/fasd"
+use = ["*.plugin.zsh"]
+
+# -- plugins (deferred) ------------------------------------------------------
+
+[plugins.forgit]
+github = "wfxr/forgit"
+apply = ["defer"]
+
+[plugins.fzf]
+github = "junegunn/fzf"
+use = ["shell/*.zsh"]
+apply = ["defer"]
+
+[plugins.fast-syntax-highlighting]
+github = "zdharma-continuum/fast-syntax-highlighting"
+apply = ["defer"]
+
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+apply = ["defer"]
+
+[plugins.zsh-vimode-visual]
+github = "b4b4r07/zsh-vimode-visual"
+apply = ["defer"]

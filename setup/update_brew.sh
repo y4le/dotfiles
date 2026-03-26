@@ -3,7 +3,7 @@
 core_packages=(
   asdf # multi version manager, replaces rvm/nvm
   tmux # terminal multiplexer
-  zplug # zsh plugin management
+  sheldon # zsh plugin management
   zsh # e.g. `git status | fpp` -> pick files -> `c` -> `git checkout master`bash replacement
 )
 
@@ -19,6 +19,7 @@ editor_packages=(
 
 other_packages=(
   bat # better `less`
+  fasd # frecency-based directory navigation
   diff-so-fancy # better `diff`
   exa # better `ls`
   fd # better `find`
