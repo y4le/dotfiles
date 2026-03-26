@@ -1,0 +1,14 @@
+[tools]
+# Core runtimes
+go = "1.26.1"
+node = "24.14.1"
+python = "3.14.3"
+rust = "1.94.0"
+
+# Cross-platform CLI tools
+"aqua:neovim/neovim" = "0.11.6"
+"aqua:sharkdp/bat" = "0.26.1"
+"aqua:sharkdp/fd" = "10.4.2"
+"aqua:junegunn/fzf" = "0.70.0"
+"aqua:BurntSushi/ripgrep" = "15.1.0"
+"aqua:ajeetdsouza/zoxide" = "0.9.9"

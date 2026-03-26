@@ -1,0 +1,12 @@
+# Native packages for Arch bootstrap.
+# Keep this list small: cross-platform CLI tools and runtimes belong in mise.
+
+curl
+git
+ranger
+stow
+tmux
+tree
+vim
+wget
+zsh

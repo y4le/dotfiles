@@ -26,21 +26,17 @@ typeset -U path
 path=(
   "$HOME/bin"
   "$HOME/.local/bin"
+  "$HOME/.local/share/mise/shims"
   '/usr/local/bin'
   '/usr/bin'
   '/bin'
   $path
 )
 
-# set up (n)ode (p)ackage (m)anager for js packages
-# Leave npm prefix alone when npm is managed by nvm.
-if type npm &>/dev/null && [[ "$(command -v npm)" != "$HOME/.nvm/"* ]]; then
-  export NPM_PREFIX="$HOME/.config/npm"
-  export NPM_GLOBALS="$NPM_PREFIX/globals"
-  mkdir -p $NPM_GLOBALS
-  npm config --global set prefix $NPM_GLOBALS
-  path+="$NPM_GLOBALS/bin"
-fi
+# user-level npm packages
+export NPM_GLOBALS="$HOME/.config/npm/globals"
+export NPM_CONFIG_PREFIX="$NPM_GLOBALS"
+path+=("$NPM_GLOBALS/bin")
 
 # source haskell setup if present
 if [[ -f $HOME/.ghcup/env ]]; then

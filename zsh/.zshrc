@@ -5,6 +5,11 @@
 # source ~/.pre_profile if present
 [[ -f $HOME/.pre_profile ]] && source $HOME/.pre_profile
 
+# mise — pinned runtimes and cross-platform CLI tools
+if command -v mise &>/dev/null; then
+  eval "$(mise activate zsh)"
+fi
+
 # SHELDON — zsh plugin manager
 if ! command -v sheldon &>/dev/null; then
   echo "sheldon not found — run 'make setup' from your dotfiles repo"

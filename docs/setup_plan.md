@@ -21,11 +21,11 @@ and #3 (bootstrap without auto-install) from `docs/review.md`.
 ### Makefile targets
 
 ```
-make setup        # full bootstrap: deps + packages + links
+make setup        # full bootstrap: native packages + mise tools + links + sheldon lock
 make link         # link dotfiles only (platform-aware)
 make link-linux   # force linux stow set
 make link-macos   # force macos stow set
-make install      # install packages (brew on macOS, hint on Linux)
+make install      # install native packages + mise-managed tools
 make sheldon      # install sheldon binary
 make brew         # install homebrew (macOS only)
 make clean        # unstow platform-matched packages
@@ -38,7 +38,7 @@ top-level directories are ignored (not silently stowed).
 
 | Category   | Packages |
 |------------|----------|
-| **common** | agents, alacritty, bash, git, local, pet, scripts, tmux, vim, zsh |
+| **common** | agents, alacritty, bash, git, local, mise, nvim, pet, scripts, tmux, vim, zsh |
 | **linux**  | linux |
 | **macos**  | osx |
 | **skip**   | setup, docs, taskwarrior (deprecated) |
@@ -51,33 +51,31 @@ The Makefile auto-detects `uname -s` and stows `common + platform`.
 Two-tier approach:
 
 **Tier 1 — mise** (cross-platform, no sudo, declarative `config.toml`):
-Dev CLI tools and language runtimes. Replaces `asdf` and the bulk of
-`update_brew.sh`. A single `~/.config/mise/config.toml` works everywhere.
+Pinned runtimes and cross-platform CLI tools. Replaces `asdf`, `nvm`, and the
+bulk of the old brew script.
 
-Config lives at `zsh/.config/mise/config.toml` in this repo (stowed into
-`~/.config/mise/config.toml` via the `zsh` package). Add `mise` to the
-`COMMON` stow allowlist once the config file exists.
+Config lives at `mise/.config/mise/config.toml` in this repo (stowed into
+`~/.config/mise/config.toml` via the `mise` package).
 
 **Tier 2 — Native package manager** (system-level deps):
-Libraries, build tools, core system packages. These require root and are
-inherently platform-specific.
-- macOS: `brew install` via `Brewfile` or script
-- Debian/Ubuntu: `apt install`
-- Arch: `pacman -S`
+Core shell/editor/bootstrap packages. These require root and are inherently
+platform-specific.
+- macOS: `setup/packages/brew.txt`
+- Debian/Ubuntu: `setup/packages/apt.txt`
+- Arch: `setup/packages/pacman.txt`
 
-Parallel lists for tier 2 only — the list is short since mise handles
-the bulk of dev tools.
+Parallel lists stay intentionally short: `git`, `ranger`, `stow`, `tmux`,
+`tree`, `vim`, `wget`, `zsh`, plus `curl` on Linux so `mise` can bootstrap.
 
 ### Bootstrap flow (`make setup`)
 
 ```
-1. Ensure stow/xstow is available (error with install hint if missing)
-2. Install mise (prebuilt binary or curl installer)
-3. mise install (languages + dev tools from config.toml)
-4. Install sheldon (prebuilt binary → ~/.local/bin)
-5. Install system packages (native package manager, tier 2 only)
-6. make link (platform-aware stow)
-7. sheldon lock (fetch zsh plugins)
+1. Install native packages for the current platform
+2. Install mise (prebuilt binary via curl installer)
+3. mise install (runtimes + CLI tools from config.toml)
+4. make link (platform-aware stow, including mise + nvim packages)
+5. Install sheldon (prebuilt binary → ~/.local/bin)
+6. sheldon lock (fetch zsh plugins)
 ```
 
 Each step is idempotent — safe to re-run.
@@ -98,11 +96,15 @@ eval "$(sheldon source)"
 
 ## Dependency Audit
 
-Full analysis of every package currently in `setup/update_brew.sh`.
+Full analysis of packages that were previously managed in `setup/update_brew.sh`.
 
 `Used in dotfiles?` means a direct reference was found in tracked configs or
 scripts during a repo-wide search. `no` means no direct reference was found; it
 does not automatically mean the package is safe to remove.
+
+This audit is broader than the initial conservative implementation. `keep` /
+`move to mise` means the package fits the new model, not that it is part of the
+default package lists today.
 
 ### Core packages
 
@@ -195,38 +197,28 @@ does not automatically mean the package is safe to remove.
 
 ## Summary
 
-### Move to mise (~15 packages)
+### Move to mise (~10 packages)
 
-bat, fd, fzf, jq, ripgrep, neovim, go, node, yarn, python, ruby, rust,
-and optionally: sbcl, ocaml, opam, r
+bat, fd, fzf, ripgrep, zoxide, neovim, go, node, python, rust
 
-Plus replacements: eza (for exa), yt-dlp (for youtube-dl), delta (for
-diff-so-fancy), zoxide (for fasd)
+### Keep as native packages (~8 packages)
 
-### Keep as system packages (~25 packages)
+git, ranger, stow, tmux, tree, vim, wget, zsh
 
-zsh, tmux, git, vim, gpg, htop, tree, wget, tldr, ranger, fpp, fortune,
-ncdu, parallel, poppler, prettyping, pv, watch, watchman,
-autoconf, automake, cmake, coreutils, ffmpeg, imagemagick, libtool,
-libxslt, libyaml, openblas, openssl, readline, unixodbc
+### Remove from bootstrap
 
-### Delete (~6 packages)
+Legacy `setup/update_brew.sh`, `asdf`, and `nvm` are removed. Optional tools
+that are not part of the conservative default stay out of the package lists
+until there is a concrete need to add them back.
 
-asdf (replaced by mise), mercurial (unused, config cleanup needed first),
-flow (abandoned), octave (unused), fzy (redundant), sheldon (prebuilt binary)
+### Config migrations completed in this pass
 
-### Config migrations required before package changes
-
-These replacements/deletions have live config dependencies that must be
-updated in the same pass:
-
-| Change | Files to update |
-|--------|----------------|
-| fasd → zoxide | `zsh/.zshrc` (`zz` func, fasd alias guard), `zsh/.config/sheldon/plugins.toml` (oh-my-zsh fasd plugin), `scripts/.funcs/fzf_sources` |
-| node/yarn → mise | `local/.pre_profile` (remove nvm init), `zsh/.zshenv` (remove nvm-aware npm prefix logic) |
-| mercurial → delete | `vim/.vim/config/plugins.vim` (vim-signify hg, vim-lawrencium), `zsh/.config/zsh/themes/minimal.zsh-theme` (hg prompt), `scripts/.funcs/fzf_sources` (hg paths) |
-| asdf → mise | `setup/update_brew.sh` (remove from package list) |
-| diff-so-fancy → delta | `git/.gitconfig` (pager config if present), `zsh/.config/sheldon/plugins.toml` (zsh-diff-so-fancy was already removed in sheldon migration) |
+| Change | Files updated |
+|--------|---------------|
+| node → mise | `zsh/.zshenv`, `zsh/.zshrc`, `mise/.config/mise/config.toml` |
+| nvm removal (tracked files) | `zsh/.zshenv` |
+| native package lists | `Makefile`, `setup/packages/brew.txt`, `setup/packages/apt.txt`, `setup/packages/pacman.txt` |
+| neovim entrypoint | `nvim/.config/nvim/init.vim` |
 
 ---
 
@@ -237,12 +229,13 @@ updated in the same pass:
 | Makefile with platform-aware targets | done |
 | .zshrc fail-fast guard | done |
 | Delete legacy setup scripts | done |
-| Create mise config (`zsh/.config/mise/config.toml`) | pending |
-| Migrate fasd → zoxide (config + package) | pending |
-| Migrate node/yarn from nvm → mise (config + package) | pending |
-| Remove mercurial hg refs from vim/theme/fzf | pending |
-| Replace update_brew.sh with tier 2 parallel lists | pending |
-| docs/review.md mark #1, #3, #7 resolved | pending |
+| Create mise config (`mise/.config/mise/config.toml`) | done |
+| Add tracked nvim entrypoint (`nvim/.config/nvim/init.vim`) | done |
+| Migrate fasd → zoxide (config + package) | done |
+| Migrate node from nvm → mise (config + package) | done |
+| Remove mercurial hg refs from vim/theme/fzf | done |
+| Replace update_brew.sh with native package lists | done |
+| docs/review.md mark resolved items | done |
 
 ---
 
@@ -268,8 +261,23 @@ installation strategy (mise + parallel lists for system packages).
 
 1. Fixed: mercurial deletion now notes live hg config deps; migration table added.
 2. Fixed: fasd → zoxide now lists all config files that need updating.
-3. Fixed: mise config location specified (`zsh/.config/mise/config.toml`, stowed via `zsh` package).
-4. Fixed: node/yarn migration now includes nvm removal from `.pre_profile` and `.zshenv`.
+3. Superseded by implementation: `mise` now lives at `mise/.config/mise/config.toml` and is stowed via its own package.
+4. Fixed in tracked files: node migration removes the repo-managed nvm-specific shell init.
+
+---
+
+## Review (implementation pass — codex)
+
+### Notes
+
+1. Implemented the conservative split:
+   `mise` handles pinned runtimes and cross-platform CLI tools, while
+   `setup/packages/*.txt` covers the short native package lists.
+2. `vim` remains the default editor. `neovim` is installed and supported via
+   `nvim/.config/nvim/init.vim`, which sources the existing `~/.vimrc`.
+3. The repo-managed nvm-specific shell init is removed. `mise` is activated
+   in `zsh/.zshrc`, and `~/.local/share/mise/shims` is present in `PATH`
+   from `zsh/.zshenv`.
 
 ### Summary
 
