@@ -20,8 +20,8 @@ editor_packages=(
 other_packages=(
   bat # better `less`
   fasd # frecency-based directory navigation
-  diff-so-fancy # better `diff`
-  exa # better `ls`
+  delta # better `diff`
+  eza # better `ls`
   fd # better `find`
   fpp # facebook path picker - pipe in txt, pick files, do thing
   fzf # fuzzy finder
