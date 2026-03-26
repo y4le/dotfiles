@@ -10,10 +10,10 @@ command_exists () {
 # they should return 1 if they cannot provide results
 # print results and return 0 if they can
 
-fasd_source () {
-  command_exists fasd || return 1
+zoxide_source () {
+  command_exists zoxide || return 1
 
-  fasd -Rlf
+  zoxide query --list
 }
 
 git_source () {
@@ -60,7 +60,7 @@ rg_source () {
 sources=(
   git_source
   rg_source
-  fasd_source
+  zoxide_source
   fd_source
   find_source
 )

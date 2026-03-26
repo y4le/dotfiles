@@ -23,11 +23,6 @@ github = "zlsun/solarized-man"
 [plugins.fzf-widgets]
 github = "ytet5uy4/fzf-widgets"
 
-[plugins.oh-my-zsh-fasd]
-github = "ohmyzsh/ohmyzsh"
-dir = "plugins/fasd"
-use = ["*.plugin.zsh"]
-
 # -- plugins (deferred) ------------------------------------------------------
 
 [plugins.forgit]

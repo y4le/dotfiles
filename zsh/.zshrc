@@ -7,11 +7,15 @@
 
 # SHELDON — zsh plugin manager
 if ! command -v sheldon &>/dev/null; then
-  echo "sheldon not found — installing from prebuilt binary..."
-  curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
-    | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
+  echo "sheldon not found — run 'make setup' from your dotfiles repo"
+  return
 fi
 eval "$(sheldon source)"
+
+# zoxide — frecency-based directory navigation
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+fi
 
 # source all files in these dirs
 source_dirs=(
@@ -59,13 +63,6 @@ function rangernav() {
 }
 zle -N rangernav
 bindkey '^g' rangernav
-
-# fasd: quick frecency dirs
-(( $+aliases[zz] )) && unalias zz
-function zz() {
-  local dir
-  dir="$(fasd -Rdl "$1" | fzf --query="$1" -1 -0 --no-sort +m)" && cd "${dir}" || return 1
-}
 
 # ctrl-R history search
 bindkey -M viins '^r' fzf-insert-history

@@ -18,7 +18,7 @@ editor_packages=(
 
 other_packages=(
   bat # better `less`
-  fasd # frecency-based directory navigation
+  zoxide # better `cd` — frecency-based directory navigation
   delta # better `diff`
   eza # better `ls`
   fd # better `find`
