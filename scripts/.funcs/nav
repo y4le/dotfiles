@@ -1,5 +1,4 @@
 function nav() {
-  type highlight &> /dev/null || sudo apt-get install highlight
   while true; do
     local lsd=($(ls -ap))
     local sel="$(printf '%s\n' ${lsd[@]} |
@@ -12,7 +11,11 @@ function nav() {
           ls -ap --color=always "${__nav_path}";
         else
           echo $__nav_path;
-          highlight "$__nav_nxt" --out-format xterm256 --line-numbers --force --style=solarized-dark
+          if command -v bat >/dev/null 2>&1; then
+            bat --color=always --line-range :200 "$__nav_nxt"
+          else
+            head -200 "$__nav_nxt"
+          fi
         fi
         ')"
     [[ ${#sel} != 0 ]] || return 0

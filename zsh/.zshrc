@@ -83,7 +83,7 @@ for k v (
   fzf_action_list+=("$k:$v")
 done
 export FZF_DEFAULT_OPTS="--bind '${(j.,.)fzf_action_list}'"
-export fzf_preview_opt="--preview-window down:50% --preview '(bat {} || highlight -O ansi -l {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
+export fzf_preview_opt="--preview-window down:50% --preview '(bat {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
 export FZF_CTRL_T_OPTS="$fzf_preview_opt"
 
 export FZF_TMUX=1
