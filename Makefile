@@ -26,7 +26,7 @@ STOW := $(shell command -v xstow 2>/dev/null || command -v stow 2>/dev/null)
 
 # -- package allowlists --------------------------------------------------------
 
-COMMON  := agents bash git local mise nvim pet scripts tmux vim zsh
+COMMON  := agents bash git local mise nvim scripts tmux vim zsh
 LINUX   := linux
 MACOS   := osx
 
