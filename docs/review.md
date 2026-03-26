@@ -90,7 +90,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 | ~~T8~~ | ~~**youtube-dl**~~ | ~~`setup/update_brew.sh:45`~~ | ~~Effectively dead~~ | ~~**yt-dlp**~~ | (removed from brew list) |
 | ~~T9~~ | ~~**exa**~~ | ~~`setup/update_brew.sh:23`~~ | ~~Unmaintained (author posted notice)~~ | ~~**eza** (maintained community fork)~~ | (replaced with eza) |
 | T10 | **vimpager** | `zsh/.zshenv:18`, vim plugins | Niche, largely superseded | **bat** + **less** |
-| T11 | **Alacritty YAML** | `alacritty/.config/alacritty/alacritty.yml` | Deprecated config format | Migrate to `alacritty.toml` (TOML) |
+| ~~T11~~ | ~~**Alacritty YAML**~~ | ~~`alacritty/.config/alacritty/alacritty.yml`~~ | ~~Deprecated config format~~ | ~~Migrate to `alacritty.toml` (TOML)~~ | (done — alacritty package deleted) |
 | ~~T12~~ | ~~**reattach-to-user-namespace**~~ | ~~`tmux/.tmux.conf:50`~~ | ~~Not needed on modern macOS/tmux~~ | ~~Remove; tmux 2.6+ handles clipboard natively~~ | (done — tmux now copies through `cpy`) |
 | ~~T13~~ | ~~**Homebrew install URLs**~~ | ~~`setup/maybe_install_brew.sh:7,10`~~ | ~~Obsolete `master` branch URLs~~ | ~~Use `Homebrew/install/HEAD/install.sh`~~ | (file deleted; Makefile uses current URL) |
 | ~~T14~~ | ~~**mercurial (hg)**~~ | ~~Theme, vim-signify, vim-lawrencium, fzf_sources, vim fzf commands~~ | ~~Likely unused~~ | ~~Remove hg integration unless actively used~~ | (removed from all configs) |
@@ -121,7 +121,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 2. ~~**fasd → zoxide** — zoxide is a drop-in improvement: faster (Rust), actively maintained, same `z` command interface. The `zz` function in `.zshrc` can be replaced by `zi` (zoxide interactive).~~ (done — migrated to zoxide, `zz` aliases `zi`)
 
-3. **Alacritty YAML → TOML** — newer Alacritty versions only support TOML. The current YAML config will stop working on upgrade. Strip the extensive comments (most are defaults) during migration.
+3. ~~**Alacritty YAML → TOML** — newer Alacritty versions only support TOML. The current YAML config will stop working on upgrade. Strip the extensive comments (most are defaults) during migration.~~ (done — alacritty package deleted)
 
 4. ~~**Fix clipboard abstraction** — `cpy`/`pst` should use `elif` chains and add `wl-copy`/`wl-paste` for Wayland support.~~ (done — `cpy`/`pst` use `elif` chains and support Wayland)
 
@@ -137,11 +137,9 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 ### Nice to Have
 
-9. **Consider Nerd Fonts** — Alacritty config uses "Inconsolata for Powerline". Nerd Fonts (which superset Powerline) are more widely supported by modern tools.
+9. **NERDTree → oil.nvim or nvim-tree** — if migrating to neovim as primary editor.
 
-10. **NERDTree → oil.nvim or nvim-tree** — if migrating to neovim as primary editor.
-
-11. **rofi config format** — rofi deprecated the old `rofi.key: value` format in favor of a rasi config file.
+10. **rofi config format** — rofi deprecated the old `rofi.key: value` format in favor of a rasi config file.
 
 ---
 
@@ -169,7 +167,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 7. ~~**Consider a Makefile or justfile** — for discoverable setup commands (`make install`, `make link-linux`, `make link-macos`) rather than the current `setup.sh` which has limited options.~~ (done — Makefile with setup/link/install/sheldon/clean targets)
 
-8. **XDG compliance is inconsistent** — some configs use `~/.config/` (alacritty, tmux, zsh themes) while others use `~/` (`.vimrc`, `.tmux.conf`, `.taskrc`). Full XDG compliance would be a large refactor but worth noting.
+8. **XDG compliance is inconsistent** — some configs use `~/.config/` (tmux, zsh themes) while others use `~/` (`.vimrc`, `.tmux.conf`, `.taskrc`). Full XDG compliance would be a large refactor but worth noting.
 
 ---
 
@@ -192,7 +190,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 - ~~T2: fasd → zoxide~~ (done)
 - ~~T8-T9: exa → eza, youtube-dl → yt-dlp~~ (done)
 - ~~T12-T15: reattach-to-user-namespace, Homebrew URLs, mercurial, Linuxbrew~~ (done)
-- T11: Alacritty YAML → TOML (will break on upgrade)
+- ~~T11: Alacritty YAML → TOML~~ (done — alacritty package deleted)
 - T5-T7: Update stale GitHub repo URLs (ale, nerdtree, tagbar)
 
 ### Address Eventually (structure)
