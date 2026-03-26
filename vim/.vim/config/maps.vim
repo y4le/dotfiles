@@ -18,7 +18,7 @@ nnoremap <leader>% :vertical split<cr>|" create new vertical split
 nnoremap <leader>" :split<cr>|" create new horizontal split
 
 " fzf - see $VIMHOME/plugin/fzf.vim for more -   C-v :vsp    C-x :sp    <cr> :e
-nnoremap <leader>f :FzfDefault!<cr>|" contextual open files hg>git>everything
+nnoremap <leader>f :FzfDefault!<cr>|" contextual open files for the current project
 nnoremap <leader>m :FzfMru!<cr>|" open most recently edited files
 nnoremap <leader>j :Buffs<cr>|" open buffers, mru, can mash to get last buffer
 nnoremap <leader>J :AllBuffs<cr>|" open buffers, including temp/help/unused

@@ -47,7 +47,7 @@ function! s:FzfFileCmdDefRaw(name, rawtext, options)
     \         : fzf#vim#with_preview(' not_bang_opts ', "right:50%:hidden", "?")))'
 endfunction
 
-" FZF_DEFAULT_COMMAND - contextual hg/git/all files -> fzf
+" FZF_DEFAULT_COMMAND - contextual project files -> fzf
 call s:FzfFileCmdDef('FzfDefault', {'source': $FZF_DEFAULT_COMMAND})
 nnoremap <leader>Ff :FzfDefault<cr>
 nnoremap <leader>Fpf :FzfDefault!<cr>
@@ -68,11 +68,6 @@ nnoremap <leader>Fpl :FzfLocalDir!<cr>
 call s:FzfFileCmdDef('FzfGit', {'source': 'git ls-files'})
 nnoremap <leader>Fg :FzfGit<cr>
 nnoremap <leader>Fpg :FzfGit!<cr>
-
-" hg edited files -> fzf
-call s:FzfFileCmdDef('FzfHg', {'source': 'hg files'})
-nnoremap <leader>Fh :FzfHg<cr>
-nnoremap <leader>Fph :FzfHg!<cr>
 
 " most recently used files -> fzf
 call s:FzfFileCmdDef('FzfMru', {'source': 'tail -n +2 ' . MRU_File})
