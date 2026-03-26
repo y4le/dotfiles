@@ -77,7 +77,6 @@ Plug 'junegunn/fzf.vim' " fuzzy finder integration
 
 " VCS plugins
 Plug 'tpope/vim-fugitive' " git integration
-Plug 'ludovicchabant/vim-lawrencium' " mercurial integration
 
 " system plugins
 Plug 'HerringtonDarkholme/w3m.vim' " w3m cli browser plugin
@@ -108,19 +107,18 @@ call plug#end()
 
 let g:peekaboo_prefix = '<leader>'
 let g:EasyMotion_smartcase = 1 " easymotion plugin ignore case if nocaps
-let g:signify_vcs_list = ['git', 'hg'] " vim-signify plugin - only check these VCS
+let g:signify_vcs_list = ['git'] " vim-signify plugin - only check these VCS
 let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
 let g:gutentags_cache_dir='~/vim/.tags' " keep ctags in one place
 let g:ycm_filetype_blacklist=extend(get(g:, 'ycm_filetype_blacklist', {}),
   \ {'cpp': 1, 'c': 1, 'md': 1, 'markdown':1, 'tar':1, 'vimwiki':1})
 let g:better_whitespace_filetypes_blacklist=
-  \ ['diff', 'gitcommit', 'hgcommit', 'unite', 'qf', 'help', 'markdown', 'w3m']
+  \ ['diff', 'gitcommit', 'unite', 'qf', 'help', 'markdown', 'w3m']
 
 " prevent plugin maps
 let g:buffergator_suppress_keymaps = 1
 let g:ranger_map_keys = 0
 let g:FerretMap = 0
-let g:lawrencium_define_mappings = 0
 let g:w3m#disable_default_keymap = 1
 
 " airline - tab/status line

@@ -9,7 +9,6 @@ core_packages=(
 
 vcs_packages=(
   git # og distributed version control
-  mercurial # `hg`, the new hotness
 )
 
 editor_packages=(

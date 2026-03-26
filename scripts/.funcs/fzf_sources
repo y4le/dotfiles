@@ -16,15 +16,6 @@ fasd_source () {
   fasd -Rlf
 }
 
-hg_source () {
-  command_exists hg || return 1
-
-  # check that we are in a hg repo
-  hg --cwd "$root_file" root &> /dev/null || return 1
-
-  hg --cwd "$root_file" files
-}
-
 git_source () {
   command_exists git || return 1
 
@@ -67,7 +58,6 @@ rg_source () {
 # FUNCTIONS
 
 sources=(
-  hg_source
   git_source
   rg_source
   fasd_source
