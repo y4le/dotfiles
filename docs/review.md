@@ -91,7 +91,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 | ~~T9~~ | ~~**exa**~~ | ~~`setup/update_brew.sh:23`~~ | ~~Unmaintained (author posted notice)~~ | ~~**eza** (maintained community fork)~~ | (replaced with eza) |
 | T10 | **vimpager** | `zsh/.zshenv:18`, vim plugins | Niche, largely superseded | **bat** + **less** |
 | T11 | **Alacritty YAML** | `alacritty/.config/alacritty/alacritty.yml` | Deprecated config format | Migrate to `alacritty.toml` (TOML) |
-| T12 | **reattach-to-user-namespace** | `tmux/.tmux.conf:50` | Not needed on modern macOS/tmux | Remove; tmux 2.6+ handles clipboard natively |
+| ~~T12~~ | ~~**reattach-to-user-namespace**~~ | ~~`tmux/.tmux.conf:50`~~ | ~~Not needed on modern macOS/tmux~~ | ~~Remove; tmux 2.6+ handles clipboard natively~~ | (done — tmux now copies through `cpy`) |
 | ~~T13~~ | ~~**Homebrew install URLs**~~ | ~~`setup/maybe_install_brew.sh:7,10`~~ | ~~Obsolete `master` branch URLs~~ | ~~Use `Homebrew/install/HEAD/install.sh`~~ | (file deleted; Makefile uses current URL) |
 | ~~T14~~ | ~~**mercurial (hg)**~~ | ~~Theme, vim-signify, vim-lawrencium, fzf_sources, vim fzf commands~~ | ~~Likely unused~~ | ~~Remove hg integration unless actively used~~ | (removed from all configs) |
 | ~~T15~~ | ~~**Linuxbrew**~~ | ~~`setup/maybe_install_brew.sh:10-14`~~ | ~~Merged into Homebrew~~ | ~~Update to current Homebrew-on-Linux flow~~ | (file deleted; brew is macOS only now) |
@@ -123,7 +123,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 3. **Alacritty YAML → TOML** — newer Alacritty versions only support TOML. The current YAML config will stop working on upgrade. Strip the extensive comments (most are defaults) during migration.
 
-4. **Fix clipboard abstraction** — `cpy`/`pst` should use `elif` chains and add `wl-copy`/`wl-paste` for Wayland support.
+4. ~~**Fix clipboard abstraction** — `cpy`/`pst` should use `elif` chains and add `wl-copy`/`wl-paste` for Wayland support.~~ (done — `cpy`/`pst` use `elif` chains and support Wayland)
 
 ### Medium Value
 
@@ -151,13 +151,17 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 1. ~~**Stow platform logic is inverted** — `symlinks.sh` blacklists `osx` and `taskwarrior` but does *not* blacklist `linux`. Running `./setup.sh` on macOS will stow Linux-specific files (i3, xbindkeys, xsession) into `~`. Should auto-detect platform and only stow the relevant directory, or maintain explicit allowlists per platform.~~ (done — Makefile with explicit allowlists per platform)
 
-2. **Side effects in .zshenv** — `.zshenv` runs on *every* shell (including non-interactive subshells, scripts, cron). Lines 36-44 run `mkdir -p` and `npm config --global set prefix` unconditionally. These should move to `.zshrc` or a one-time setup script.
+2. ~~**Side effects in .zshenv** — `.zshenv` runs on *every* shell (including non-interactive subshells, scripts, cron). Lines 36-44 run `mkdir -p` and `npm config --global set prefix` unconditionally. These should move to `.zshrc` or a one-time setup script.~~ (done — side-effectful npm setup was removed; `.zshenv` now only exports env and PATH)
 
 3. ~~**Shell bootstrap at startup**~~ — sheldon guard now fails fast with a message pointing to `make setup` instead of auto-installing. TPM still auto-clones on first tmux session (separate fix if desired).
 
-4. ~~**Brew lists are stale** — `update_brew.sh` includes tools that may no longer be relevant (octave, mercurial, sbcl, flow, opam). Worth pruning to reduce install time.~~ (done — removed 16 unused packages, updated exa→eza and diff-so-fancy→delta)
+4. **Vim bootstrap at editor startup** — `vim/.vim/config/plugins.vim` still auto-downloads `plug.vim` with `curl` and runs `PlugInstall` when it is missing. That keeps first editor launch network-dependent.
 
-5. ~~**Missing `asdf` config** — `update_brew.sh` installs asdf ("replaces rvm/nvm") but `.pre_profile` sets up nvm. Pick one or document the intended flow.~~ (done — replaced with mise, removed repo bootstrap dependency on both)
+5. ~~**Brew lists are stale** — `update_brew.sh` includes tools that may no longer be relevant (octave, mercurial, sbcl, flow, opam). Worth pruning to reduce install time.~~ (done — removed 16 unused packages, updated exa→eza and diff-so-fancy→delta)
+
+6. ~~**Missing `asdf` config** — `update_brew.sh` installs asdf ("replaces rvm/nvm") but `.pre_profile` sets up nvm. Pick one or document the intended flow.~~ (done — replaced with mise, removed repo bootstrap dependency on both)
+
+7. ~~**README install instructions are stale** — `README.md` still tells users to run `./setup.sh`, but setup now goes through `make setup`.~~ (done — README now points to `make setup` and `make help`)
 
 ### Organization
 
@@ -187,7 +191,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 - ~~T1: zplug → sheldon~~ (done)
 - ~~T2: fasd → zoxide~~ (done)
 - ~~T8-T9: exa → eza, youtube-dl → yt-dlp~~ (done)
-- ~~T13-T15: Homebrew URLs, mercurial, Linuxbrew~~ (done)
+- ~~T12-T15: reattach-to-user-namespace, Homebrew URLs, mercurial, Linuxbrew~~ (done)
 - T11: Alacritty YAML → TOML (will break on upgrade)
 - T5-T7: Update stale GitHub repo URLs (ale, nerdtree, tagbar)
 
@@ -195,9 +199,10 @@ references should be cleaned up or moved to a gitignored local overlay:
 - ~~Platform-aware stow setup~~ (done — Makefile)
 - ~~Prune brew lists~~ (done — 16 packages removed)
 - ~~Adopt mise, replace asdf + nvm~~ (done — Makefile + `mise/.config/mise/config.toml`)
-- Move npm side effects out of `.zshenv`
+- ~~Move npm side effects out of `.zshenv`~~ (done — side-effectful npm setup removed)
+- Move vim-plug bootstrap out of editor startup
 - Prune dead code and commented-out blocks
-- Decide neovim's role
+- Decide whether to keep the current Neovim shim or build a dedicated Neovim config
 
 ---
 

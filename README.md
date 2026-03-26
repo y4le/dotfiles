@@ -15,7 +15,8 @@ I must master it as I must master my life.
 
 - clone from git
 - navigate into directory
-- run `./setup.sh`
+- run `make setup`
+- use `make help` to see the other setup and link targets
 
 
 ## Information Isolation
@@ -64,4 +65,3 @@ You work for a company, `foo`, and you want to keep their information in a priva
     - prefered method is to add new file in `~/.config/zsh/sources/`
     - `~/.pre_profile`/`~/.post_profile`/`~/.zshenv.local` are available if
       necessary
-
