@@ -1,21 +1,13 @@
 " VIM-PLUG
-" Auto-Install vim-plug if missing
-if empty(glob($VIMHOME . '/autoload/plug.vim'))
-  silent !curl -fLo $VIMHOME/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
-
-" set up nvim vim-plug access
-if has('nvim') && empty(glob('~/.config/nvim/autoload/plug.vim'))
-  silent !mkdir -p ~/.config/nvim/autoload
-  silent !ln -s $VIMHOME/autoload/plug.vim ~/.config/nvim/autoload/plug.vim
-  autocmd VimEnter * PlugInstall
+if !filereadable($VIMHOME . '/autoload/plug.vim')
+  echomsg "plug.vim not found - run 'make vim-plugins' from your dotfiles repo"
+  finish
 endif
 
 if has('nvim')
-  call plug#begin('~/.config/nvim/plugged')
+  call plug#begin(stdpath('data') . '/plugged')
 else
-  call plug#begin($VIMHOME . '/plugged')
+  call plug#begin(expand('~/.local/share/vim/plugged'))
   Plug 'gpanders/vim-man' " :Man pages in vim, nvim builtin
 endif
 

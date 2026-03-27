@@ -153,7 +153,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 3. ~~**Shell bootstrap at startup** — sheldon guard now fails fast with a message pointing to `make setup` instead of auto-installing. TPM still auto-clones on first tmux session (separate fix if desired).~~
 
-4. **Vim bootstrap at editor startup** — `vim/.vim/config/plugins.vim` still auto-downloads `plug.vim` with `curl` and runs `PlugInstall` when it is missing. That keeps first editor launch network-dependent.
+4. ~~**Vim bootstrap at editor startup** — `vim/.vim/config/plugins.vim` still auto-downloads `plug.vim` with `curl` and runs `PlugInstall` when it is missing. That keeps first editor launch network-dependent. (done — `make vim-plugins` now installs `plug.vim`, syncs plugins explicitly, and `make setup` runs it after `make link`)~~
 
 5. ~~**Brew lists are stale** — `update_brew.sh` includes tools that may no longer be relevant (octave, mercurial, sbcl, flow, opam). Worth pruning to reduce install time. (done — removed 16 unused packages, updated exa→eza and diff-so-fancy→delta)~~
 
@@ -198,7 +198,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 - ~~Prune brew lists (done — 16 packages removed)~~
 - ~~Adopt mise, replace asdf + nvm (done — Makefile + `mise/.config/mise/config.toml`)~~
 - ~~Move npm side effects out of `.zshenv` (done — side-effectful npm setup removed)~~
-- Move vim-plug bootstrap out of editor startup
+- ~~Move vim-plug bootstrap out of editor startup~~
 - Prune dead code and commented-out blocks
 - Decide whether to keep the current Neovim shim or build a dedicated Neovim config
 

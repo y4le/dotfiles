@@ -50,6 +50,11 @@ MISE_BIN            := $(HOME)/.local/bin/mise
 MISE_INSTALL_URL    := https://mise.run
 MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
 
+# -- vim -----------------------------------------------------------------------
+
+VIM_PLUG_URL        := https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
+
 # -- brew (macOS only) --------------------------------------------------------
 
 BREW_INSTALL_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
@@ -63,15 +68,16 @@ PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
 
 # -- targets -------------------------------------------------------------------
 
-.PHONY: setup install system-packages mise mise-tools link link-linux link-macos sheldon brew clean help
+.PHONY: setup install system-packages mise mise-tools link link-linux link-macos sheldon vim-plugins vim-bootstrap brew clean help
 
 help: ## show this help
 	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk -F ':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
-setup: ## full bootstrap: system packages + mise tools + links + sheldon lock
+setup: ## full bootstrap: system packages + mise tools + links + editor plugins + sheldon lock
 	@$(MAKE) install
 	@$(MAKE) link
+	@$(MAKE) vim-plugins
 	@$(MAKE) sheldon
 	$(SHELDON_BIN) lock
 
@@ -141,7 +147,11 @@ link-macos: _require-stow ## force macos package set
 
 mise: $(MISE_BIN) ## install mise binary
 
-$(MISE_BIN): _require-curl
+$(MISE_BIN):
+	@if ! command -v curl >/dev/null 2>&1; then \
+		echo "curl not found. Install it with your system package manager."; \
+		exit 1; \
+	fi
 	@mkdir -p $(HOME)/.local/bin
 	curl -fsSL $(MISE_INSTALL_URL) | MISE_INSTALL_PATH=$(MISE_BIN) sh
 
@@ -150,10 +160,48 @@ mise-tools: mise ## install tools from mise config
 
 sheldon: $(SHELDON_BIN) ## install sheldon binary
 
-$(SHELDON_BIN): _require-curl
+$(SHELDON_BIN):
+	@if ! command -v curl >/dev/null 2>&1; then \
+		echo "curl not found. Install it with your system package manager."; \
+		exit 1; \
+	fi
 	@mkdir -p $(HOME)/.local/bin
 	curl --proto '=https' -fLsS $(SHELDON_URL) | \
 		bash -s -- --repo $(SHELDON_REPO) --to $(HOME)/.local/bin
+
+vim-bootstrap: vim-plugins ## alias for vim-plugins
+
+vim-plugins: $(VIM_PLUG_FILE) ## install vim-plug and sync Vim/Neovim plugins
+	@if ! command -v vim >/dev/null 2>&1; then \
+		echo "vim not found. Install it with your system package manager."; \
+		exit 1; \
+	fi
+	@bootstrap="$$(mktemp)"; \
+	trap 'rm -f "$$bootstrap"' EXIT HUP INT TERM; \
+	printf '%s\n' \
+		'let $$VIMHOME = expand("~/.vim")' \
+		'execute "set runtimepath^=" . fnameescape($$VIMHOME)' \
+		'execute "source " . fnameescape($$VIMHOME . "/config/plugins.vim")' > "$$bootstrap"; \
+	echo "syncing Vim plugins"; \
+	vim -Nu NONE -n -S "$$bootstrap" '+PlugInstall --sync' +qa; \
+	nvim_bin=""; \
+	if [ -x "$(MISE_BIN)" ]; then \
+		nvim_bin="$$(MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) which nvim 2>/dev/null || true)"; \
+	fi; \
+	if [ -n "$$nvim_bin" ] && [ -x "$$nvim_bin" ]; then \
+		echo "syncing Neovim plugins"; \
+		"$$nvim_bin" --headless -u NONE -S "$$bootstrap" '+PlugInstall --sync' +qa; \
+	else \
+		echo "Neovim not available; skipping Neovim plugin sync"; \
+	fi
+
+$(VIM_PLUG_FILE):
+	@if ! command -v curl >/dev/null 2>&1; then \
+		echo "curl not found. Install it with your system package manager."; \
+		exit 1; \
+	fi
+	@mkdir -p $(HOME)/.vim/autoload
+	curl -fLo $(VIM_PLUG_FILE) --create-dirs $(VIM_PLUG_URL)
 
 brew: _require-curl ## install homebrew (macOS only)
 ifeq ($(PLATFORM),macos)
