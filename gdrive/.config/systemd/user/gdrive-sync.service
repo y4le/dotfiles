@@ -1,0 +1,6 @@
+[Unit]
+Description=rclone bisync Google Drive
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/gdrive-sync

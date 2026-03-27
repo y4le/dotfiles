@@ -1,0 +1,9 @@
+[Unit]
+Description=Periodic Google Drive bisync
+
+[Timer]
+OnBootSec=1m
+OnUnitActiveSec=15m
+
+[Install]
+WantedBy=timers.target
