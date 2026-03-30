@@ -33,6 +33,18 @@ You work for a company, `foo`, and you want to keep their information in a priva
 | `~/.example_foo_config`           | `foo/.example_foo_config`                           |
 
 
+## Agents
+
+- the public repo now keeps a minimal base package in `agents/.agents/`
+- an optional private repo can live at `~/dev/agents`
+- the private repo should expose its own `agents/.agents/skills/` package
+- active skills like `parley` now live in the private repo
+- enable the private layer with `make agents-enable-private`
+- disable the private layer with `make agents-disable-private`
+- both repos use Stow's multi-directory support to share the same target path:
+  `~/.agents/skills/`
+
+
 ## Vim
   - `~/.vimrc` calls into 3 subfiles in `~/.vim/config/`
     - plugins (load and install plugins, do plugin config)

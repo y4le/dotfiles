@@ -22,7 +22,12 @@ endif
 
 # -- stow command detection ----------------------------------------------------
 
-STOW := $(shell command -v xstow 2>/dev/null || command -v stow 2>/dev/null)
+STOW := $(shell command -v stow 2>/dev/null || command -v xstow 2>/dev/null)
+
+# -- agents --------------------------------------------------------------------
+
+PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
+PRIVATE_AGENTS_PACKAGE := agents
 
 # -- package allowlists --------------------------------------------------------
 
@@ -68,7 +73,7 @@ PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
 
 # -- targets -------------------------------------------------------------------
 
-.PHONY: setup install system-packages mise mise-tools link link-linux link-macos sheldon vim-plugins vim-bootstrap brew clean help gdrive-auth gdrive gdrive-enable gdrive-disable gdrive-status
+.PHONY: setup install system-packages mise mise-tools link link-linux link-macos agents-enable-private agents-disable-private sheldon vim-plugins vim-bootstrap brew clean help gdrive-auth gdrive gdrive-enable gdrive-disable gdrive-status
 
 help: ## show this help
 	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -132,18 +137,53 @@ link: _require-stow ## link dotfiles (auto-detect platform)
 		echo "  stow $$pkg"; \
 		$(STOW) -t $(HOME) $$pkg; \
 	done
+	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
+		$(MAKE) agents-enable-private; \
+	fi
 
 link-linux: _require-stow ## force linux package set
 	@for pkg in $(COMMON) $(LINUX); do \
 		echo "  stow $$pkg"; \
 		$(STOW) -t $(HOME) $$pkg; \
 	done
+	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
+		$(MAKE) agents-enable-private; \
+	fi
 
 link-macos: _require-stow ## force macos package set
 	@for pkg in $(COMMON) $(MACOS); do \
 		echo "  stow $$pkg"; \
 		$(STOW) -t $(HOME) $$pkg; \
 	done
+	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
+		$(MAKE) agents-enable-private; \
+	fi
+
+agents-enable-private: _require-stow ## merge private agents into ~/.agents if present
+	@if [ ! -d "$(PRIVATE_AGENTS_DIR)" ]; then \
+		echo "private agents repo not found at $(PRIVATE_AGENTS_DIR)"; \
+		echo "clone it there, then rerun 'make agents-enable-private'"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
+		echo "private agents package not found at $(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)"; \
+		echo "expected layout: $(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)/.agents/skills/"; \
+		exit 1; \
+	fi
+	@touch "$(PRIVATE_AGENTS_DIR)/.stow"
+	@echo "  stow $(PRIVATE_AGENTS_PACKAGE) from $(PRIVATE_AGENTS_DIR)"
+	@$(STOW) -d "$(PRIVATE_AGENTS_DIR)" -t "$(HOME)" $(PRIVATE_AGENTS_PACKAGE)
+
+agents-disable-private: _require-stow ## remove private agents from ~/.agents if present
+	@if [ ! -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
+		echo "private agents package not found at $(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE); nothing to do"; \
+		exit 0; \
+	fi
+	@if [ ! -e "$(PRIVATE_AGENTS_DIR)/.stow" ]; then \
+		touch "$(PRIVATE_AGENTS_DIR)/.stow"; \
+	fi
+	@echo "  unstow $(PRIVATE_AGENTS_PACKAGE) from $(PRIVATE_AGENTS_DIR)"
+	@$(STOW) -D -d "$(PRIVATE_AGENTS_DIR)" -t "$(HOME)" $(PRIVATE_AGENTS_PACKAGE)
 
 mise: $(MISE_BIN) ## install mise binary
 
