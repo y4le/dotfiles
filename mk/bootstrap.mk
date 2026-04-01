@@ -1,4 +1,4 @@
-.PHONY: setup install system-packages link link-linux link-macos
+.PHONY: setup install system-packages link link-linux link-macos _normalize-stow-state
 
 setup: ## full bootstrap: system packages + mise tools + links + editor plugins + sheldon lock
 	@$(MAKE) install
@@ -54,6 +54,7 @@ else
 endif
 
 link: _require-stow ## link dotfiles (auto-detect platform)
+	@$(MAKE) _normalize-stow-state
 	@echo "linking $(PLATFORM) packages: $(PACKAGES)"
 	@for pkg in $(PACKAGES); do \
 		echo "  stow $$pkg"; \
@@ -64,6 +65,7 @@ link: _require-stow ## link dotfiles (auto-detect platform)
 	fi
 
 link-linux: _require-stow ## force linux package set
+	@$(MAKE) _normalize-stow-state
 	@for pkg in $(LINUX_PACKAGES); do \
 		echo "  stow $$pkg"; \
 		$(STOW) -t $(HOME) $$pkg; \
@@ -73,10 +75,19 @@ link-linux: _require-stow ## force linux package set
 	fi
 
 link-macos: _require-stow ## force macos package set
+	@$(MAKE) _normalize-stow-state
 	@for pkg in $(MACOS_PACKAGES); do \
 		echo "  stow $$pkg"; \
 		$(STOW) -t $(HOME) $$pkg; \
 	done
 	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
 		$(MAKE) agents-enable-private; \
+	fi
+
+_normalize-stow-state:
+	@target="$(HOME)/.config/sheldon"; \
+	expected="$(CURDIR)/zsh/.config/sheldon"; \
+	if [ -L "$$target" ] && [ "$$(readlink "$$target")" = "$$expected" ]; then \
+		echo "normalizing legacy absolute symlink $$target"; \
+		rm "$$target"; \
 	fi
