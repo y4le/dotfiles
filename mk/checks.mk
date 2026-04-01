@@ -58,5 +58,7 @@ check-make: ## dry-run make target graph and help output
 	@$(MAKE) -n link-linux >/dev/null
 	@echo "check-make: make -n link-macos"
 	@$(MAKE) -n link-macos >/dev/null
+	@echo "check-make: make -n nvim-plugins"
+	@$(MAKE) -n nvim-plugins >/dev/null
 	@echo "check-make: make help"
 	@$(MAKE) help >/dev/null

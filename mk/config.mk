@@ -42,6 +42,10 @@ MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
 
 VIM_PLUG_URL        := https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
+LAZY_NVIM_URL       := https://github.com/folke/lazy.nvim.git
+LAZY_NVIM_BRANCH    := stable
+LAZY_NVIM_DIR       := $(HOME)/.local/share/nvim/lazy/lazy.nvim
+NVIM_TREESITTER_PARSERS := bash json lua markdown markdown_inline python query rust toml tsx typescript vim vimdoc yaml
 
 BREW_INSTALL_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
 
