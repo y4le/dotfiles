@@ -8,7 +8,7 @@ Already completed and intentionally excluded from this plan:
 
 - Google Drive sync is implemented via `make gdrive*`, `scripts/bin/gdrive-sync`, and the `gdrive/` stow package
 - Vim bootstrap is explicit via `make vim-plugins`, and `make setup` already runs it
-- Phase 1 core validation is complete locally: `make check`, `check-shell`, `check-stow`, and `check-make` now exist
+- Phase 1 validation is in place: `make check`, `check-shell`, `check-stow`, and `check-make` exist locally, GitHub Actions runs `make check` on Linux and macOS, and a Linux `make setup` smoke job validates bootstrap in a clean `HOME`
 - Phase 2 Vim cleanup is complete: moved plugin repos were updated, dead settings and stale language plugins were removed, `resize_mode.vim` was deleted, and pager changes were deferred to the Neovim migration plan
 
 ## Problem
@@ -19,7 +19,6 @@ shape.
 
 The remaining issues are mostly maintainability problems:
 
-- validation exists locally but is not yet enforced in CI or backed by a disposable bootstrap smoke test
 - the root `Makefile` mixes bootstrap, editor setup, and optional features
 - opt-in features have the right idea but not yet a formal repo-wide pattern
 - local override points exist, but the contract is not documented cleanly
@@ -57,58 +56,30 @@ core model:
 
 ## Priorities
 
-1. Extend validation into CI and bootstrap smoke tests
-2. Split the `Makefile` by concern
-3. Standardize the optional-feature pattern
-4. Document and tighten local override behavior
-5. Decide and document the XDG boundary
-6. Plan the future Neovim migration intentionally
+1. Split the `Makefile` by concern
+2. Standardize the optional-feature pattern
+3. Document and tighten local override behavior
+4. Decide and document the XDG boundary
+5. Plan the future Neovim migration intentionally
 
 ## Phase 1: Validation and CI
 
-### Why first
+### Status
 
-This gives every later cleanup a cheap safety net. Right now validation is done
-manually and inconsistently.
+Completed on 2026-03-31.
 
-### Planned changes
+### Completed work
 
-- Keep `make check` as the main local entrypoint
-- Keep `make check-shell`
-- Keep `make check-make`
-- Optionally add `make check-optional`
+- `make check` is the main local entrypoint
+- `make check` runs in GitHub Actions on Linux and macOS
+- the CI smoke job runs `make setup` on Linux in a clean `HOME`
+- local `make check` still warns and skips optional linters when they are not installed
+- CI installs the full toolchain so checks run in enforced mode
 
-### Checks to include
+### Notes
 
-- `git diff --check`
-- `sh -n` for POSIX shell scripts
-- `bash -n` for bash scripts
-- `zsh -n` for zsh entrypoints
-- `stow -n` / `xstow -n` for package dry-runs
-- `shellcheck` where available
-- `shfmt -d` where available
-- `make -n setup`
-- `make -n link-linux`
-- `make -n link-macos`
-- `make help`
-
-### Policy decisions to make up front
-
-- local `make check` should warn-and-skip when optional linters such as
-  `shellcheck` or `shfmt` are missing
-- CI should install the full toolchain and fail if any check cannot run
-- `make -n` targets should be documented as graph/syntax validation only, not
-  proof that bootstrap is functionally correct
-
-### Nice-to-have follow-up
-
-- Add lightweight CI that runs `make check` on Linux
-- Add a disposable bootstrap smoke test for `make setup`
-
-### Success criteria
-
-- one command validates the repo’s core behavior
-- contributors no longer have to remember the manual check sequence
+- `make -n` targets remain graph and syntax validation, not proof that bootstrap is functionally correct
+- bootstrap smoke coverage is currently Linux-only; add macOS smoke later only if the extra runtime is worth it
 
 ## Phase 2: Vim Cleanup
 
@@ -308,14 +279,12 @@ That document should list each major subsystem as:
 
 ## Recommended Execution Order
 
-1. Add lightweight CI for `make check`
-2. Add a disposable bootstrap smoke test for `make setup`
-3. Write down the optional-feature contract that Makefile fragments should
+1. Write down the optional-feature contract that Makefile fragments should
    conform to
-4. Split the `Makefile`
-5. Normalize optional-feature conventions in code and docs
-6. Document local override policy
-7. Decide and document the XDG boundary
+2. Split the `Makefile`
+3. Normalize optional-feature conventions in code and docs
+4. Document local override policy
+5. Decide and document the XDG boundary
 
 ## External Review Notes
 

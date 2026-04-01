@@ -1,0 +1,74 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: make check (${{ matrix.label }})
+    runs-on: ${{ matrix.runs_on }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: linux
+            runs_on: ubuntu-24.04
+            install: |
+              sudo apt-get update
+              sudo apt-get install -y shellcheck shfmt stow zsh
+          - label: macos
+            runs_on: macos-14
+            install: |
+              HOMEBREW_NO_AUTO_UPDATE=1 brew install shellcheck shfmt stow
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install check toolchain
+        run: ${{ matrix.install }}
+
+      - name: Run repo checks
+        run: make check
+
+  setup-smoke-linux:
+    name: make setup smoke (linux)
+    runs-on: ubuntu-24.04
+    needs: check
+    timeout-minutes: 45
+    env:
+      SMOKE_HOME: ${{ runner.temp }}/smoke-home
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare clean HOME
+        run: mkdir -p "$SMOKE_HOME"
+
+      - name: Run bootstrap smoke test
+        run: HOME="$SMOKE_HOME" make setup
+
+      - name: Verify bootstrap outputs
+        run: |
+          test -L "$SMOKE_HOME/.vimrc"
+          test -L "$SMOKE_HOME/.zshrc"
+          test -L "$SMOKE_HOME/.config/nvim/init.vim"
+          test -f "$SMOKE_HOME/.vim/autoload/plug.vim"
+          test -x "$SMOKE_HOME/.local/bin/mise"
+          test -x "$SMOKE_HOME/.local/bin/sheldon"
+          HOME="$SMOKE_HOME" MISE_GLOBAL_CONFIG_FILE="$GITHUB_WORKSPACE/mise/.config/mise/config.toml" \
+            "$SMOKE_HOME/.local/bin/mise" which nvim >/dev/null
+
+      - name: Ensure bootstrap does not modify the repo
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
