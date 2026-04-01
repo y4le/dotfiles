@@ -1,28 +1,46 @@
 #!/bin/bash
 
 # grab the actual fzf_src function
+# This resolves to the stowed file in ~/.funcs at runtime, not a repo-relative path.
+# shellcheck source=/dev/null
 . ~/.funcs/fzf_sources
 
 
 # store the parameters in env vars to pass fzf_src
-root_file=`pwd`
+# fzf_sources reads this from the caller's shell after being sourced.
+# shellcheck disable=SC2034
+root_file=$(pwd)
+# fzf_sources reads this from the caller's shell after being sourced.
+# shellcheck disable=SC2034
 color=false
+# fzf_sources reads this from the caller's shell after being sourced.
+# shellcheck disable=SC2034
 hidden=false
+# fzf_sources reads this from the caller's shell after being sourced.
+# shellcheck disable=SC2034
 debug=false
 
 while [ "$1" != "" ]; do
   case $1 in
     -r | --root )
       shift
+      # This reassignment is consumed by the sourced helper, not locally here.
+      # shellcheck disable=SC2034
       root_file=$1
       ;;
     -c | --color )
+      # This reassignment is consumed by the sourced helper, not locally here.
+      # shellcheck disable=SC2034
       color=true
       ;;
     -h | --hidden )
+      # This reassignment is consumed by the sourced helper, not locally here.
+      # shellcheck disable=SC2034
       hidden=true
       ;;
     -d | --debug )
+      # This reassignment is consumed by the sourced helper, not locally here.
+      # shellcheck disable=SC2034
       debug=true
       ;;
   esac
@@ -30,5 +48,3 @@ while [ "$1" != "" ]; do
 done
 
 fzf_src
-
-

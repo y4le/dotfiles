@@ -15,6 +15,7 @@ GDRIVE_FOLDER="sync"
 # exit silently if not opted in
 [ -f "$CONFIG" ] || exit 0
 
+# This config file is machine-local and gitignored, so ShellCheck cannot resolve it.
 # shellcheck source=/dev/null
 . "$CONFIG"
 

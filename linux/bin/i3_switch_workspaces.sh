@@ -12,7 +12,7 @@ echo empty; gen_workspaces
 else
     WORKSPACE="$*"
 
-    if [ x"empty" = x"${WORKSPACE}" ]
+    if [ "empty" = "${WORKSPACE}" ]
     then
         # Find the first unused workspace number (1-10)
         USED=$(i3-msg -t get_workspaces | tr ',' '\n' | grep '"num"' | sed 's/.*:\([0-9]*\)/\1/g')

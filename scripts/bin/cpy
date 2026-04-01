@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This resolves to the stowed file in ~/.funcs at runtime, not a repo-relative path.
+# shellcheck source=/dev/null
 . ~/.funcs/cpst
 
 cpy
