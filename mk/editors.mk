@@ -31,7 +31,7 @@ nvim-plugins: $(LAZY_NVIM_DIR) ## install lazy.nvim and sync Neovim plugins
 		exit 1; \
 	fi; \
 	echo "syncing Neovim plugins"; \
-	"$$nvim_bin" --headless "+Lazy! sync" "+TSInstallSync $(NVIM_TREESITTER_PARSERS)" +qa
+	"$$nvim_bin" --headless "+Lazy! sync" "+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" +qa
 
 $(LAZY_NVIM_DIR):
 	@if ! command -v git >/dev/null 2>&1; then \
