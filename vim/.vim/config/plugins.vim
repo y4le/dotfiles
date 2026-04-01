@@ -42,19 +42,19 @@ Plug 'wincent/ferret' " :Ack -> multi file search | quickfix pane
 Plug 'jeetsukumaran/vim-buffergator' " sidebar showing buffer list
 Plug 'jeffkreeftmeijer/vim-numbertoggle' " hybrid to static line #s on un/focus
 Plug 'mhinz/vim-signify' " git gutter
-Plug 'scrooloose/nerdtree' " sidebar showing file navigator
+Plug 'preservim/nerdtree' " sidebar showing file navigator
 Plug 'sjl/gundo.vim' " sidebar showing full undo history
 
 " " ctags
 " Plug 'ludovicchabant/vim-gutentags' " auto manage ctags
-Plug 'majutsushi/tagbar' " sidebar showing structure using ctags
+Plug 'preservim/tagbar' " sidebar showing structure using ctags
 
 " completion / linting plugins
 " Plug 'maralla/completor.vim' " code completion
 " Plug 'Valloric/YouCompleteMe' " code completion
 Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
 Plug 'tomtom/tcomment_vim' " commenting plugin
-Plug 'w0rp/ale' " async linting engine
+Plug 'dense-analysis/ale' " async linting engine
 
 " vimwiki - see $VIMHOME/plugin/wiki.vim
 " Plug 'tbabej/taskwiki' " taskwarrior vimwiki integration
@@ -80,12 +80,8 @@ Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
 Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
 
 " language specific plugins
-Plug 'l04m33/vlime', { 'rtp': 'vim', 'for': ['clojure', 'lisp'] }
-Plug 'tpope/vim-rails', { 'for': 'ruby' }
-Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
 Plug 'psf/black', { 'for': 'python' }
 Plug 'leafgarland/typescript-vim', { 'for': 'typescript' }
-Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
 Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 
 " source local overrides if present; inside init block so you can Plug 'eg.vim'
@@ -98,12 +94,8 @@ call plug#end()
 " PLUGIN CONFIG
 
 let g:peekaboo_prefix = '<leader>'
-let g:EasyMotion_smartcase = 1 " easymotion plugin ignore case if nocaps
 let g:signify_vcs_list = ['git'] " vim-signify plugin - only check these VCS
 let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
-let g:gutentags_cache_dir='~/vim/.tags' " keep ctags in one place
-let g:ycm_filetype_blacklist=extend(get(g:, 'ycm_filetype_blacklist', {}),
-  \ {'cpp': 1, 'c': 1, 'md': 1, 'markdown':1, 'tar':1, 'vimwiki':1})
 let g:better_whitespace_filetypes_blacklist=
   \ ['diff', 'gitcommit', 'unite', 'qf', 'help', 'markdown', 'w3m']
 
@@ -118,7 +110,6 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 
 " submodes
-" see $VIMHOME/plugin/resize_mode
 " setup airline to show submode
 let g:airline_section_y = '%{submode#current()}'
 let g:submode_always_show_submode = 1 " make submode status available to airline

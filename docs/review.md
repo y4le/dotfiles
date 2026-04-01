@@ -64,7 +64,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 | ~~S10~~ | ~~`taskwarrior/.config/taskwarrior/info/certs.7z`~~ | ~~—~~ | ~~Bundled certificate archive — potentially sensitive (file deleted)~~ |
 | ~~S11~~ | ~~`linux/.xsessionrc`~~ | ~~4, 7~~ | ~~References "gnome for trusty" and internal `g/i3-users/` note~~ |
 | ~~S12~~ | ~~`linux/.config/i3/config`~~ | ~~218-220~~ | ~~Hardcodes `/usr/share/goobuntu-desktop-files/xsecurelock.sh`~~ |
-| S13 | `.gitignore` | 1-2 | Entries for `google` and `amazon` directories — intentional, supports information isolation pattern |
+| ~~S13~~ | ~~`.gitignore`~~ | ~~1-2~~ | ~~Entries for `google` and `amazon` directories — intentional, supports information isolation pattern. (keep as-is)~~ |
 
 ### Other
 
@@ -84,12 +84,12 @@ references should be cleaned up or moved to a gitignored local overlay:
 | ~~T2~~ | ~~**fasd**~~ | ~~`zsh/.zshrc` (plugin + command)~~ | ~~Archived/unmaintained~~ | ~~**zoxide** (Rust, actively maintained)~~ | ~~(migrated to zoxide)~~ |
 | ~~T3~~ | ~~**junegunn/fzf-bin**~~ | ~~`zsh/.zshrc:30`~~ | ~~Deprecated repo~~ | ~~Use `junegunn/fzf` (ships binaries now)~~ | ~~(removed; fzf from package manager)~~ |
 | ~~T4~~ | ~~**zdharma/fast-syntax-highlighting**~~ | ~~`zsh/.zshrc:46`~~ | ~~zdharma org deleted~~ | ~~**zdharma-continuum/fast-syntax-highlighting**~~ | ~~(updated in sheldon config)~~ |
-| T5 | **w0rp/ale** | `vim/.vim/config/plugins.vim:65` | Repo moved | **dense-analysis/ale** |
-| T6 | **scrooloose/nerdtree** | `vim/.vim/config/plugins.vim:53` | Repo moved | **preservim/nerdtree** |
-| T7 | **majutsushi/tagbar** | `vim/.vim/config/plugins.vim:58` | Repo moved | **preservim/tagbar** |
+| ~~T5~~ | ~~**w0rp/ale**~~ | ~~`vim/.vim/config/plugins.vim:57`~~ | ~~Repo moved~~ | ~~**dense-analysis/ale**~~ | ~~(updated in Vim cleanup)~~ |
+| ~~T6~~ | ~~**scrooloose/nerdtree**~~ | ~~`vim/.vim/config/plugins.vim:45`~~ | ~~Repo moved~~ | ~~**preservim/nerdtree**~~ | ~~(updated in Vim cleanup)~~ |
+| ~~T7~~ | ~~**majutsushi/tagbar**~~ | ~~`vim/.vim/config/plugins.vim:50`~~ | ~~Repo moved~~ | ~~**preservim/tagbar**~~ | ~~(updated in Vim cleanup)~~ |
 | ~~T8~~ | ~~**youtube-dl**~~ | ~~`setup/update_brew.sh:45`~~ | ~~Effectively dead~~ | ~~**yt-dlp**~~ | ~~(removed from brew list)~~ |
 | ~~T9~~ | ~~**exa**~~ | ~~`setup/update_brew.sh:23`~~ | ~~Unmaintained (author posted notice)~~ | ~~**eza** (maintained community fork)~~ | ~~(replaced with eza)~~ |
-| T10 | **vimpager** | `zsh/.zshenv:18`, vim plugins | Niche, largely superseded | **bat** + **less** |
+| T10 | **vimpager** | `zsh/.zshenv:17`, `vim/.vim/config/plugins.vim:77,126-128` | Keep for now; decide during Neovim migration | **Defer pager replacement to Neovim migration plan** |
 | ~~T11~~ | ~~**Alacritty YAML**~~ | ~~`alacritty/.config/alacritty/alacritty.yml`~~ | ~~Deprecated config format~~ | ~~Migrate to `alacritty.toml` (TOML)~~ | ~~(done — alacritty package deleted)~~ |
 | ~~T12~~ | ~~**reattach-to-user-namespace**~~ | ~~`tmux/.tmux.conf:50`~~ | ~~Not needed on modern macOS/tmux~~ | ~~Remove; tmux 2.6+ handles clipboard natively~~ | ~~(done — tmux now copies through `cpy`)~~ |
 | ~~T13~~ | ~~**Homebrew install URLs**~~ | ~~`setup/maybe_install_brew.sh:7,10`~~ | ~~Obsolete `master` branch URLs~~ | ~~Use `Homebrew/install/HEAD/install.sh`~~ | ~~(file deleted; Makefile uses current URL)~~ |
@@ -102,12 +102,12 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 | # | File | Line | Description |
 |---|------|------|-------------|
-| D1 | `vim/.vim/plugin/resize_mode.vim` | 1-53 | Entire file is commented out except for a 2-line header. ~50 lines of dead code. |
+| ~~D1~~ | ~~`vim/.vim/plugin/resize_mode.vim`~~ | ~~2-52~~ | ~~Entire file is commented out except for a 2-line header. ~50 lines of dead code. (file deleted)~~ |
 | ~~D2~~ | ~~`scripts/.funcs/cpst`~~ | ~~32-34~~ | ~~Leftover `foobar()` test function.~~ |
 | ~~D3~~ | ~~`setup.sh`~~ | ~~9-10~~ | ~~Commented-out brew install/update lines. (file deleted — replaced by Makefile)~~ |
-| D4 | `vim/.vim/config/plugins.vim` | 114-115 | `ycm_filetype_blacklist` config for YouCompleteMe, but YCM is commented out (line 62). |
-| D5 | `vim/.vim/config/plugins.vim` | 113 | `gutentags_cache_dir` setting, but vim-gutentags is commented out (line 57). |
-| D6 | `vim/.vim/config/plugins.vim` | 92-97 | Language plugins for CoffeeScript, Ruby, Lisp — assess if still used. |
+| ~~D4~~ | ~~`vim/.vim/config/plugins.vim`~~ | ~~105-106~~ | ~~`ycm_filetype_blacklist` config for YouCompleteMe, but YCM is commented out (line 54). (removed in Vim cleanup)~~ |
+| ~~D5~~ | ~~`vim/.vim/config/plugins.vim`~~ | ~~104~~ | ~~`gutentags_cache_dir` setting, but vim-gutentags is commented out (line 49). (removed in Vim cleanup)~~ |
+| ~~D6~~ | ~~`vim/.vim/config/plugins.vim`~~ | ~~83-89~~ | ~~Language plugins for CoffeeScript, Ruby, Lisp — assess if still used. (removed stale entries in Vim cleanup)~~ |
 | ~~D7~~ | ~~`scripts/bin/filez`~~ | ~~`--root` flag~~ | ~~Accepted but never functionally used by `fzf_sources`. (wired up)~~ |
 | ~~D8~~ | ~~`taskwarrior/.config/zsh/sources/taskwarrior-aliases.zsh`~~ | ~~3~~ | ~~Unreachable `echo` after `return 0`.~~ |
 
@@ -129,7 +129,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 5. ~~**exa → eza** and **youtube-dl → yt-dlp** — simple package name swaps in brew list. (done)~~
 
-6. **vim-plug repo names** — update `scrooloose/nerdtree` → `preservim/nerdtree`, `majutsushi/tagbar` → `preservim/tagbar`, `w0rp/ale` → `dense-analysis/ale`.
+6. ~~**vim-plug repo names** — update `scrooloose/nerdtree` → `preservim/nerdtree`, `majutsushi/tagbar` → `preservim/tagbar`, `w0rp/ale` → `dense-analysis/ale`. (done in Vim cleanup)~~
 
 7. ~~**Vim-to-FZF coupling** — `plugins.vim:75` hardcodes `~/.zplug/repos/junegunn/fzf` for the fzf runtime path. This couples vim startup to zplug's on-disk layout. Let vim-plug manage its own fzf copy, or use a system-installed fzf. (done — vim-plug manages its own fzf copy)~~
 
@@ -163,11 +163,11 @@ references should be cleaned up or moved to a gitignored local overlay:
 
 ### Organization
 
-6. ~~**No CLAUDE.md** — a project-level `CLAUDE.md` would help Claude Code understand the repo structure, conventions, and local override patterns. (done — added `AGENTS.md` as agent-agnostic equivalent)~~
+1. ~~**No CLAUDE.md** — a project-level `CLAUDE.md` would help Claude Code understand the repo structure, conventions, and local override patterns. (done — added `AGENTS.md` as agent-agnostic equivalent)~~
 
-7. ~~**Consider a Makefile or justfile** — for discoverable setup commands (`make install`, `make link-linux`, `make link-macos`) rather than the current `setup.sh` which has limited options. (done — Makefile with setup/link/install/sheldon/clean targets)~~
+2. ~~**Consider a Makefile or justfile** — for discoverable setup commands (`make install`, `make link-linux`, `make link-macos`) rather than the current `setup.sh` which has limited options. (done — Makefile with setup/link/install/sheldon/clean targets)~~
 
-8. **XDG compliance is inconsistent** — some configs use `~/.config/` (tmux, zsh themes) while others use `~/` (`.vimrc`, `.tmux.conf`, `.taskrc`). Full XDG compliance would be a large refactor but worth noting.
+3. **XDG compliance is inconsistent** — some configs use `~/.config/` (tmux, zsh themes) while others use `~/` (`.vimrc`, `.tmux.conf`, `.taskrc`). Full XDG compliance would be a large refactor but worth noting.
 
 ---
 
@@ -191,14 +191,14 @@ references should be cleaned up or moved to a gitignored local overlay:
 - ~~T8-T9: exa → eza, youtube-dl → yt-dlp (done)~~
 - ~~T12-T15: reattach-to-user-namespace, Homebrew URLs, mercurial, Linuxbrew (done)~~
 - ~~T11: Alacritty YAML → TOML (done — alacritty package deleted)~~
-- T5-T7: Update stale GitHub repo URLs (ale, nerdtree, tagbar)
+- ~~T5-T7: Update stale GitHub repo URLs (ale, nerdtree, tagbar)~~
 
 ### Address Eventually (structure)
 - ~~Platform-aware stow setup (done — Makefile)~~
 - ~~Prune brew lists (done — 16 packages removed)~~
 - ~~Adopt mise, replace asdf + nvm (done — Makefile + `mise/.config/mise/config.toml`)~~
 - ~~Move npm side effects out of `.zshenv` (done — side-effectful npm setup removed)~~
-- ~~Move vim-plug bootstrap out of editor startup~~
+- ~~Move vim-plug bootstrap out of editor startup (done — `make vim-plugins` now handles bootstrap explicitly)~~
 - Prune dead code and commented-out blocks
 - Decide whether to keep the current Neovim shim or build a dedicated Neovim config
 
