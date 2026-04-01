@@ -24,6 +24,78 @@ local function edit_cfile(win_cmd)
   vim.cmd("wincmd p")
 end
 
+local function find_netrw_windows()
+  local wins = {}
+
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == "netrw" then
+      table.insert(wins, win)
+    end
+  end
+
+  return wins
+end
+
+local function close_netrw_sidebar()
+  local wins = find_netrw_windows()
+
+  for _, win in ipairs(wins) do
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+  end
+
+  return #wins > 0
+end
+
+local function current_sidebar_root()
+  local path = vim.api.nvim_buf_get_name(0)
+  if path == "" then
+    return vim.fn.getcwd()
+  end
+
+  path = vim.fn.fnamemodify(path, ":p")
+  if vim.fn.isdirectory(path) == 1 then
+    return path
+  end
+
+  return vim.fn.fnamemodify(path, ":h")
+end
+
+local function open_netrw_sidebar(root)
+  vim.cmd("Lexplore " .. vim.fn.fnameescape(root))
+
+  local wins = find_netrw_windows()
+  if wins[1] then
+    vim.api.nvim_set_current_win(wins[1])
+  end
+end
+
+local function toggle_netrw_sidebar()
+  if close_netrw_sidebar() then
+    return
+  end
+
+  open_netrw_sidebar(current_sidebar_root())
+end
+
+local function focus_current_file_in_netrw()
+  local path = vim.api.nvim_buf_get_name(0)
+  if path == "" then
+    open_netrw_sidebar(current_sidebar_root())
+    return
+  end
+
+  close_netrw_sidebar()
+  open_netrw_sidebar(vim.fn.fnamemodify(path, ":p:h"))
+
+  local target = vim.fn.fnamemodify(path, ":t")
+  if vim.fn.search("\\V" .. vim.fn.escape(target, [[\]]), "cw") == 0 then
+    vim.notify("could not locate current file in netrw", vim.log.levels.WARN)
+  end
+end
+
 map("n", "<leader>;", function()
   vim.cmd.normal({ args = { "@:" }, bang = true })
 end, { desc = "Repeat last command-line command" })
@@ -51,6 +123,12 @@ map("n", "<leader>sr", function()
   vim.wo.relativenumber = not vim.wo.relativenumber
 end, { desc = "Toggle relative number" })
 map("n", "<leader>sp", "<Cmd>set paste!<CR>", { desc = "Toggle paste mode" })
+map("n", "<leader>sn", function()
+  toggle_netrw_sidebar()
+end, { desc = "Toggle file sidebar" })
+map("n", "<leader>sN", function()
+  focus_current_file_in_netrw()
+end, { desc = "Reveal current file in sidebar" })
 map("n", "<leader>sc", function()
   vim.opt_local.conceallevel = vim.opt_local.conceallevel:get() == 0 and 2 or 0
 end, { desc = "Toggle conceal" })

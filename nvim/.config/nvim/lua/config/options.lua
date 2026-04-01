@@ -11,6 +11,11 @@ end
 
 vim.opt.termguicolors = true
 
+-- Keep netrw usable as a sidebar file navigator.
+vim.g.netrw_banner = 0
+vim.g.netrw_liststyle = 3
+vim.g.netrw_winsize = 25
+
 vim.opt.autoread = true
 vim.opt.hidden = true
 vim.opt.history = 10000
