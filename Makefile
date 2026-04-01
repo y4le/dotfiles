@@ -1,168 +1,16 @@
 .POSIX:
 SHELL = /bin/sh
+.DEFAULT_GOAL := help
 
-# -- platform detection -------------------------------------------------------
+include mk/config.mk
+include mk/guards.mk
+include mk/checks.mk
 
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
-  PLATFORM := macos
-else
-  PLATFORM := linux
-endif
-
-ifeq ($(PLATFORM),macos)
-  PACKAGE_MANAGER := brew
-else ifneq ($(shell command -v apt-get 2>/dev/null),)
-  PACKAGE_MANAGER := apt
-else ifneq ($(shell command -v pacman 2>/dev/null),)
-  PACKAGE_MANAGER := pacman
-else
-  PACKAGE_MANAGER := unknown
-endif
-
-# -- stow command detection ----------------------------------------------------
-
-STOW := $(shell command -v stow 2>/dev/null || command -v xstow 2>/dev/null)
-
-# -- agents --------------------------------------------------------------------
-
-PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
-PRIVATE_AGENTS_PACKAGE := agents
-
-# -- package allowlists --------------------------------------------------------
-
-COMMON  := agents bash git local mise nvim scripts tmux vim zsh
-LINUX   := linux
-MACOS   := osx
-LINUX_PACKAGES := $(COMMON) $(LINUX)
-MACOS_PACKAGES := $(COMMON) $(MACOS)
-
-# -- computed package set ------------------------------------------------------
-
-ifeq ($(PLATFORM),macos)
-  PACKAGES := $(MACOS_PACKAGES)
-else
-  PACKAGES := $(LINUX_PACKAGES)
-endif
-
-# -- sheldon -------------------------------------------------------------------
-
-SHELDON_BIN   := $(HOME)/.local/bin/sheldon
-SHELDON_REPO  := rossmacarthur/sheldon
-SHELDON_URL   := https://rossmacarthur.github.io/install/crate.sh
-
-# -- mise ----------------------------------------------------------------------
-
-MISE_BIN            := $(HOME)/.local/bin/mise
-MISE_INSTALL_URL    := https://mise.run
-MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
-
-# -- vim -----------------------------------------------------------------------
-
-VIM_PLUG_URL        := https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
-
-# -- brew (macOS only) --------------------------------------------------------
-
-BREW_INSTALL_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
-
-# -- package lists -------------------------------------------------------------
-
-PACKAGES_DIR        := setup/packages
-BREW_PACKAGES_FILE  := $(PACKAGES_DIR)/brew.txt
-APT_PACKAGES_FILE   := $(PACKAGES_DIR)/apt.txt
-PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
-
-# -- validation ----------------------------------------------------------------
-
-SH_FILES := linux/.xsessionrc scripts/bin/gdrive-sync
-BASH_FILES := \
-	linux/bin/i3_switch_workspaces.sh \
-	scripts/bin/benchmark.sh \
-	scripts/bin/compair.sh \
-	scripts/bin/cpy \
-	scripts/bin/filez \
-	scripts/bin/pst \
-	scripts/.funcs/cpst \
-	scripts/.funcs/fzf_sources
-ZSH_FILES := \
-	local/.pre_profile \
-	scripts/.funcs/cpst \
-	scripts/.funcs/fzf_sources \
-	scripts/.funcs/nav \
-	taskwarrior/.config/zsh/sources/taskwarrior-aliases.zsh \
-	zsh/.config/zsh/themes/minimal.zsh-theme \
-	zsh/.zshenv \
-	zsh/.zshrc
-
-# -- targets -------------------------------------------------------------------
-
-.PHONY: check check-git check-shell check-stow check-make setup install system-packages mise mise-tools link link-linux link-macos agents-enable-private agents-disable-private sheldon vim-plugins vim-bootstrap brew clean help gdrive-auth gdrive gdrive-enable gdrive-disable gdrive-status
+.PHONY: help setup install system-packages mise mise-tools link link-linux link-macos agents-enable-private agents-disable-private sheldon vim-plugins vim-bootstrap brew clean gdrive-auth gdrive gdrive-enable gdrive-disable gdrive-status
 
 help: ## show this help
-	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
+	@grep -h -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk -F ':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
-
-check: check-git check-shell check-stow check-make ## run repo validation checks
-
-check-git: ## check git diff for whitespace errors
-	git diff --check
-
-check-shell: ## syntax-check and lint tracked shell files
-	@fail=0; \
-	echo "check-shell: sh -n"; \
-	for f in $(SH_FILES); do \
-		sh -n "$$f" || fail=1; \
-	done; \
-	echo "check-shell: bash -n"; \
-	for f in $(BASH_FILES); do \
-		bash -n "$$f" || fail=1; \
-	done; \
-	echo "check-shell: zsh -n"; \
-	for f in $(ZSH_FILES); do \
-		zsh -n "$$f" || fail=1; \
-	done; \
-	if command -v shellcheck >/dev/null 2>&1; then \
-		echo "check-shell: shellcheck"; \
-		shellcheck -S warning -s sh $(SH_FILES) || fail=1; \
-		shellcheck -S warning -s bash $(BASH_FILES) || fail=1; \
-	else \
-		echo "check-shell: shellcheck not found, skipping"; \
-	fi; \
-	if command -v shfmt >/dev/null 2>&1; then \
-		echo "check-shell: shfmt -d"; \
-		shfmt -d -ln posix $(SH_FILES) || fail=1; \
-		shfmt -d -ln bash $(BASH_FILES) || fail=1; \
-	else \
-		echo "check-shell: shfmt not found, skipping"; \
-	fi; \
-	exit $$fail
-
-check-stow: _require-stow ## dry-run stow package graphs in temp dirs
-	@fail=0; \
-	check_pkg_set() { \
-		label="$$1"; \
-		shift; \
-		tmpdir=$$(mktemp -d); \
-		echo "check-stow: $$label"; \
-		if ! $(STOW) -n -t "$$tmpdir" "$$@" >/dev/null 2>&1; then \
-			$(STOW) -n -t "$$tmpdir" "$$@" || fail=1; \
-		fi; \
-		rm -rf "$$tmpdir"; \
-	}; \
-	check_pkg_set "linux package set" $(LINUX_PACKAGES); \
-	check_pkg_set "macos package set" $(MACOS_PACKAGES); \
-	exit $$fail
-
-check-make: ## dry-run make target graph and help output
-	@echo "check-make: make -n setup"
-	@$(MAKE) -n setup >/dev/null
-	@echo "check-make: make -n link-linux"
-	@$(MAKE) -n link-linux >/dev/null
-	@echo "check-make: make -n link-macos"
-	@$(MAKE) -n link-macos >/dev/null
-	@echo "check-make: make help"
-	@$(MAKE) help >/dev/null
 
 setup: ## full bootstrap: system packages + mise tools + links + editor plugins + sheldon lock
 	@$(MAKE) install
@@ -400,24 +248,3 @@ clean: _require-stow ## unstow platform-matched packages
 		echo "  unstow $$pkg"; \
 		$(STOW) -D -t $(HOME) $$pkg 2>/dev/null || true; \
 	done
-
-# -- internal ------------------------------------------------------------------
-
-.PHONY: _require-stow
-
-_require-stow:
-	@if [ -z "$(STOW)" ]; then \
-		echo "stow not found. Install it:"; \
-		echo "  apt install stow      # Debian/Ubuntu"; \
-		echo "  brew install stow     # macOS/Homebrew"; \
-		echo "  pacman -S stow        # Arch"; \
-		exit 1; \
-	fi
-
-.PHONY: _require-curl
-
-_require-curl:
-	@if ! command -v curl >/dev/null 2>&1; then \
-		echo "curl not found. Install it with your system package manager."; \
-		exit 1; \
-	fi
