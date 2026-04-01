@@ -58,8 +58,8 @@ core model:
 
 1. Document and tighten local override behavior
 2. Decide and document the XDG boundary
-3. Plan the future Neovim migration intentionally
-4. Normalize optional-feature conventions in docs and future code
+3. Normalize optional-feature conventions in docs and future code
+4. Revisit remaining editor follow-ups only if they prove valuable in practice
 
 ## Phase 1: Validation and CI
 
@@ -96,7 +96,8 @@ Completed on 2026-03-31.
 
 ### Follow-on
 
-Future editor and pager work now lives in `docs/planning/nvim_migration.md`.
+Remaining editor follow-ups, including the pager decision, now live in
+`docs/planning/nvim_migration.md`.
 
 ## Phase 3: Makefile Modularization
 

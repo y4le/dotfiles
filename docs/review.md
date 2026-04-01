@@ -89,7 +89,7 @@ references should be cleaned up or moved to a gitignored local overlay:
 | ~~T7~~ | ~~**majutsushi/tagbar**~~ | ~~`vim/.vim/config/plugins.vim:50`~~ | ~~Repo moved~~ | ~~**preservim/tagbar**~~ | ~~(updated in Vim cleanup)~~ |
 | ~~T8~~ | ~~**youtube-dl**~~ | ~~`setup/update_brew.sh:45`~~ | ~~Effectively dead~~ | ~~**yt-dlp**~~ | ~~(removed from brew list)~~ |
 | ~~T9~~ | ~~**exa**~~ | ~~`setup/update_brew.sh:23`~~ | ~~Unmaintained (author posted notice)~~ | ~~**eza** (maintained community fork)~~ | ~~(replaced with eza)~~ |
-| T10 | **vimpager** | `zsh/.zshenv:17`, `vim/.vim/config/plugins.vim:77,126-128` | Keep for now; decide during Neovim migration | **Defer pager replacement to Neovim migration plan** |
+| T10 | **vimpager** | `zsh/.zshenv:17`, `vim/.vim/config/plugins.vim:77,126-128` | Not part of Neovim v1; keep current pager workflow for now | **Revisit later with `nvimpager`, a plain `nvim` pager workflow, or the current pager flow outside Neovim** |
 | ~~T11~~ | ~~**Alacritty YAML**~~ | ~~`alacritty/.config/alacritty/alacritty.yml`~~ | ~~Deprecated config format~~ | ~~Migrate to `alacritty.toml` (TOML)~~ | ~~(done — alacritty package deleted)~~ |
 | ~~T12~~ | ~~**reattach-to-user-namespace**~~ | ~~`tmux/.tmux.conf:50`~~ | ~~Not needed on modern macOS/tmux~~ | ~~Remove; tmux 2.6+ handles clipboard natively~~ | ~~(done — tmux now copies through `cpy`)~~ |
 | ~~T13~~ | ~~**Homebrew install URLs**~~ | ~~`setup/maybe_install_brew.sh:7,10`~~ | ~~Obsolete `master` branch URLs~~ | ~~Use `Homebrew/install/HEAD/install.sh`~~ | ~~(file deleted; Makefile uses current URL)~~ |
