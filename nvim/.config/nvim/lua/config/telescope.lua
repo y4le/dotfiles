@@ -83,6 +83,13 @@ function M.quickfix()
   builtin().quickfix()
 end
 
+function M.colorschemes()
+  builtin().colorscheme({
+    enable_preview = true,
+    prompt_title = "Colors",
+  })
+end
+
 local function live_grep(cwd, query)
   builtin().live_grep({
     additional_args = function()
@@ -199,6 +206,12 @@ function M.setup()
     M.session_picker()
   end, {
     desc = "Pick a saved session",
+  })
+
+  vim.api.nvim_create_user_command("Colors", function()
+    M.colorschemes()
+  end, {
+    desc = "Pick a colorscheme",
   })
 end
 

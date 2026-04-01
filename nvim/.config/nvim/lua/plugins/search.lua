@@ -3,7 +3,7 @@ local telescope = require("config.telescope")
 return {
   {
     "nvim-telescope/telescope.nvim",
-    cmd = { "Docs", "Fl", "Fw", "Sessions", "Telescope" },
+    cmd = { "Colors", "Docs", "Fl", "Fw", "Sessions", "Telescope" },
     dependencies = {
       "nvim-lua/plenary.nvim",
       {
@@ -21,6 +21,7 @@ return {
       { "<leader>j", telescope.buffers, desc = "Buffers" },
       { "<leader>J", telescope.all_buffers, desc = "All buffers" },
       { "<leader>c", telescope.keymaps, desc = "Keymaps" },
+      { "<leader>st", telescope.colorschemes, desc = "Colorscheme" },
       { "<leader>qm", telescope.quickfix, desc = "Quickfix list" },
       { "<leader>Ff", telescope.project_files, desc = "Project files" },
       { "<leader>Fw", telescope.working_dir_files, desc = "Working directory files" },
