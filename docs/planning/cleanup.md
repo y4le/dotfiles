@@ -10,6 +10,8 @@ Already completed and intentionally excluded from this plan:
 - Vim bootstrap is explicit via `make vim-plugins`, and `make setup` already runs it
 - Phase 1 validation is in place: `make check`, `check-shell`, `check-stow`, and `check-make` exist locally, GitHub Actions runs `make check` on Linux and macOS, and a Linux `make setup` smoke job validates bootstrap in a clean `HOME`
 - Phase 2 Vim cleanup is complete: moved plugin repos were updated, dead settings and stale language plugins were removed, `resize_mode.vim` was deleted, and pager changes were deferred to the Neovim migration plan
+- Phase 3 Makefile modularization is complete: the root `Makefile` is now an index with explicit include order and implementation moved into `mk/*.mk`
+- Phase 4 optional feature contract is complete: optional features live under `mk/optional/`, stay out of `make setup`, and `gdrive` is the reference implementation
 
 ## Problem
 
@@ -19,8 +21,6 @@ shape.
 
 The remaining issues are mostly maintainability problems:
 
-- the root `Makefile` mixes bootstrap, editor setup, and optional features
-- opt-in features have the right idea but not yet a formal repo-wide pattern
 - local override points exist, but the contract is not documented cleanly
 - XDG usage is mixed without a deliberate boundary
 
@@ -56,11 +56,10 @@ core model:
 
 ## Priorities
 
-1. Split the `Makefile` by concern
-2. Standardize the optional-feature pattern
-3. Document and tighten local override behavior
-4. Decide and document the XDG boundary
-5. Plan the future Neovim migration intentionally
+1. Document and tighten local override behavior
+2. Decide and document the XDG boundary
+3. Plan the future Neovim migration intentionally
+4. Normalize optional-feature conventions in docs and future code
 
 ## Phase 1: Validation and CI
 
@@ -101,101 +100,45 @@ Future editor and pager work now lives in `docs/planning/nvim_migration.md`.
 
 ## Phase 3: Makefile Modularization
 
-### Why after validation
+### Status
 
-Splitting the `Makefile` is worthwhile, but it should happen with checks in
-place so the refactor stays safe.
+Completed on 2026-03-31.
 
-### Planned changes
+### Completed work
 
-- Keep the root `Makefile` as the entrypoint
-- Use GNU Make `include` with explicit relative paths from the repo root
-- Enumerate current targets before moving anything
-- Move implementation into included fragments, for example:
-  - `mk/bootstrap.mk`
-  - `mk/editors.mk`
-  - `mk/optional/gdrive.mk`
-  - `mk/helpers.mk`
+- the root `Makefile` remains the repo entrypoint
+- implementation moved into concern-specific files under `mk/`
+- include order is explicit rather than wildcard-based
+- validation, bootstrap, tools, editors, overlays, optional features, and
+  cleanup no longer share one large file
 
-### Shared helpers to extract
+### Result
 
-- command-availability guards
-- package-list loading
-- systemd helper patterns
-- repeated `curl`-install logic
-
-### Precondition
-
-Before extracting optional-feature fragments, write down the minimal
-optional-feature contract so `mk/optional/*.mk` has a known target shape.
-
-### Migration strategy
-
-- move one fragment at a time
-- run `make check` after each extraction
-- keep `make help` output stable throughout the refactor
-- do not extract shared helpers until at least two call sites actually need the
-  same abstraction
-
-### Design rule
-
-The top-level `Makefile` should read like a command index, not an implementation
-dump.
-
-### Success criteria
-
-- optional features are not interleaved with bootstrap internals
-- related logic lives together
-- adding a new optional feature does not further bloat the root file
+The root `Makefile` now reads as a command index and include list rather than
+an implementation dump.
 
 ## Phase 4: Optional Feature Contract
 
-### Why
+### Status
 
-`gdrive` is the right direction, but the repo should make optional subsystems
-feel uniform.
+Completed on 2026-03-31.
 
-### Standard pattern
+### Completed work
+
+- optional features are grouped under `mk/optional/`
+- optional targets stay discoverable through `make help`
+- optional features remain outside default `make setup`
+- `gdrive` is now the reference optional feature layout
+
+### Current contract
 
 For an opt-in feature:
 
-- helper script in `scripts/bin/`
-- stow package only if the feature needs tracked files in `$HOME`
-- local config under `~/.config/<feature>/`
-- explicit `make` targets only
-- never part of default `make setup`
-
-### Minimal target surface
-
-Not every optional feature needs every target. The minimal contract is:
-
-- `<feature>` or `<feature>-status` if the feature has a meaningful runtime
-  action or state check
-- `<feature>-enable` and `<feature>-disable` only if the feature manages a
-  service or linked files
-- `<feature>-auth` only if the feature has a one-time auth flow
-- `<feature>-install` only if the binary is intentionally outside default
-  bootstrap
-
-### Discovery and templates
-
-- Add a short template for creating new optional features
-- Decide how optional features are discovered by checks and docs:
-  - naming convention only
-  - or a small manifest/registry if the feature set grows
-
-The initial version should prefer naming convention over a registry unless the
-repo actually needs the extra indirection.
-
-### Candidate adopters
-
-- `gdrive` as the reference implementation
-- future `syncthing` work should follow the same contract
-
-### Success criteria
-
-- new optional features look structurally familiar
-- local-only state and tracked repo state are clearly separated
+- keep the feature out of default bootstrap
+- give it explicit `make` targets
+- keep tracked files in a stow package only if the feature needs files in
+  `$HOME`
+- place feature-specific target definitions in `mk/optional/<feature>.mk`
 
 ## Phase 5: Local Override Contract
 
@@ -279,12 +222,9 @@ That document should list each major subsystem as:
 
 ## Recommended Execution Order
 
-1. Write down the optional-feature contract that Makefile fragments should
-   conform to
-2. Split the `Makefile`
-3. Normalize optional-feature conventions in code and docs
-4. Document local override policy
-5. Decide and document the XDG boundary
+1. Normalize optional-feature conventions in docs and future code
+2. Document local override policy
+3. Decide and document the XDG boundary
 
 ## External Review Notes
 
