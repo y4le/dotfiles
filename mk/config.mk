@@ -54,7 +54,7 @@ BREW_PACKAGES_FILE   := $(PACKAGES_DIR)/brew.txt
 APT_PACKAGES_FILE    := $(PACKAGES_DIR)/apt.txt
 PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
 
-SH_FILES := linux/.xsessionrc scripts/bin/gdrive-sync
+SH_FILES := linux/.xsessionrc
 BASH_FILES := \
 	linux/bin/i3_switch_workspaces.sh \
 	scripts/bin/benchmark.sh \
@@ -69,7 +69,6 @@ ZSH_FILES := \
 	scripts/.funcs/cpst \
 	scripts/.funcs/fzf_sources \
 	scripts/.funcs/nav \
-	taskwarrior/.config/zsh/sources/taskwarrior-aliases.zsh \
 	zsh/.config/zsh/themes/minimal.zsh-theme \
 	zsh/.zshenv \
 	zsh/.zshrc

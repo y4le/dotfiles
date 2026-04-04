@@ -6,12 +6,11 @@ Active plan, updated against the repo state on 2026-03-31.
 
 Already completed and intentionally excluded from this plan:
 
-- Google Drive sync is implemented via `make gdrive*`, `scripts/bin/gdrive-sync`, and the `gdrive/` stow package
 - Vim bootstrap is explicit via `make vim-plugins`, and `make setup` already runs it
 - Phase 1 validation is in place: `make check`, `check-shell`, `check-stow`, and `check-make` exist locally, GitHub Actions runs `make check` on Linux and macOS, and a Linux `make setup` smoke job validates bootstrap in a clean `HOME`
 - Phase 2 Vim cleanup is complete: moved plugin repos were updated, dead settings and stale language plugins were removed, `resize_mode.vim` was deleted, and pager changes were deferred to the Neovim migration plan
 - Phase 3 Makefile modularization is complete: the root `Makefile` is now an index with explicit include order and implementation moved into `mk/*.mk`
-- Phase 4 optional feature contract is complete: optional features live under `mk/optional/`, stay out of `make setup`, and `gdrive` is the reference implementation
+- Phase 4 optional feature contract is complete: optional features live under `mk/optional/` and stay out of `make setup`
 
 ## Problem
 
@@ -129,8 +128,6 @@ Completed on 2026-03-31.
 - optional features are grouped under `mk/optional/`
 - optional targets stay discoverable through `make help`
 - optional features remain outside default `make setup`
-- `gdrive` is now the reference optional feature layout
-
 ### Current contract
 
 For an opt-in feature:
