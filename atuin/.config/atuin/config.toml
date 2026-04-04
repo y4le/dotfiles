@@ -1,0 +1,17 @@
+## Search
+search_mode = "fuzzy"
+filter_mode = "directory"
+
+## UI
+style = "full"
+show_preview = true
+enter_accept = false
+
+## Sync (disabled — local only)
+auto_sync = false
+
+## Keys
+keymap_mode = "auto"
+
+## Privacy
+secrets_filter = true

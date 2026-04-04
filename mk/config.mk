@@ -20,7 +20,7 @@ STOW := $(shell command -v stow 2>/dev/null || command -v xstow 2>/dev/null)
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
 PRIVATE_AGENTS_PACKAGE := agents
 
-COMMON  := agents bash git local mise nvim scripts tmux vim zsh
+COMMON  := agents atuin bash git local mise nvim scripts tmux vim zsh
 LINUX   := linux
 MACOS   := osx
 LINUX_PACKAGES := $(COMMON) $(LINUX)

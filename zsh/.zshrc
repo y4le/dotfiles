@@ -69,9 +69,16 @@ function rangernav() {
 zle -N rangernav
 bindkey '^g' rangernav
 
-# ctrl-R history search
-bindkey -M viins '^r' fzf-insert-history
-bindkey -M vicmd '^r' fzf-insert-history
+# ctrl-R history search (atuin with fzf fallback)
+if command -v atuin &>/dev/null; then
+  export ATUIN_NOBIND="true"
+  eval "$(atuin init zsh --disable-up-arrow)"
+  bindkey -M viins '^r' atuin-search
+  bindkey -M vicmd '^r' atuin-search
+else
+  bindkey -M viins '^r' fzf-insert-history
+  bindkey -M vicmd '^r' fzf-insert-history
+fi
 
 # ctrl-X ctrl-e edit current command in vim
 autoload -z edit-command-line
