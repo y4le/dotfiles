@@ -1,5 +1,15 @@
 return {
   {
+    "stevearc/oil.nvim",
+    lazy = false,
+    opts = {
+      default_file_explorer = false,
+      keymaps = {
+        ["q"] = { "actions.close", mode = "n" },
+      },
+    },
+  },
+  {
     "nvim-mini/mini.nvim",
     event = "VeryLazy",
     keys = {
