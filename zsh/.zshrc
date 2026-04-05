@@ -89,7 +89,7 @@ bindkey "^X^E" edit-command-line
 fzf_action_list=()
 for k v (
   "ctrl-l" "execute(bat --color=always {} | less -Rf || less -f {})" # quick preview file
-  "ctrl-f" "execute(vimpager --no-passthrough {} || less -f {})" # serious preview file
+  "ctrl-f" "execute(bat --paging=always {} || less -f {})" # full pager file
   "ctrl-y" "execute-silent(echo -n {} | cpy)" # copy selected line to clipboard
 ); do
   fzf_action_list+=("$k:$v")

@@ -74,7 +74,6 @@ Plug 'tpope/vim-fugitive' " git integration
 Plug 'HerringtonDarkholme/w3m.vim' " w3m cli browser plugin
 Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
 Plug 'kana/vim-submode' " define modes that temporarily override maps
-Plug 'rkitover/vimpager' " use vim as terminal $PAGER
 Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
 Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
@@ -122,7 +121,3 @@ let g:goyo_margin_bottom = 0
 " setup mru
 let MRU_File = $VIMHOME . '/mru_files'
 let MRU_Max_Entries = 1000
-
-" setup vimpager
-let g:vimpager = { 'ansiesc': 1 } " parse ansi color codes
-let g:less = { 'enabled': 0 } " disable less keymaps

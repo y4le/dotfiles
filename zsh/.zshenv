@@ -14,9 +14,16 @@ export GIT_EDITOR=$EDITOR
 
 export LESS='-imJMWR'
 export PAGER="less $LESS"
-type vimpager &>/dev/null && export PAGER='vimpager'
-export MANPAGER=$PAGER
-export GIT_PAGER=$PAGER
+if bat --version >/dev/null 2>&1; then
+  export MANPAGER='bat -plman'
+else
+  export MANPAGER=$PAGER
+fi
+if delta --version >/dev/null 2>&1; then
+  export GIT_PAGER='delta'
+else
+  export GIT_PAGER=$PAGER
+fi
 
 
 # no duplicates in path

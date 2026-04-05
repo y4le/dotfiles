@@ -21,6 +21,8 @@
     tool = vimdiff
 [diff]
     tool = vimdiff
+[delta]
+    navigate = true
 [difftool]
     prompt = false
 [alias]

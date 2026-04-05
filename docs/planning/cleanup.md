@@ -81,8 +81,6 @@ Success criteria:
 
 Only do these if they prove valuable in practice:
 
-- decide the long-term pager path:
-  keep `vimpager`, switch to `nvimpager`, or use a plain `nvim` pager workflow
 - migrate active wiki content from `vimwiki` markup to org files as needed
 - re-evaluate optional Neovim add-backs only if missed in practice:
   `oil.nvim`, `mini.surround`, `mini.ai`, distraction-free writing mode
