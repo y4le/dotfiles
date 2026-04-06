@@ -2,6 +2,14 @@ google
 amazon
 local
 
+# Machine-local overrides (may contain secrets)
+*.local.vim
+.zshenv.local
+.pre_profile
+.post_profile
+.tmux.local.conf
+lua/local/
+
 /vimwiki
 vim/.vim/autoload
 vim/.vim/mru_files
