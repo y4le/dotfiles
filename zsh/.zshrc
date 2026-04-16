@@ -61,13 +61,14 @@ setopt share_history          # share history data
 # quick re-source this file
 alias src="source ~/.zshrc"
 
-# ctrl-g ranger: file system navigator
-function rangernav() {
-  source ranger < $TTY # source so when we move we cd
+# ctrl-g yazi: file system navigator
+function yazinav() {
+  zle -I
+  y < $TTY
   zle reset-prompt; zle redisplay
 }
-zle -N rangernav
-bindkey '^g' rangernav
+zle -N yazinav
+bindkey '^g' yazinav
 
 # ctrl-R history search (atuin with fzf fallback)
 if command -v atuin &>/dev/null; then

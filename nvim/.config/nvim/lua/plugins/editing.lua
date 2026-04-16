@@ -10,6 +10,18 @@ return {
     },
   },
   {
+    "mikavilpas/yazi.nvim",
+    cmd = { "Yazi" },
+    event = "VeryLazy",
+    keys = {
+      { "<C-g>", "<Cmd>Yazi<CR>", mode = "n", desc = "Open Yazi" },
+    },
+    opts = {
+      change_neovim_cwd_on_close = true,
+      open_for_directories = false,
+    },
+  },
+  {
     "nvim-mini/mini.nvim",
     event = "VeryLazy",
     keys = {

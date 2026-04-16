@@ -3,7 +3,6 @@
 
 curl
 git
-ranger
 stow
 tmux
 tree

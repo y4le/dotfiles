@@ -1,0 +1,18 @@
+function y() {
+  if ! command -v yazi &> /dev/null; then
+    echo "yazi not found - run 'make mise-tools' from your dotfiles repo"
+    return 1
+  fi
+
+  local tmp cwd
+  tmp="$(mktemp -t "yazi-cwd.XXXXXX")" || return 1
+
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+
+  if [[ -n "$cwd" && "$cwd" != "$PWD" && -d "$cwd" ]]; then
+    builtin cd -- "$cwd"
+  fi
+
+  rm -f -- "$tmp"
+}

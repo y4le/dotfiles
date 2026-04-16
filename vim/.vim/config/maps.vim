@@ -58,7 +58,7 @@ nnoremap <leader>qm :MRU<cr>|" most recently used files in quickfix
 " other
 vnoremap <leader>n :NarrowRegion<cr>|" open temp buffer to modify selection
 noremap <leader>/ :<C-u>nohlsearch<cr>|" clear highlight for last search
-noremap <C-g> :<C-u>Ranger<cr>|" start ranger file system navigator, zsh keymap
+noremap <C-g> :<C-u>Yazi<cr>|" start yazi file system navigator, zsh keymap
 
 " expand `%%/` to full path of current file on command line
 cnoreabbr <expr> %% expand('%:p:h')

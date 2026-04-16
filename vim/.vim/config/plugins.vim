@@ -18,7 +18,6 @@ Plug 'vim-airline/vim-airline' " status line replacement
 " ui navigation plugins
 Plug 'christoomey/vim-tmux-navigator' " C-h/j/k/l moves vim/tmux panes
 Plug 'dhruvasagar/vim-zoom' " <leader>z zooms pane like tmux
-Plug 'francoiscabrol/ranger.vim' " G-g file system navigator
 Plug 'gcmt/taboo.vim' " better tabline / rename tabs
 Plug 'chrisbra/unicode.vim' " unicode search / completion
 
@@ -100,7 +99,6 @@ let g:better_whitespace_filetypes_blacklist=
 
 " prevent plugin maps
 let g:buffergator_suppress_keymaps = 1
-let g:ranger_map_keys = 0
 let g:FerretMap = 0
 let g:w3m#disable_default_keymap = 1
 
