@@ -57,8 +57,12 @@ link: _require-stow ## link dotfiles (auto-detect platform)
 	@$(MAKE) _normalize-stow-state
 	@echo "linking $(PLATFORM) packages: $(PACKAGES)"
 	@for pkg in $(PACKAGES); do \
+		if [ ! -d "$$pkg" ]; then \
+			echo "  skip $$pkg (missing)"; \
+			continue; \
+		fi; \
 		echo "  stow $$pkg"; \
-		$(STOW) -t $(HOME) $$pkg; \
+		$(STOW) -t $(HOME) $$pkg || exit $$?; \
 	done
 	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
 		$(MAKE) agents-enable-private; \
@@ -67,8 +71,12 @@ link: _require-stow ## link dotfiles (auto-detect platform)
 link-linux: _require-stow ## force linux package set
 	@$(MAKE) _normalize-stow-state
 	@for pkg in $(LINUX_PACKAGES); do \
+		if [ ! -d "$$pkg" ]; then \
+			echo "  skip $$pkg (missing)"; \
+			continue; \
+		fi; \
 		echo "  stow $$pkg"; \
-		$(STOW) -t $(HOME) $$pkg; \
+		$(STOW) -t $(HOME) $$pkg || exit $$?; \
 	done
 	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
 		$(MAKE) agents-enable-private; \
@@ -77,8 +85,12 @@ link-linux: _require-stow ## force linux package set
 link-macos: _require-stow ## force macos package set
 	@$(MAKE) _normalize-stow-state
 	@for pkg in $(MACOS_PACKAGES); do \
+		if [ ! -d "$$pkg" ]; then \
+			echo "  skip $$pkg (missing)"; \
+			continue; \
+		fi; \
 		echo "  stow $$pkg"; \
-		$(STOW) -t $(HOME) $$pkg; \
+		$(STOW) -t $(HOME) $$pkg || exit $$?; \
 	done
 	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
 		$(MAKE) agents-enable-private; \
@@ -90,4 +102,10 @@ _normalize-stow-state:
 	if [ -L "$$target" ] && [ "$$(readlink "$$target")" = "$$expected" ]; then \
 		echo "normalizing legacy absolute symlink $$target"; \
 		rm "$$target"; \
+	fi; \
+	target="$(HOME)/.zshenv"; \
+	if [ -f "$$target" ] && [ ! -L "$$target" ]; then \
+		backup="$$target.pre-dotfiles-backup.$$(date +%Y%m%d%H%M%S)"; \
+		echo "backing up existing $$target to $$backup"; \
+		mv "$$target" "$$backup"; \
 	fi
