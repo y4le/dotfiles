@@ -1,13 +1,10 @@
+local oil = require("config.oil")
+
 return {
   {
     "stevearc/oil.nvim",
     lazy = false,
-    opts = {
-      default_file_explorer = false,
-      keymaps = {
-        ["q"] = { "actions.close", mode = "n" },
-      },
-    },
+    opts = oil.opts(),
   },
   {
     "mikavilpas/yazi.nvim",
