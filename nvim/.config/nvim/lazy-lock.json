@@ -13,7 +13,7 @@
   },
   "gitsigns.nvim": {
     "branch": "main",
-    "commit": "4bafeca9bc9ce5b3b4b953ec8ca85ddeac25ed29"
+    "commit": "db486b42299b2e3f5831809617af21becf268a39"
   },
   "lazy.nvim": {
     "branch": "main",
