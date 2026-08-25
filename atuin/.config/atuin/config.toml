@@ -4,14 +4,33 @@ filter_mode = "directory"
 
 ## UI
 style = "full"
+inline_height = 0
 show_preview = true
 enter_accept = false
 
 ## Sync (disabled — local only)
 auto_sync = false
+update_check = false
 
 ## Keys
 keymap_mode = "auto"
 
 ## Privacy
 secrets_filter = true
+
+## Ctrl-R cycles between directory-local and all history
+[search]
+filters = ["directory", "global"]
+
+[tmux]
+enabled = true
+width = "90%"
+height = "70%"
+
+[ui]
+columns = [
+  "time",
+  "exit",
+  { type = "directory", width = 24 },
+  "command",
+]

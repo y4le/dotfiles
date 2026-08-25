@@ -10,6 +10,11 @@ if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
 fi
 
+# fzf is loaded asynchronously; keep it from taking ctrl-R back from atuin
+if command -v atuin &>/dev/null; then
+  export FZF_CTRL_R_COMMAND=""
+fi
+
 # SHELDON — zsh plugin manager
 if ! command -v sheldon &>/dev/null; then
   echo "sheldon not found — run 'make setup' from your dotfiles repo"
@@ -73,9 +78,52 @@ bindkey '^g' yazinav
 # ctrl-R history search (atuin with fzf fallback)
 if command -v atuin &>/dev/null; then
   export ATUIN_NOBIND="true"
-  eval "$(atuin init zsh --disable-up-arrow)"
-  bindkey -M viins '^r' atuin-search
-  bindkey -M vicmd '^r' atuin-search
+  eval "$(atuin init zsh --disable-up-arrow --disable-ai)"
+
+  # use a popup only when this tmux server provides display-popup
+  if [[ -n "$TMUX" ]] && tmux list-commands 2>/dev/null | command grep -q '^display-popup '; then
+    export ATUIN_TMUX_POPUP="true"
+  else
+    export ATUIN_TMUX_POPUP="false"
+  fi
+
+  bindkey -M emacs '^r' atuin-search
+  bindkey -M viins '^r' atuin-search-viins
+  bindkey -M vicmd '^r' atuin-search-vicmd
+
+  # ctrl-X o: successful commands only (Atuin's TUI cannot filter by exit status)
+  function atuin-success-history() {
+    if ! command -v fzf &>/dev/null; then
+      zle -M "fzf not found"
+      return 1
+    fi
+
+    zle -I
+    local -a selector=(fzf)
+    if [[ "$ATUIN_TMUX_POPUP" == "true" ]] && command -v fzf-tmux &>/dev/null; then
+      selector=(
+        fzf-tmux
+        -p "${ATUIN_TMUX_POPUP_WIDTH:-90%},${ATUIN_TMUX_POPUP_HEIGHT:-70%}"
+      )
+    fi
+
+    local selected
+    selected=$(
+      ATUIN_LOG=error atuin search --exit 0 --cmd-only --print0 --limit 10000 |
+        "${selector[@]}" --read0 --scheme=history --query "$BUFFER" --prompt='success> '
+    )
+    local status=$?
+    zle reset-prompt
+
+    if (( status == 0 )) && [[ -n "$selected" ]]; then
+      BUFFER="$selected"
+      CURSOR=${#BUFFER}
+    fi
+  }
+  zle -N atuin-success-history
+  bindkey -M emacs '^Xo' atuin-success-history
+  bindkey -M viins '^Xo' atuin-success-history
+  bindkey -M vicmd '^Xo' atuin-success-history
 else
   bindkey -M viins '^r' fzf-insert-history
   bindkey -M vicmd '^r' fzf-insert-history
