@@ -1,10 +1,36 @@
-local oil = require("config.oil")
-
 return {
   {
     "stevearc/oil.nvim",
     lazy = false,
-    opts = oil.opts(),
+    opts = {
+      default_file_explorer = true,
+      view_options = {
+        show_hidden = true,
+      },
+      keymaps = {
+        ["q"] = { "actions.close", mode = "n" },
+      },
+    },
+  },
+  {
+    "preservim/nerdtree",
+    cmd = {
+      "NERDTree",
+      "NERDTreeClose",
+      "NERDTreeFind",
+      "NERDTreeFocus",
+      "NERDTreeRefreshRoot",
+      "NERDTreeToggle",
+    },
+    keys = {
+      { "<leader>sn", "<Cmd>NERDTreeToggle<CR>", desc = "Toggle file sidebar" },
+      { "<leader>sN", "<Cmd>NERDTreeFind<CR>", desc = "Reveal current file in sidebar" },
+      { "<leader>sR", "<Cmd>NERDTreeRefreshRoot<CR>", desc = "Refresh file sidebar" },
+    },
+    init = function()
+      vim.g.NERDTreeShowHidden = 1
+      vim.g.NERDTreeWinSize = 30
+    end,
   },
   {
     "mikavilpas/yazi.nvim",

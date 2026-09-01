@@ -51,12 +51,6 @@ map("n", "<leader>sr", function()
   vim.wo.relativenumber = not vim.wo.relativenumber
 end, { desc = "Toggle relative number" })
 map("n", "<leader>sp", "<Cmd>set paste!<CR>", { desc = "Toggle paste mode" })
-map("n", "<leader>sn", function()
-  require("config.oil").toggle_sidebar()
-end, { desc = "Toggle file sidebar" })
-map("n", "<leader>sN", function()
-  require("config.oil").reveal_in_sidebar()
-end, { desc = "Reveal current file in sidebar" })
 map("n", "<leader>sc", function()
   vim.opt_local.conceallevel = vim.opt_local.conceallevel:get() == 0 and 2 or 0
 end, { desc = "Toggle conceal" })
