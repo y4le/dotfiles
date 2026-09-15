@@ -97,6 +97,10 @@ fi
   fail "fresh link did not create the portable Git config"
 [ -f "$fresh_home/.gitconfig" ] && [ ! -L "$fresh_home/.gitconfig" ] || \
   fail "fresh link did not create a local Git config"
+[ ! -e "$fresh_home/.xsessionrc" ] || \
+  fail "default link enabled Linux desktop config"
+[ ! -e "$fresh_home/.config/karabiner/karabiner.json" ] || \
+  fail "default link enabled macOS desktop config"
 portable_git_before=$(cksum < "$repo/git/.config/git/config")
 env -i HOME="$fresh_home" PATH="$PATH" LC_ALL=C GIT_CONFIG_NOSYSTEM=1 \
   git config --global user.name Test || \
@@ -111,6 +115,53 @@ run_make "$fresh_home" link >/dev/null 2>&1 || fail "second link failed"
 snapshot_home "$fresh_home" > "$test_root/fresh-after"
 cmp -s "$test_root/fresh-before" "$test_root/fresh-after" || \
   fail "second link changed HOME"
+
+echo "check-link: desktop packages are opt-in"
+linux_core_home=$test_root/linux-core-home
+mkdir -p "$linux_core_home"
+run_make "$linux_core_home" PLATFORM=linux link \
+  >/dev/null 2>&1 || fail "Linux core link failed"
+[ ! -e "$linux_core_home/.xsessionrc" ] || \
+  fail "Linux core link included desktop config"
+
+macos_core_home=$test_root/macos-core-home
+mkdir -p "$macos_core_home"
+run_make "$macos_core_home" PLATFORM=macos link \
+  >/dev/null 2>&1 || fail "macOS core link failed"
+[ -L "$macos_core_home/.config/zsh/sources/osx.zsh" ] || \
+  fail "macOS core link omitted shell config"
+[ ! -e "$macos_core_home/.config/karabiner/karabiner.json" ] || \
+  fail "macOS core link included desktop config"
+
+linux_desktop_home=$test_root/linux-desktop-home
+mkdir -p "$linux_desktop_home"
+run_make "$linux_desktop_home" PLATFORM=linux DESKTOP=1 link \
+  >/dev/null 2>&1 || fail "Linux desktop link failed"
+[ -L "$linux_desktop_home/.xsessionrc" ] || \
+  fail "Linux desktop link omitted .xsessionrc"
+[ -L "$linux_desktop_home/.config/i3/config" ] || \
+  fail "Linux desktop link omitted i3"
+[ -x "$linux_desktop_home/bin/i3_switch_workspaces.sh" ] || \
+  fail "Linux desktop workspace switcher is not executable"
+[ -x "$linux_desktop_home/.config/i3/scripts/mediaplayer" ] || \
+  fail "Linux desktop media player is not executable"
+[ ! -e "$linux_desktop_home/.config/karabiner/karabiner.json" ] || \
+  fail "Linux desktop link included macOS config"
+assert_no_directory_links "$linux_desktop_home" || \
+  fail "Linux desktop link folded directories"
+
+macos_desktop_home=$test_root/macos-desktop-home
+mkdir -p "$macos_desktop_home"
+run_make "$macos_desktop_home" PLATFORM=macos DESKTOP=1 link \
+  >/dev/null 2>&1 || fail "macOS desktop link failed"
+[ -L "$macos_desktop_home/.config/karabiner/karabiner.json" ] || \
+  fail "macOS desktop link omitted Karabiner"
+[ -L "$macos_desktop_home/.config/zsh/sources/osx.zsh" ] || \
+  fail "macOS desktop link omitted core macOS shell config"
+[ ! -e "$macos_desktop_home/.xsessionrc" ] || \
+  fail "macOS desktop link included Linux config"
+assert_no_directory_links "$macos_desktop_home" || \
+  fail "macOS desktop link folded directories"
 
 echo "check-link: conflict is non-mutating"
 conflict_home=$test_root/conflict-home

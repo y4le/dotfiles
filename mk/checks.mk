@@ -98,8 +98,10 @@ check-stow: _require-stow ## dry-run stow package graphs in temp dirs
 		fi; \
 		rm -rf "$$tmpdir"; \
 	}; \
-	check_pkg_set "linux package set" $(LINUX_PACKAGES); \
-	check_pkg_set "macos package set" $(MACOS_PACKAGES); \
+	check_pkg_set "linux core package set" $(LINUX_BASE_PACKAGES); \
+	check_pkg_set "linux desktop package set" $(LINUX_DESKTOP_PACKAGES); \
+	check_pkg_set "macos core package set" $(MACOS_BASE_PACKAGES); \
+	check_pkg_set "macos desktop package set" $(MACOS_DESKTOP_PACKAGES); \
 	exit $$fail
 
 check-link: ## test safe linking in isolated temporary homes
@@ -112,6 +114,13 @@ check-make: ## dry-run make target graph and help output
 	@$(MAKE) -n link-linux >/dev/null
 	@echo "check-make: make -n link-macos"
 	@$(MAKE) -n link-macos >/dev/null
+	@echo "check-make: make -n DESKTOP=1 link"
+	@$(MAKE) -n DESKTOP=1 link >/dev/null
+	@echo "check-make: reject invalid DESKTOP values"
+	@if $(MAKE) -n DESKTOP=yes link >/dev/null 2>&1; then \
+		echo "check-make: DESKTOP=yes was accepted"; \
+		exit 1; \
+	fi
 	@echo "check-make: make -n link-plan"
 	@$(MAKE) -n link-plan >/dev/null
 	@echo "check-make: make -n clean"

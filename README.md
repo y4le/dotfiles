@@ -15,8 +15,15 @@ I must master it as I must master my life.
 
 - clone from git
 - navigate into directory
-- run `make setup`
+- run `make setup` for portable shell/editor configuration
+- use `make DESKTOP=1 setup` only on a personal desktop where the repository
+  should manage the Linux X11/i3 session or macOS Karabiner configuration
 - use `make help` to see the other setup and link targets
+
+The desktop choice is also used by `link`, `link-linux`, `link-macos`, and
+`clean`. Pass the same `DESKTOP=1` setting when removing a desktop install.
+Existing installs from before the core/desktop split should run
+`make DESKTOP=1 link` once to migrate their managed desktop links.
 
 ### Git identity
 

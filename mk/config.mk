@@ -21,12 +21,26 @@ STOW_FLAGS := --no-folding -d "$(CURDIR)" -t "$(HOME)"
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
 PRIVATE_AGENTS_PACKAGE := agents
 
-COMMON  := agents atuin bash git mise nvim scripts tmux vim zsh
+COMMON := agents atuin bash git mise nvim scripts tmux vim zsh
 LOCAL_PACKAGES := $(if $(wildcard local/.),local,)
-LINUX   := linux
-MACOS   := osx
-LINUX_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(LINUX)
-MACOS_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(MACOS)
+LINUX_CORE :=
+MACOS_CORE := osx
+LINUX_DESKTOP := linux-desktop
+MACOS_DESKTOP := osx-desktop
+
+LINUX_BASE_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(LINUX_CORE)
+MACOS_BASE_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(MACOS_CORE)
+LINUX_DESKTOP_PACKAGES := $(LINUX_BASE_PACKAGES) $(LINUX_DESKTOP)
+MACOS_DESKTOP_PACKAGES := $(MACOS_BASE_PACKAGES) $(MACOS_DESKTOP)
+
+DESKTOP ?= 0
+ifneq ($(DESKTOP),0)
+  ifneq ($(DESKTOP),1)
+    $(error DESKTOP must be 0 or 1 (got '$(DESKTOP)'))
+  endif
+endif
+LINUX_PACKAGES := $(LINUX_BASE_PACKAGES) $(if $(filter 1,$(DESKTOP)),$(LINUX_DESKTOP),)
+MACOS_PACKAGES := $(MACOS_BASE_PACKAGES) $(if $(filter 1,$(DESKTOP)),$(MACOS_DESKTOP),)
 
 ifeq ($(PLATFORM),macos)
   PACKAGES := $(MACOS_PACKAGES)
