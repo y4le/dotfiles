@@ -151,6 +151,8 @@ check-make: ## [offline] dry-run make target graph and help output
 	@$(MAKE) -n clean >/dev/null
 	@echo "check-make: make -n nvim-plugins"
 	@$(MAKE) -n nvim-plugins >/dev/null
+	@echo "check-make: make -n nvim-update"
+	@$(MAKE) -n nvim-update >/dev/null
 	@echo "check-make: make -n sheldon-plugins"
 	@$(MAKE) -n sheldon-plugins >/dev/null
 	@echo "check-make: make -n tmux-plugins"

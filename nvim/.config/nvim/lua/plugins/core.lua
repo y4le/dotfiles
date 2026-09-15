@@ -73,6 +73,9 @@ return {
     cmd = { "ConformInfo" },
     opts = {
       format_on_save = function(bufnr)
+        if vim.api.nvim_buf_get_name(bufnr):match("lazy%-lock%.json$") then
+          return nil
+        end
         if vim.bo[bufnr].buftype ~= "" then
           return nil
         end

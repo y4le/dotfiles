@@ -25,7 +25,16 @@ if ! command -v stow >/dev/null 2>&1; then
 fi
 
 test_root=$(mktemp -d) || exit 1
+original_home=$HOME
 tmux_bin=$(command -v tmux 2>/dev/null || true)
+nvim_bin=$(command -v nvim 2>/dev/null || true)
+if command -v mise >/dev/null 2>&1; then
+  mise_nvim=$(MISE_GLOBAL_CONFIG_FILE="$(pwd -P)/mise/.config/mise/config.toml" \
+    mise which nvim 2>/dev/null || true)
+  if [ -x "$mise_nvim" ]; then
+    nvim_bin=$mise_nvim
+  fi
+fi
 tmux_missing_socket=/tmp/dotfiles-tmux-missing.$$
 tmux_restored_socket=/tmp/dotfiles-tmux-restored.$$
 cleanup() {
@@ -42,7 +51,7 @@ trap 'cleanup; exit 1' HUP INT TERM
 repo=$(pwd -P) || exit 1
 test_home=$test_root/home
 mkdir -p "$test_home"
-stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts tmux >/dev/null 2>&1 || \
+stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts tmux nvim >/dev/null 2>&1 || \
   fail "could not prepare the test HOME"
 
 runtime_log=$test_root/network.log
@@ -158,6 +167,108 @@ DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" run_zsh -c true \
 [ ! -s "$runtime_log" ] || fail ".zshenv invoked an external probe"
 if grep -Eq '\$\(|`' "$repo/zsh/.zshenv"; then
   fail ".zshenv contains command substitution"
+fi
+
+if [ -n "$nvim_bin" ]; then
+  git_stub=$test_home/bin/git
+  printf '%s\n' \
+    '#!/bin/sh' \
+    'printf "%s\\n" "$0 $*" >> "$DOTFILES_RUNTIME_LOG"' \
+    'exit 97' > "$git_stub"
+  chmod +x "$git_stub"
+  echo "check-runtime: Neovim without lazy.nvim"
+  : > "$runtime_log"
+  lock_before=$(cksum < "$repo/nvim/.config/nvim/lazy-lock.json")
+  if ! env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C DOTFILES_RUNTIME_LOG="$runtime_log" \
+    HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
+    ALL_PROXY=http://127.0.0.1:9 "$nvim_bin" --headless +qa \
+    > "$test_root/nvim-missing.out" 2> "$test_root/nvim-missing.err"; then
+    cat "$test_root/nvim-missing.out" "$test_root/nvim-missing.err" >&2
+    fail "Neovim failed without lazy.nvim"
+  fi
+  cat "$test_root/nvim-missing.out" "$test_root/nvim-missing.err" > \
+    "$test_root/nvim-missing.log"
+  grep -Fq "lazy.nvim not found - run 'make nvim-plugins'" \
+    "$test_root/nvim-missing.log" || fail "Neovim omitted the missing-lazy hint"
+  [ ! -s "$runtime_log" ] || fail "Neovim startup invoked git or a downloader"
+
+  lazy_source=${DOTFILES_TEST_LAZY_DIR:-$original_home/.local/share/nvim/lazy/lazy.nvim}
+  if [ -d "$lazy_source" ]; then
+    echo "check-runtime: Neovim with lazy.nvim but no restored plugins"
+    lazy_dir=$test_home/.local/share/nvim/lazy/lazy.nvim
+    mkdir -p "$(dirname "$lazy_dir")"
+    cp -R "$lazy_source" "$lazy_dir"
+    : > "$runtime_log"
+    if ! env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+      SHELL=/bin/sh TERM=xterm LC_ALL=C DOTFILES_RUNTIME_LOG="$runtime_log" \
+      HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
+      ALL_PROXY=http://127.0.0.1:9 "$nvim_bin" --headless +qa \
+      > "$test_root/nvim-unrestored.out" 2> "$test_root/nvim-unrestored.err"; then
+      cat "$test_root/nvim-unrestored.out" "$test_root/nvim-unrestored.err" >&2
+      fail "Neovim failed with only lazy.nvim restored"
+    fi
+    cat "$test_root/nvim-unrestored.out" "$test_root/nvim-unrestored.err" > \
+      "$test_root/nvim-unrestored.log"
+    grep -Fq "Neovim plugins not restored; run 'make plugins'" \
+      "$test_root/nvim-unrestored.log" || \
+      fail "Neovim omitted the plugin restore hint"
+    [ ! -s "$runtime_log" ] || fail "unrestored Neovim invoked git or a downloader"
+
+    echo "check-runtime: partial Neovim plugin state stays offline"
+    mkdir -p "$test_home/.local/share/nvim/lazy/plenary.nvim"
+    : > "$runtime_log"
+    env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+      SHELL=/bin/sh TERM=xterm LC_ALL=C DOTFILES_RUNTIME_LOG="$runtime_log" \
+      HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
+      ALL_PROXY=http://127.0.0.1:9 "$nvim_bin" --headless +qa \
+      > "$test_root/nvim-partial.out" 2> "$test_root/nvim-partial.err" || \
+      fail "Neovim failed with a partial plugin state"
+    [ ! -s "$runtime_log" ] || fail "partial Neovim startup invoked git or a downloader"
+    if find "$test_home/.local/share/nvim" -name '*.cloning' -print | grep -q .; then
+      fail "partial Neovim startup left clone state"
+    fi
+    [ "$(cksum < "$repo/nvim/.config/nvim/lazy-lock.json")" = "$lock_before" ] || \
+      fail "Neovim startup changed the lockfile"
+
+    echo "check-runtime: failed Neovim restore preserves the lock"
+    rm -f "$git_stub"
+    restore_lock=$test_root/lazy-lock.json
+    restore_lock_before=$test_root/lazy-lock.before.json
+    restore_count=$test_root/nvim-restore-count
+    cp "$repo/nvim/.config/nvim/lazy-lock.json" "$restore_lock"
+    cp "$restore_lock" "$restore_lock_before"
+    restore_lazy_commit=$(git -C "$lazy_dir" rev-parse HEAD) || \
+      fail "could not read the lazy.nvim fixture revision"
+    printf '%s\n' \
+      '#!/bin/sh' \
+      'count=0' \
+      '[ ! -f "$DOTFILES_TEST_RESTORE_COUNT" ] || count=$(cat "$DOTFILES_TEST_RESTORE_COUNT")' \
+      'count=$((count + 1))' \
+      'printf "%s\n" "$count" > "$DOTFILES_TEST_RESTORE_COUNT"' \
+      '[ "$count" -eq 1 ] && exit 0' \
+      'printf "%s\n" corrupted > "$DOTFILES_TEST_RESTORE_LOCK"' \
+      'exit 42' > "$test_home/bin/nvim"
+    chmod +x "$test_home/bin/nvim"
+    if env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+      DOTFILES_TEST_RESTORE_COUNT="$restore_count" \
+      DOTFILES_TEST_RESTORE_LOCK="$restore_lock" \
+      make -s -C "$repo" MISE_BIN="$test_home/missing-mise" \
+        LAZY_NVIM_DIR="$lazy_dir" LAZY_NVIM_LOCK_FILE="$restore_lock" \
+        LAZY_NVIM_COMMIT="$restore_lazy_commit" nvim-plugins \
+        > "$test_root/nvim-restore.out" 2> "$test_root/nvim-restore.err"; then
+      fail "simulated Neovim restore failure succeeded"
+    fi
+    cmp -s "$restore_lock_before" "$restore_lock" || \
+      fail "failed Neovim restore changed the lockfile"
+    if [ ! -f "$restore_count" ] || [ "$(cat "$restore_count")" -ne 2 ]; then
+      fail "simulated failure did not reach the Neovim restore process"
+    fi
+  else
+    echo "check-runtime: lazy.nvim fixture not found; skipping restored-state cases"
+  fi
+else
+  echo "check-runtime: nvim not found; skipping Neovim cases"
 fi
 
 if [ -n "$tmux_bin" ]; then
