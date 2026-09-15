@@ -27,8 +27,13 @@ remain usable after the link-only step; missing plugins are restored only by
 the explicit networked plugin targets.
 
 The offline link step requires GNU Stow 2.3 or newer. `setup-user` assumes Git,
-curl, Vim, and Stow are already available; `setup` installs native prerequisites
-before running the same user-space phases.
+curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or `openssl`),
+Vim, and Stow are already available; `setup` installs native prerequisites before
+running the same user-space phases. The mise bootstrap archive is version-pinned
+and checksum-verified before installation.
+
+`make tools` converges its managed binaries to the reviewed pins. If a managed
+binary has been self-updated, the next run reports and replaces that drift.
 
 The desktop choice is also used by `link`, `link-linux`, `link-macos`, and
 `clean`. Pass the same `DESKTOP=1` setting when removing a desktop install.

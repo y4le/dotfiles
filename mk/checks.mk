@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-vim check-runtime check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-pins check-vim check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+check: check-git check-shell check-pins check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
 
 check-actions: ## [offline] lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -86,6 +86,9 @@ check-shell: ## [offline] syntax-check and lint tracked shell files
 	fi; \
 	exit $$fail
 
+check-pins: ## [offline] validate download pins and the verified installer
+	@sh mk/test-pins.sh
+
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
 
@@ -124,7 +127,15 @@ check-make: ## [offline] dry-run make target graph and help output
 		exit 1; \
 	fi
 	@echo "check-make: make -n tools"
-	@$(MAKE) -n tools >/dev/null
+	@tools_plan="$$( $(MAKE) -n tools )" || exit $$?; \
+	printf '%s\n' "$$tools_plan" | grep -F 'mk/pinned.sh install mise' >/dev/null || { \
+		echo "check-make: tools does not use the pinned mise installer"; \
+		exit 1; \
+	}; \
+	if printf '%s\n' "$$tools_plan" | grep -F 'mise.run' >/dev/null; then \
+		echo "check-make: tools still uses mise.run"; \
+		exit 1; \
+	fi
 	@echo "check-make: make -n plugins"
 	@plugin_plan="$$( $(MAKE) -n plugins )" || exit $$?; \
 	sheldon_line="$$(printf '%s\n' "$$plugin_plan" | awk '/ lock \|\| exit/ { print NR; exit }')"; \

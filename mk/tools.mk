@@ -1,14 +1,7 @@
 .PHONY: mise mise-tools sheldon sheldon-plugins tmux-plugins brew
 
-mise: $(MISE_BIN) ## [network] install mise binary
-
-$(MISE_BIN):
-	@if ! command -v curl >/dev/null 2>&1; then \
-		echo "curl not found. Install it with your system package manager."; \
-		exit 1; \
-	fi
-	@mkdir -p $(HOME)/.local/bin
-	curl -fsSL $(MISE_INSTALL_URL) | MISE_INSTALL_PATH=$(MISE_BIN) sh
+mise: ## [network] install the pinned, verified mise binary
+	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install mise "$(MISE_BIN)" 0755
 
 mise-tools: mise ## [network] install tools from mise config
 	MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) install

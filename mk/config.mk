@@ -55,8 +55,8 @@ SHELDON_REPO  := rossmacarthur/sheldon
 SHELDON_URL   := https://rossmacarthur.github.io/install/crate.sh
 
 MISE_BIN            := $(HOME)/.local/bin/mise
-MISE_INSTALL_URL    := https://mise.run
 MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
+DOWNLOAD_PINS_FILE  := setup/pins/downloads.txt
 
 VIM_PLUG_URL        := https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
