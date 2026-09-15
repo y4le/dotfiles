@@ -57,7 +57,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends shellcheck stow zsh
+          sudo apt-get install -y --no-install-recommends shellcheck stow vim zsh
 
       - name: Install macOS check toolchain
         if: runner.os == 'macOS'

@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-vim check-stow check-link check-make
 
-check: check-git check-shell check-stow check-link check-make ## run repo validation checks
+check: check-git check-shell check-vim check-stow check-link check-make ## run repo validation checks
 
 check-actions: ## lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -85,6 +85,9 @@ check-shell: ## syntax-check and lint tracked shell files
 		fi; \
 	fi; \
 	exit $$fail
+
+check-vim: ## validate portable Vim configuration behavior
+	@sh mk/test-vim.sh
 
 check-stow: _require-stow ## dry-run stow package graphs in temp dirs
 	@fail=0; \

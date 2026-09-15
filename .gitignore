@@ -1,6 +1,8 @@
-google
-amazon
-local
+/google
+/amazon
+/local
+/.claude/
+/.parley/
 
 # Machine-local overrides (may contain secrets)
 *.local.vim

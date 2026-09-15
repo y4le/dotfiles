@@ -47,16 +47,22 @@ empty local file, so its identity must be configured again. Keep
 
 ## Information Isolation
 
-You work for a company, `foo`, and you want to keep their information in a private git server
-- create a new `foo/` directory, `stow -t ~ foo` will symlink its contents to `~`
-- consider adding `foo/` to `.gitignore` in the public repo to prevent accidental publishing
-- anything that hints at company info should be in `foo/`
+Machine- or company-specific files belong in the ignored top-level `local/`
+Stow package or directly in the real directories under `~`. When `local/`
+exists, the Make targets include it automatically. Run `make link-plan` before
+linking; the public packages reject ignored or untracked runtime files so they
+cannot be linked into `HOME` accidentally.
+
+Because linking uses no-folding mode, files created directly under directories
+such as `~/.config/zsh/sources/` remain local instead of being written through
+into this repository. Anything that hints at company information should stay
+outside the public packages.
 
 | company info that would go here   | instead goes here                                   |
 |:----------------------------------|:----------------------------------------------------|
-| `~/.zshrc`                        | `foo/.config/zsh/sources/foo.zsh`                   |
-| `~/.vimrc`                        | `foo/.vim/config/{plugins,maps,settings}.local.vim` |
-| `~/.example_foo_config`           | `foo/.example_foo_config`                           |
+| `~/.zshrc`                        | `local/.config/zsh/sources/corp.zsh`                 |
+| `~/.vimrc`                        | `local/.vim/config/{plugins,maps,settings}.local.vim` |
+| `~/.example_corp_config`          | `local/.example_corp_config`                         |
 
 
 ## Agents
@@ -82,6 +88,9 @@ You work for a company, `foo`, and you want to keep their information in a priva
     - functions should go in `~/.vim/autoload/` - sourced on first use
     - self contained chunks can go in `~/.vim/plugin/` - always sourced
     - filetype specific plugin lives in `~/.vim/ftplugin/language.vim`
+  - VimWiki defaults to `~/vimwiki`; set `VIMWIKI_ROOT` for a machine-specific
+    absolute location, or set `g:vimwiki_root` before plugins load to override
+    it in Vim
 
 
 ## Zsh

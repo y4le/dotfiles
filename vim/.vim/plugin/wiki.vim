@@ -1,11 +1,13 @@
 " setup vimwiki
 
-let s:dir = $HOME . '/Google Drive/vimwiki/'
-if !isdirectory(glob(s:dir))
-  let s:dir = $HOME . '/Drive/My Drive/vimwiki/'
+if exists('g:vimwiki_root') && !empty(g:vimwiki_root)
+  let s:root = g:vimwiki_root
+elseif !empty($VIMWIKI_ROOT)
+  let s:root = $VIMWIKI_ROOT
+else
+  let s:root = $HOME . '/vimwiki'
 endif
-
-let s:dir = fnameescape(s:dir)
+let s:root = substitute(fnamemodify(s:root, ':p'), '[/\\]\+$', '', '')
 
 let g:vim_markdown_folding_disabled = 1
 let g:vimwiki_folding = ''
@@ -14,9 +16,9 @@ let s:defaults = { 'syntax': 'markdown', 'ext': '.md' }
 
 let g:vimwiki_list = [
   \extend({}, extend(s:defaults,
-    \{'path': s:dir.'work/wiki', 'path_html': s:dir.'work/html'})),
+    \{'path': s:root.'/work/wiki', 'path_html': s:root.'/work/html'})),
   \extend({}, extend(s:defaults,
-    \{'path': s:dir.'personal/wiki', 'path_html': s:dir.'personal/html'})),
+    \{'path': s:root.'/personal/wiki', 'path_html': s:root.'/personal/html'})),
 \]
 
 " disabled in favor of custom folds (`zf`)
