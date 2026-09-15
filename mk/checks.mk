@@ -132,8 +132,12 @@ check-make: ## [offline] dry-run make target graph and help output
 		echo "check-make: tools does not use the pinned mise installer"; \
 		exit 1; \
 	}; \
-	if printf '%s\n' "$$tools_plan" | grep -F 'mise.run' >/dev/null; then \
-		echo "check-make: tools still uses mise.run"; \
+	printf '%s\n' "$$tools_plan" | grep -F 'mk/pinned.sh install sheldon' >/dev/null || { \
+		echo "check-make: tools does not use the pinned Sheldon installer"; \
+		exit 1; \
+	}; \
+	if printf '%s\n' "$$tools_plan" | grep -Eq 'mise\.run|crate\.sh|bash -s'; then \
+		echo "check-make: tools still uses an unverified installer"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n plugins"
@@ -143,6 +147,10 @@ check-make: ## [offline] dry-run make target graph and help output
 	if [ -z "$$sheldon_line" ] || [ -z "$$vim_line" ] || \
 		[ "$$sheldon_line" -ge "$$vim_line" ]; then \
 		echo "check-make: shell plugins are not restored before editor plugins"; \
+		exit 1; \
+	fi; \
+	if printf '%s\n' "$$plugin_plan" | grep -F 'mk/pinned.sh install' >/dev/null; then \
+		echo "check-make: plugins installs a tool binary"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n link-linux"

@@ -116,6 +116,7 @@ jobs:
           test -f "$SMOKE_HOME/.vim/autoload/plug.vim"
           HOME="$SMOKE_HOME" sh mk/pinned.sh status mise "$SMOKE_HOME/.local/bin/mise"
           test -x "$SMOKE_HOME/.local/bin/mise"
+          HOME="$SMOKE_HOME" sh mk/pinned.sh status sheldon "$SMOKE_HOME/.local/bin/sheldon"
           test -x "$SMOKE_HOME/.local/bin/sheldon"
           HOME="$SMOKE_HOME" MISE_GLOBAL_CONFIG_FILE="$GITHUB_WORKSPACE/mise/.config/mise/config.toml" \
             "$SMOKE_HOME/.local/bin/mise" which nvim >/dev/null

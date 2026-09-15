@@ -29,11 +29,16 @@ the explicit networked plugin targets.
 The offline link step requires GNU Stow 2.3 or newer. `setup-user` assumes Git,
 curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or `openssl`),
 Vim, and Stow are already available; `setup` installs native prerequisites before
-running the same user-space phases. The mise bootstrap archive is version-pinned
-and checksum-verified before installation.
+running the same user-space phases. The mise and Sheldon bootstrap archives are
+version-pinned and checksum-verified before installation.
 
 `make tools` converges its managed binaries to the reviewed pins. If a managed
 binary has been self-updated, the next run reports and replaces that drift.
+`make plugins` expects `make tools` to have completed; it never installs missing
+tool binaries implicitly.
+
+Sheldon 0.8 does not publish an Intel macOS binary. On those machines, follow the
+documented workaround in `setup/pins/README.md` before running `make plugins`.
 
 The desktop choice is also used by `link`, `link-linux`, `link-macos`, and
 `clean`. Pass the same `DESKTOP=1` setting when removing a desktop install.

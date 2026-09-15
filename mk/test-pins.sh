@@ -57,8 +57,11 @@ awk 'BEGIN { changed = 0 } /^#/ { print; next } !changed { NF = 6; changed = 1 }
   "$real_pins" > "$bad"
 expect_lint_failure "a six-field pin" "$bad"
 
-awk '$3 != "darwin-arm64"' "$real_pins" > "$bad"
+awk '!($1 == "mise" && $3 == "darwin-arm64")' "$real_pins" > "$bad"
 expect_lint_failure "incomplete mise platform coverage" "$bad"
+
+awk '!($1 == "sheldon" && $3 == "linux-arm64")' "$real_pins" > "$bad"
+expect_lint_failure "incomplete Sheldon platform coverage" "$bad"
 
 awk 'BEGIN { changed = 0 } /^#/ { print; next } !changed {
   $5 = "https://raw.githubusercontent.com/example/repo/0123456789012345678901234567890123456789/main/file"; changed = 1
@@ -77,6 +80,10 @@ expect_lint_failure "an unsafe archive member" "$bad"
 if grep -n 'mise\.run' Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
   fail "mise.run remains in bootstrap code"
 fi
+if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|bash -s' \
+  Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
+  fail "legacy Sheldon installer remains in bootstrap code"
+fi
 
 download_pattern='(^|[^[:alnum:]_.-])(curl|wget)([[:space:]]|$)'
 legacy_downloads=$(
@@ -86,7 +93,6 @@ legacy_downloads=$(
     grep -HnE "$download_pattern" "$file" || true
   done
 )
-sheldon_downloads=0
 vim_plug_downloads=0
 homebrew_downloads=0
 while IFS= read -r line || [ -n "$line" ]; do
@@ -97,7 +103,6 @@ while IFS= read -r line || [ -n "$line" ]; do
     continue
   fi
   case $line in
-    *SHELDON_URL*) sheldon_downloads=$((sheldon_downloads + 1)) ;;
     *VIM_PLUG_URL*) vim_plug_downloads=$((vim_plug_downloads + 1)) ;;
     *BREW_INSTALL_URL*) homebrew_downloads=$((homebrew_downloads + 1)) ;;
     *) fail "unreviewed downloader outside mk/pinned.sh: $line" ;;
@@ -105,7 +110,6 @@ while IFS= read -r line || [ -n "$line" ]; do
 done <<EOF
 $legacy_downloads
 EOF
-[ "$sheldon_downloads" -eq 1 ] || fail "expected one legacy Sheldon downloader"
 [ "$vim_plug_downloads" -eq 1 ] || fail "expected one legacy vim-plug downloader"
 [ "$homebrew_downloads" -eq 1 ] || fail "expected one legacy Homebrew downloader"
 
@@ -199,6 +203,21 @@ fixture_pins=$test_root/downloads.txt
 printf '%s\n' \
   "mise 1.2.3 linux-amd64 $archive_hash https://github.com/example/mise/releases/download/v1.2.3/mise-1.2.3.tar.gz mise/bin/mise $member_hash" \
   > "$fixture_pins"
+
+sheldon_tree=$test_root/sheldon-tree
+mkdir "$sheldon_tree"
+printf '%s\n' \
+  '#!/bin/sh' \
+  'echo "sheldon 1.2.3 (abcdef0 2025-01-01)"' \
+  'echo "rustc 1.88.0"' > "$sheldon_tree/sheldon"
+chmod +x "$sheldon_tree/sheldon"
+sheldon_archive=$fixtures/sheldon-1.2.3.tar.gz
+(cd "$sheldon_tree" && tar -czf "$sheldon_archive" sheldon)
+sheldon_archive_hash=$(sh "$pin_script" sha256 "$sheldon_archive")
+sheldon_member_hash=$(sh "$pin_script" sha256 "$sheldon_tree/sheldon")
+printf '%s\n' \
+  "sheldon 1.2.3 linux-amd64 $sheldon_archive_hash https://github.com/example/sheldon/releases/download/v1.2.3/sheldon-1.2.3.tar.gz sheldon $sheldon_member_hash" \
+  >> "$fixture_pins"
 
 printf '%s\n' \
   '#!/bin/sh' \
@@ -380,5 +399,78 @@ env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
   DOTFILES_TEST_FIXTURES="$fixtures" \
   make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" MISE_BIN="$make_destination" mise >/dev/null
 [ ! -s "$curl_log" ] || fail "make mise rerun accessed the network"
+
+sheldon_destination=$test_root/make-bin/sheldon
+: > "$curl_log"
+env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
+    SHELDON_BIN="$sheldon_destination" sheldon >/dev/null
+[ -x "$sheldon_destination" ] || fail "make sheldon did not install the fixture"
+[ "$(sh "$pin_script" sha256 "$sheldon_destination")" = "$sheldon_member_hash" ] || \
+  fail "root archive member installed with the wrong content"
+: > "$curl_log"
+env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
+    SHELDON_BIN="$sheldon_destination" sheldon >/dev/null
+[ ! -s "$curl_log" ] || fail "make sheldon rerun accessed the network"
+
+intel_sheldon=$test_root/intel-bin/sheldon
+mkdir -p "$(dirname "$intel_sheldon")"
+printf 'keep intel binary\n' > "$intel_sheldon"
+intel_before=$(sh "$pin_script" sha256 "$intel_sheldon")
+: > "$curl_log"
+if env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=darwin-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" \
+  make -s -C "$repo" SHELDON_BIN="$intel_sheldon" sheldon \
+    > "$test_root/intel.out" 2> "$test_root/intel.err"; then
+  fail "Sheldon install unexpectedly succeeded on Intel macOS"
+fi
+grep -F 'no reviewed sheldon pin for darwin-amd64' "$test_root/intel.err" >/dev/null || \
+  fail "Intel macOS refusal was not actionable"
+[ ! -s "$curl_log" ] || fail "Intel macOS refusal accessed the network"
+[ "$(sh "$pin_script" sha256 "$intel_sheldon")" = "$intel_before" ] || \
+  fail "Intel macOS refusal changed the existing destination"
+for leaked in "$test_root/intel-bin"/.pinned.*; do
+  if [ -e "$leaked" ] || [ -L "$leaked" ]; then
+    fail "Intel macOS refusal leaked a temporary directory"
+  fi
+done
+
+echo "check-pins: plugin phase does not install tools"
+sheldon_home=$test_root/sheldon-home
+mkdir -p "$sheldon_home/.config/sheldon" "$sheldon_home/bin"
+: > "$sheldon_home/.config/sheldon/plugins.toml"
+plugin_sheldon=$sheldon_home/bin/sheldon
+printf '%s\n' \
+  '#!/bin/sh' \
+  'case $1 in' \
+  '  lock) exit 0 ;;' \
+  '  source) printf "cached source\\n" ;;' \
+  '  *) exit 1 ;;' \
+  'esac' > "$plugin_sheldon"
+chmod +x "$plugin_sheldon"
+: > "$curl_log"
+env -i HOME="$sheldon_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_TEST_CURL_LOG="$curl_log" DOTFILES_TEST_FIXTURES="$fixtures" \
+  make -s -C "$repo" SHELDON_BIN="$plugin_sheldon" sheldon-plugins >/dev/null
+grep -F 'cached source' "$sheldon_home/.cache/dotfiles/sheldon.zsh" >/dev/null || \
+  fail "sheldon-plugins did not write the cache"
+[ ! -s "$curl_log" ] || fail "sheldon-plugins installed a tool binary"
+
+: > "$curl_log"
+if env -i HOME="$sheldon_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_TEST_CURL_LOG="$curl_log" DOTFILES_TEST_FIXTURES="$fixtures" \
+  make -s -C "$repo" SHELDON_BIN="$sheldon_home/bin/missing" sheldon-plugins \
+    > "$test_root/missing-sheldon.out" 2>&1; then
+  fail "sheldon-plugins succeeded without the Sheldon binary"
+fi
+grep -F 'make tools' "$test_root/missing-sheldon.out" >/dev/null || \
+  fail "missing Sheldon binary did not name the tools phase"
+[ ! -s "$curl_log" ] || fail "missing Sheldon plugin phase accessed the network"
 
 echo "check-pins: ok"

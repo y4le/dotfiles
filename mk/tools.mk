@@ -6,9 +6,14 @@ mise: ## [network] install the pinned, verified mise binary
 mise-tools: mise ## [network] install tools from mise config
 	MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) install
 
-sheldon: $(SHELDON_BIN) ## [network] install sheldon binary
+sheldon: ## [network] install the pinned, verified sheldon binary
+	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install sheldon "$(SHELDON_BIN)" 0755
 
-sheldon-plugins: sheldon ## [network] restore zsh plugins and build startup cache
+sheldon-plugins: ## [network] restore zsh plugins and build startup cache
+	@if [ ! -x "$(SHELDON_BIN)" ]; then \
+		echo "sheldon not found at $(SHELDON_BIN); run 'make tools' first"; \
+		exit 1; \
+	fi
 	@if [ ! -f "$(HOME)/.config/sheldon/plugins.toml" ]; then \
 		echo "sheldon config is not linked; run 'make link' first"; \
 		exit 1; \
@@ -66,15 +71,6 @@ tmux-plugins: ## [network] restore tmux plugins at pinned commits
 		fi; \
 		echo "restored $$name at $$commit"; \
 	done < "$(TMUX_PLUGIN_PINS_FILE)"
-
-$(SHELDON_BIN):
-	@if ! command -v curl >/dev/null 2>&1; then \
-		echo "curl not found. Install it with your system package manager."; \
-		exit 1; \
-	fi
-	@mkdir -p $(HOME)/.local/bin
-	curl --proto '=https' -fLsS $(SHELDON_URL) | \
-		bash -s -- --repo $(SHELDON_REPO) --to $(HOME)/.local/bin
 
 brew: _require-curl ## [sudo, network] install homebrew (macOS only)
 ifeq ($(PLATFORM),macos)

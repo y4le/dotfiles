@@ -31,3 +31,30 @@ issue.
 
 Keep literal asset URLs here. Upstream platform naming belongs in this update
 procedure, not in the installer.
+
+## Updating Sheldon
+
+Sheldon does not publish author-generated checksums. For each supported asset,
+compare GitHub's release `digest` with a locally computed SHA-256 from an
+independent download. Confirm that the archive contains a regular file named
+`sheldon` at its root, then record that member's SHA-256 separately.
+
+Before changing the pins:
+
+1. Confirm the release is neither a draft nor a prerelease and has been public
+   for at least seven days.
+2. Confirm the Linux x86-64, Linux arm64, and macOS arm64 assets exist. Check
+   whether upstream has added an Intel macOS asset.
+3. Compare `sheldon --version` with the release version and the short prefix of
+   the tagged commit returned by `git ls-remote`.
+4. Update every supported row together, run `make check-pins`, then test a real
+   install and a no-network rerun in a disposable home.
+
+Sheldon 0.8 and newer currently publish no Intel macOS binary; the previous
+`crate.sh` installer fails on that platform too. Install a trusted Sheldon binary
+at `~/.local/bin/sheldon` through your organization or package manager, then run
+`make mise-tools link plugins` instead of `make setup-user`. On corporate
+networks, add an intercepting CA to the system trust bundle or set
+`SSL_CERT_FILE`; the static Linux binary does not read Git's `http.sslCAInfo`.
+Its musl resolver uses `/etc/resolv.conf`, so hostnames available only through
+NSS modules may not resolve.

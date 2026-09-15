@@ -125,12 +125,18 @@ lint() {
     }
     END {
       for (name in any) if (name in specific) bad("any cannot be mixed with specific platforms for " name)
-      required[1] = "linux-amd64"
-      required[2] = "linux-arm64"
-      required[3] = "darwin-amd64"
-      required[4] = "darwin-arm64"
-      for (i = 1; i <= 4; i++) {
-        if (!("mise" SUBSEP required[i] in seen)) bad("missing mise pin for " required[i])
+      need[++n] = "mise linux-amd64"
+      need[++n] = "mise linux-arm64"
+      need[++n] = "mise darwin-amd64"
+      need[++n] = "mise darwin-arm64"
+      need[++n] = "sheldon linux-amd64"
+      need[++n] = "sheldon linux-arm64"
+      need[++n] = "sheldon darwin-arm64"
+      for (i = 1; i <= n; i++) {
+        split(need[i], required, " ")
+        if (!((required[1] SUBSEP required[2]) in seen)) {
+          bad("missing " required[1] " pin for " required[2])
+        }
       }
       exit failed
     }
@@ -174,6 +180,9 @@ select_pin() {
     $1 == name && ($3 == platform || $3 == "any") { print }
   ' "$pins_file")
   count=$(printf '%s\n' "$matches" | awk 'NF { count++ } END { print count + 0 }')
+  if [ "$count" -eq 0 ]; then
+    fail "no reviewed $1 pin for $selected_platform; see setup/pins/README.md"
+  fi
   [ "$count" -eq 1 ] || fail "expected one pinned $1 for $selected_platform, found $count"
   printf '%s\n' "$matches"
 }

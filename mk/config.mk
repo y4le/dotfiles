@@ -50,9 +50,7 @@ endif
 
 GUARDED_LINK_PACKAGES = $(filter-out local,$(LINK_PACKAGES))
 
-SHELDON_BIN   := $(HOME)/.local/bin/sheldon
-SHELDON_REPO  := rossmacarthur/sheldon
-SHELDON_URL   := https://rossmacarthur.github.io/install/crate.sh
+SHELDON_BIN := $(HOME)/.local/bin/sheldon
 
 MISE_BIN            := $(HOME)/.local/bin/mise
 MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
