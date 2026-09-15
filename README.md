@@ -58,6 +58,7 @@ You work for a company, `foo`, and you want to keep their information in a priva
 - an optional private repo can live at `~/dev/agents`
 - the private repo should expose its own `agents/.agents/skills/` package
 - active skills like `parley` now live in the private repo
+- preview the private layer with `make agents-plan-private`
 - enable the private layer with `make agents-enable-private`
 - disable the private layer with `make agents-disable-private`
 - both repos use Stow's multi-directory support to share the same target path:

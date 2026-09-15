@@ -140,6 +140,10 @@ fi
 grep -q 'vim/.vim/autoload/plug.vim' "$test_root/artifact.log" || \
   fail "artifact failure did not name the file"
 rm -f "$repo/vim/.vim/autoload/plug.vim"
+mkdir -p "$repo/vim/.vim/empty-runtime"
+run_make "$artifact_home" link >/dev/null 2>&1 || \
+  fail "link rejected an empty package directory"
+rmdir "$repo/vim/.vim/empty-runtime"
 
 echo "check-link: legacy folded layout migration"
 legacy_home=$test_root/legacy-home
@@ -184,6 +188,86 @@ run_make "$linked_identity_home" link >/dev/null 2>&1 || \
   fail "link replaced an external Git config link"
 grep -q 'managed@example.invalid' "$linked_identity" || \
   fail "link changed an external Git config"
+
+echo "check-link: private agents are explicit and isolated"
+private_dir=$test_root/private-agents
+private_skill=$private_dir/agents/.agents/skills/corp/SKILL.md
+mkdir -p "$(dirname "$private_skill")"
+printf '%s\n' '# Corporate skill' > "$private_skill"
+git_isolated -C "$private_dir" init -q || fail "private repo init failed"
+git_isolated -C "$private_dir" add -Af . || fail "private repo add failed"
+git_isolated -C "$private_dir" \
+  -c commit.gpgsign=false -c user.name=test -c user.email=test@example.invalid \
+  commit -qm private || fail "private repo commit failed"
+
+private_home=$test_root/private-home
+mkdir -p "$private_home"
+run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" link \
+  >/dev/null 2>&1 || fail "private public link failed"
+[ ! -e "$private_home/.agents/skills/corp/SKILL.md" ] || \
+  fail "public link enabled private agents implicitly"
+snapshot_home "$private_home" > "$test_root/private-plan-before"
+run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" agents-plan-private \
+  >/dev/null 2>&1 || fail "private agent plan failed"
+snapshot_home "$private_home" > "$test_root/private-plan-after"
+cmp -s "$test_root/private-plan-before" "$test_root/private-plan-after" || \
+  fail "private agent plan changed HOME"
+run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" agents-enable-private \
+  >/dev/null 2>&1 || fail "private agent enable failed"
+[ -L "$private_home/.agents/skills/corp/SKILL.md" ] || \
+  fail "private agent enable did not link the skill"
+assert_no_directory_links "$private_home" || \
+  fail "private agent enable folded directories"
+[ -z "$(git_isolated -C "$private_dir" status --porcelain)" ] || \
+  fail "private agent enable changed its source repo"
+snapshot_home "$private_home" > "$test_root/private-before-second"
+run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" agents-enable-private \
+  >/dev/null 2>&1 || fail "second private agent enable failed"
+snapshot_home "$private_home" > "$test_root/private-after-second"
+cmp -s "$test_root/private-before-second" "$test_root/private-after-second" || \
+  fail "second private agent enable changed HOME"
+private_disable_log=$test_root/private-disable.log
+if ! run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" \
+  agents-disable-private > "$private_disable_log" 2>&1; then
+  cat "$private_disable_log" >&2
+  fail "private agent disable failed"
+fi
+[ ! -e "$private_home/.agents/skills/corp/SKILL.md" ] || \
+  { cat "$private_disable_log" >&2; fail "private agent disable left the skill"; }
+[ -L "$private_home/.agents/AGENTS.md" ] || \
+  fail "private agent disable removed the public base"
+
+private_conflict_home=$test_root/private-conflict-home
+mkdir -p "$private_conflict_home/.agents/skills/corp"
+printf 'keep me\n' > "$private_conflict_home/.agents/skills/corp/SKILL.md"
+snapshot_home "$private_conflict_home" > "$test_root/private-conflict-before"
+if run_make "$private_conflict_home" PRIVATE_AGENTS_DIR="$private_dir" \
+  agents-enable-private > "$test_root/private-conflict.log" 2>&1; then
+  fail "private agent enable accepted a conflict"
+fi
+grep -Fq 'SKILL.md' "$test_root/private-conflict.log" || \
+  fail "private agent conflict did not name the path"
+snapshot_home "$private_conflict_home" > "$test_root/private-conflict-after"
+cmp -s "$test_root/private-conflict-before" "$test_root/private-conflict-after" || \
+  fail "private agent conflict changed HOME"
+
+private_artifact=$private_dir/agents/.agents/skills/leak/secret.txt
+mkdir -p "$(dirname "$private_artifact")"
+printf 'secret\n' > "$private_artifact"
+if run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" \
+  agents-plan-private > "$test_root/private-artifact.log" 2>&1; then
+  fail "private agent plan accepted an untracked artifact"
+fi
+grep -Fxq '  agents/.agents/skills/leak/' \
+  "$test_root/private-artifact.log" || \
+  fail "private agent artifact failure did not name the file"
+rm -f "$private_artifact"
+rmdir "$private_dir/agents/.agents/skills/leak"
+mkdir -p "$private_dir/agents/.agents/skills/empty-runtime"
+run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" \
+  agents-plan-private >/dev/null 2>&1 || \
+  fail "private agent plan rejected an empty package directory"
+rmdir "$private_dir/agents/.agents/skills/empty-runtime"
 
 echo "check-link: clean removes managed links"
 clean_home=$test_root/clean-home

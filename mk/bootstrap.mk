@@ -67,7 +67,7 @@ link-macos: ## force macos package set
 
 _link-plan: _require-stow
 	@if git -C "$(CURDIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
-		artifacts="$$(git -C "$(CURDIR)" ls-files --others -- $(GUARDED_LINK_PACKAGES))" || exit 1; \
+		artifacts="$$(git -C "$(CURDIR)" ls-files --others --directory --no-empty-directory -- $(GUARDED_LINK_PACKAGES))" || exit 1; \
 		if [ -n "$$artifacts" ]; then \
 			echo "untracked package files would be linked into HOME:"; \
 			printf '  %s\n' $$artifacts; \
