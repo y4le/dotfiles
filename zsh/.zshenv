@@ -5,7 +5,7 @@
 # source ~/.zshenv.local if present
 [[ -f $HOME/.zshenv.local ]] && source $HOME/.zshenv.local
 
-export SHELL=$(which zsh)
+export SHELL=${commands[zsh]:-${SHELL:-/bin/zsh}}
 
 
 export EDITOR=vim # vim 4 life
@@ -14,17 +14,6 @@ export GIT_EDITOR=$EDITOR
 
 export LESS='-imJMWR'
 export PAGER="less $LESS"
-if bat --version >/dev/null 2>&1; then
-  export MANPAGER='bat -plman'
-else
-  export MANPAGER=$PAGER
-fi
-if delta --version >/dev/null 2>&1; then
-  export GIT_PAGER='delta'
-else
-  export GIT_PAGER=$PAGER
-fi
-
 
 # no duplicates in path
 typeset -U path

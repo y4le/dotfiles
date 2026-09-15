@@ -5,8 +5,7 @@ setup: ## full bootstrap: system packages + mise tools + links + editor plugins 
 	@$(MAKE) link
 	@$(MAKE) vim-plugins
 	@$(MAKE) nvim-plugins
-	@$(MAKE) sheldon
-	$(SHELDON_BIN) lock
+	@$(MAKE) sheldon-plugins
 
 install: ## install system packages + mise-managed tools
 	@$(MAKE) system-packages

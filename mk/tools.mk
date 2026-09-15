@@ -1,4 +1,4 @@
-.PHONY: mise mise-tools sheldon brew
+.PHONY: mise mise-tools sheldon sheldon-plugins brew
 
 mise: $(MISE_BIN) ## install mise binary
 
@@ -14,6 +14,27 @@ mise-tools: mise ## install tools from mise config
 	MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) install
 
 sheldon: $(SHELDON_BIN) ## install sheldon binary
+
+sheldon-plugins: sheldon ## restore zsh plugins and build the startup cache
+	@if [ ! -f "$(HOME)/.config/sheldon/plugins.toml" ]; then \
+		echo "sheldon config is not linked; run 'make link' first"; \
+		exit 1; \
+	fi
+	@cache="$${XDG_CACHE_HOME:-$(HOME)/.cache}/dotfiles/sheldon.zsh"; \
+	dir="$$(dirname "$$cache")"; \
+	tmp="$$cache.tmp.$$$$"; \
+	trap 'rm -f "$$tmp"' EXIT; \
+	trap 'rm -f "$$tmp"; exit 1' HUP INT TERM; \
+	umask 077; \
+	mkdir -p "$$dir"; \
+	"$(SHELDON_BIN)" lock || exit $$?; \
+	"$(SHELDON_BIN)" source > "$$tmp" || exit $$?; \
+	if [ ! -s "$$tmp" ]; then \
+		echo "sheldon produced an empty startup cache"; \
+		exit 1; \
+	fi; \
+	mv "$$tmp" "$$cache"; \
+	echo "wrote $$cache"
 
 $(SHELDON_BIN):
 	@if ! command -v curl >/dev/null 2>&1; then \

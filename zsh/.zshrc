@@ -5,6 +5,17 @@
 # source ~/.pre_profile if present
 [[ -f $HOME/.pre_profile ]] && source $HOME/.pre_profile
 
+if bat --version >/dev/null 2>&1; then
+  export MANPAGER='bat -plman'
+else
+  export MANPAGER=$PAGER
+fi
+if delta --version >/dev/null 2>&1; then
+  export GIT_PAGER='delta'
+else
+  export GIT_PAGER=$PAGER
+fi
+
 # mise — pinned runtimes and cross-platform CLI tools
 if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
@@ -15,12 +26,16 @@ if command -v atuin &>/dev/null; then
   export FZF_CTRL_R_COMMAND=""
 fi
 
-# SHELDON — zsh plugin manager
-if ! command -v sheldon &>/dev/null; then
-  echo "sheldon not found — run 'make setup' from your dotfiles repo"
-  return
+# SHELDON — source only the explicitly restored cache; startup stays offline
+sheldon_cache="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/sheldon.zsh"
+if [[ -r "$sheldon_cache" ]]; then
+  source "$sheldon_cache"
+else
+  [[ -r $HOME/.config/zsh/themes/minimal.zsh-theme ]] && \
+    source $HOME/.config/zsh/themes/minimal.zsh-theme
+  [[ -o interactive ]] && \
+    print -u2 "dotfiles: zsh plugins not restored; run 'make sheldon-plugins'"
 fi
-eval "$(sheldon source)"
 
 # zoxide — frecency-based directory navigation
 if command -v zoxide &>/dev/null; then
@@ -125,8 +140,10 @@ if command -v atuin &>/dev/null; then
   bindkey -M viins '^Xo' atuin-success-history
   bindkey -M vicmd '^Xo' atuin-success-history
 else
-  bindkey -M viins '^r' fzf-insert-history
-  bindkey -M vicmd '^r' fzf-insert-history
+  if (( $+widgets[fzf-insert-history] )); then
+    bindkey -M viins '^r' fzf-insert-history
+    bindkey -M vicmd '^r' fzf-insert-history
+  fi
 fi
 
 # ctrl-X ctrl-e edit current command in vim

@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-vim check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-vim check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-vim check-stow check-link check-make ## run repo validation checks
+check: check-git check-shell check-vim check-runtime check-stow check-link check-make ## run repo validation checks
 
 check-actions: ## lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -89,6 +89,9 @@ check-shell: ## syntax-check and lint tracked shell files
 check-vim: ## validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
 
+check-runtime: ## verify shell startup stays usable and offline
+	@sh mk/test-runtime.sh
+
 check-stow: _require-stow ## dry-run stow package graphs in temp dirs
 	@fail=0; \
 	check_pkg_set() { \
@@ -130,5 +133,7 @@ check-make: ## dry-run make target graph and help output
 	@$(MAKE) -n clean >/dev/null
 	@echo "check-make: make -n nvim-plugins"
 	@$(MAKE) -n nvim-plugins >/dev/null
+	@echo "check-make: make -n sheldon-plugins"
+	@$(MAKE) -n sheldon-plugins >/dev/null
 	@echo "check-make: make help"
 	@$(MAKE) help >/dev/null

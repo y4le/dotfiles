@@ -1,3 +1,8 @@
+[settings]
+auto_install = false
+exec_auto_install = false
+not_found_auto_install = false
+
 [tools]
 # Core runtimes
 go = "1.26.1"
