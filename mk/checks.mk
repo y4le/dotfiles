@@ -150,7 +150,9 @@ check-make: ## [offline] dry-run make target graph and help output
 		echo "check-make: shell plugins are not restored before editor plugins"; \
 		exit 1; \
 	fi; \
-	if printf '%s\n' "$$plugin_plan" | grep -F 'mk/pinned.sh install' >/dev/null; then \
+	other_installs="$$(printf '%s\n' "$$plugin_plan" | \
+		grep -F 'mk/pinned.sh install' | grep -Fv 'mk/pinned.sh install vim-plug' || true)"; \
+	if [ -n "$$other_installs" ]; then \
 		echo "check-make: plugins installs a tool binary"; \
 		exit 1; \
 	fi
@@ -173,6 +175,18 @@ check-make: ## [offline] dry-run make target graph and help output
 	@$(MAKE) -n nvim-plugins >/dev/null
 	@echo "check-make: make -n nvim-update"
 	@$(MAKE) -n nvim-update >/dev/null
+	@echo "check-make: make -n vim-plugins"
+	@vim_plan="$$( $(MAKE) -n vim-plugins )" || exit $$?; \
+	install_line="$$(printf '%s\n' "$$vim_plan" | awk '/mk\/pinned\.sh install vim-plug/ { print NR; exit }')"; \
+	sync_line="$$(printf '%s\n' "$$vim_plan" | awk '/syncing Vim plugins/ { print NR; exit }')"; \
+	if [ -z "$$install_line" ] || [ -z "$$sync_line" ] || [ "$$install_line" -ge "$$sync_line" ]; then \
+		echo "check-make: pinned vim-plug is not installed before Vim plugin sync"; \
+		exit 1; \
+	fi; \
+	if printf '%s\n' "$$vim_plan" | grep -Eq 'VIM_PLUG_URL|curl[[:space:]]'; then \
+		echo "check-make: vim-plugins still has a legacy downloader"; \
+		exit 1; \
+	fi
 	@echo "check-make: make -n sheldon-plugins"
 	@sheldon_plan="$$( $(MAKE) -n sheldon-plugins )" || exit $$?; \
 	lock_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/ lock \|\| exit/ { print NR; exit }')"; \

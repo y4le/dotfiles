@@ -63,7 +63,7 @@ Plug 'mattn/calendar-vim' " what is said on the tin, calendar in vim
 Plug 'junegunn/vim-easy-align' " align columns
 
 " fzf plugins
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " fzf setup
+Plug 'junegunn/fzf' " fzf runtime; the binary comes from mise
 Plug 'junegunn/fzf.vim' " fuzzy finder integration
 
 " VCS plugins

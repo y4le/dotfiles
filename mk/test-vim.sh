@@ -175,4 +175,23 @@ fi
   fail "available colorscheme was not loaded"
 assert_clean_startup "startup with an available colorscheme"
 
+installed_plug=${HOME:-}/.vim/autoload/plug.vim
+if [ -n "${HOME:-}" ] && \
+  DOTFILES_PINS_FILE="$repo/setup/pins/downloads.txt" \
+    sh "$repo/mk/pinned.sh" status vim-plug "$installed_plug" >/dev/null 2>&1; then
+  cp "$installed_plug" "$runtime_home/.vim/autoload/plug.vim"
+  rm -f "$runtime_home/.vim/colors/sublimemonokai.vim"
+  mkdir -p "$runtime_home/.local/share/vim/plugged"
+  if ! run_startup; then
+    print_startup_failure
+    fail "startup with pinned vim-plug and no plugins failed"
+  fi
+  if grep -F "plug.vim not found" "$messages" >/dev/null; then
+    fail "startup with pinned vim-plug reported it missing"
+  fi
+  assert_clean_startup "startup with pinned vim-plug"
+else
+  echo "check-vim: pinned vim-plug startup fixture unavailable; skipping"
+fi
+
 echo "check-vim: ok"

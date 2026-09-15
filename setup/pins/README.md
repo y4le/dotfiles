@@ -74,3 +74,25 @@ not delete them automatically. Either review and remove that checkout, or run
 `SHELDON_DATA_DIR=<dir> ~/.local/bin/sheldon lock --reinstall` and retry. When
 bumping the Sheldon binary, also reconfirm its
 `repos/github.com/<owner>/<repo>` checkout layout.
+
+## Updating vim-plug
+
+vim-plug has no release assets, so pin the raw `plug.vim` file to the immutable
+commit behind a reviewed release tag. Never use the `master` URL.
+
+1. Resolve both the tag and its peeled target with
+   `git ls-remote https://github.com/junegunn/vim-plug.git
+   'refs/tags/<tag>' 'refs/tags/<tag>^{}'`. Use the peeled commit when the tag is
+   annotated.
+2. Download
+   `https://raw.githubusercontent.com/junegunn/vim-plug/<commit>/plug.vim` and
+   compare its SHA-256 with `git show <commit>:plug.vim` from a fresh clone.
+   Also confirm that `git hash-object` of those bytes matches the GitHub contents
+   API blob SHA for the same commit.
+3. Review the `plug.vim` history and diff between the old and new commits, then
+   update the single `vim-plug` row in `downloads.txt`.
+4. Run `make check-pins`, test `make vim-plugins` in a disposable home, and run
+   it again with network access disabled.
+
+`:PlugUpgrade` follows upstream master. The next `make vim-plugins` deliberately
+reports and replaces that drift with the reviewed version.

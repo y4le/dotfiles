@@ -132,6 +132,7 @@ lint() {
       need[++n] = "sheldon linux-amd64"
       need[++n] = "sheldon linux-arm64"
       need[++n] = "sheldon darwin-arm64"
+      need[++n] = "vim-plug any"
       for (i = 1; i <= n; i++) {
         split(need[i], required, " ")
         if (!((required[1] SUBSEP required[2]) in seen)) {

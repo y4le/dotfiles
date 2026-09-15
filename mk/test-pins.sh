@@ -63,6 +63,9 @@ expect_lint_failure "incomplete mise platform coverage" "$bad"
 awk '!($1 == "sheldon" && $3 == "linux-arm64")' "$real_pins" > "$bad"
 expect_lint_failure "incomplete Sheldon platform coverage" "$bad"
 
+awk '!($1 == "vim-plug" && $3 == "any")' "$real_pins" > "$bad"
+expect_lint_failure "missing vim-plug pin" "$bad"
+
 awk 'BEGIN { changed = 0 } /^#/ { print; next } !changed {
   $5 = "https://raw.githubusercontent.com/example/repo/0123456789012345678901234567890123456789/main/file"; changed = 1
 } { print }' "$real_pins" > "$bad"
@@ -80,9 +83,12 @@ expect_lint_failure "an unsafe archive member" "$bad"
 if grep -n 'mise\.run' Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
   fail "mise.run remains in bootstrap code"
 fi
-if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|bash -s' \
+if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|VIM_PLUG_URL|vim-plug/master|bash -s' \
   Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
-  fail "legacy Sheldon installer remains in bootstrap code"
+  fail "legacy unverified installer remains in bootstrap code"
+fi
+if git grep -n 'fzf#install' -- 'vim/*' 'nvim/*' >/dev/null 2>&1; then
+  fail "Vim still installs an unverified fzf binary"
 fi
 
 download_pattern='(^|[^[:alnum:]_.-])(curl|wget)([[:space:]]|$)'
@@ -93,7 +99,6 @@ legacy_downloads=$(
     grep -HnE "$download_pattern" "$file" || true
   done
 )
-vim_plug_downloads=0
 homebrew_downloads=0
 while IFS= read -r line || [ -n "$line" ]; do
   [ -n "$line" ] || continue
@@ -103,14 +108,12 @@ while IFS= read -r line || [ -n "$line" ]; do
     continue
   fi
   case $line in
-    *VIM_PLUG_URL*) vim_plug_downloads=$((vim_plug_downloads + 1)) ;;
     *BREW_INSTALL_URL*) homebrew_downloads=$((homebrew_downloads + 1)) ;;
     *) fail "unreviewed downloader outside mk/pinned.sh: $line" ;;
   esac
 done <<EOF
 $legacy_downloads
 EOF
-[ "$vim_plug_downloads" -eq 1 ] || fail "expected one legacy vim-plug downloader"
 [ "$homebrew_downloads" -eq 1 ] || fail "expected one legacy Homebrew downloader"
 
 for injected in \
@@ -217,6 +220,12 @@ sheldon_archive_hash=$(sh "$pin_script" sha256 "$sheldon_archive")
 sheldon_member_hash=$(sh "$pin_script" sha256 "$sheldon_tree/sheldon")
 printf '%s\n' \
   "sheldon 1.2.3 linux-amd64 $sheldon_archive_hash https://github.com/example/sheldon/releases/download/v1.2.3/sheldon-1.2.3.tar.gz sheldon $sheldon_member_hash" \
+  >> "$fixture_pins"
+
+printf 'fixture plug.vim\n' > "$fixtures/plug.vim"
+vim_plug_hash=$(sh "$pin_script" sha256 "$fixtures/plug.vim")
+printf '%s\n' \
+  "vim-plug 1.0.0 any $vim_plug_hash https://raw.githubusercontent.com/example/vim-plug/0123456789012345678901234567890123456789/plug.vim" \
   >> "$fixture_pins"
 
 printf '%s\n' \
@@ -417,6 +426,180 @@ env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
   make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
     SHELDON_BIN="$sheldon_destination" sheldon >/dev/null
 [ ! -s "$curl_log" ] || fail "make sheldon rerun accessed the network"
+
+echo "check-pins: Vim bootstrap wiring"
+vim_home=$test_root/vim-home
+vim_log=$test_root/vim.log
+real_git=$(command -v git) || fail "git is required"
+mkdir -p "$vim_home/.vim/config" "$vim_home/.vim/autoload"
+: > "$vim_home/.vim/config/plugins.vim"
+# These single-quoted lines are the body of the generated Vim stub.
+# shellcheck disable=SC2016
+printf '%s\n' \
+  '#!/bin/sh' \
+  '[ -f "$HOME/.vim/autoload/plug.vim" ] || exit 97' \
+  'printf "%s\n" "$*" >> "$DOTFILES_TEST_VIM_LOG"' > "$stub_bin/vim"
+chmod +x "$stub_bin/vim"
+# These single-quoted lines are the body of the generated Git stub.
+# shellcheck disable=SC2016
+printf '%s\n' \
+  '#!/bin/sh' \
+  'if [ "${DOTFILES_TEST_GIT_MODE:-}" = fail-ls-files ]; then' \
+  '  case " $* " in *" ls-files "*) exit 98 ;; esac' \
+  'fi' \
+  'exec "$DOTFILES_REAL_GIT" "$@"' > "$stub_bin/git"
+chmod +x "$stub_bin/git"
+
+run_vim_plugins() {
+  env -i HOME="$vim_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+    DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+    DOTFILES_TEST_FIXTURES="$fixtures" DOTFILES_TEST_VIM_LOG="$vim_log" \
+    DOTFILES_REAL_GIT="$real_git" \
+    make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" vim-plugins
+}
+
+: > "$curl_log"
+: > "$vim_log"
+run_vim_plugins >/dev/null
+[ "$(sh "$pin_script" sha256 "$vim_home/.vim/autoload/plug.vim")" = "$vim_plug_hash" ] || \
+  fail "make vim-plugins installed the wrong plug.vim"
+[ ! -x "$vim_home/.vim/autoload/plug.vim" ] || fail "plug.vim is executable"
+[ "$(wc -l < "$curl_log" | tr -d ' ')" -eq 1 ] || \
+  fail "fresh vim-plug install did not download once"
+grep -F 'PlugInstall --sync' "$vim_log" >/dev/null || fail "Vim plugins were not synced"
+
+: > "$curl_log"
+: > "$vim_log"
+run_vim_plugins >/dev/null
+[ ! -s "$curl_log" ] || fail "pinned vim-plug rerun accessed the network"
+[ -s "$vim_log" ] || fail "pinned vim-plug rerun did not sync plugins"
+
+printf drifted > "$vim_home/.vim/autoload/plug.vim"
+: > "$curl_log"
+run_vim_plugins > "$test_root/vim-replace.out"
+grep -F "replacing $vim_home/.vim/autoload/plug.vim" "$test_root/vim-replace.out" >/dev/null || \
+  fail "drifted vim-plug replacement was not reported"
+[ "$(sh "$pin_script" sha256 "$vim_home/.vim/autoload/plug.vim")" = "$vim_plug_hash" ] || \
+  fail "drifted vim-plug was not repaired"
+
+bad_vim_pins=$test_root/bad-vim-pins.txt
+printf '%s\n' \
+  "vim-plug 1.0.0 any $(printf '%064d' 0) https://raw.githubusercontent.com/example/vim-plug/0123456789012345678901234567890123456789/plug.vim" \
+  > "$bad_vim_pins"
+printf keep-this > "$vim_home/.vim/autoload/plug.vim"
+vim_before=$(sh "$pin_script" sha256 "$vim_home/.vim/autoload/plug.vim")
+: > "$vim_log"
+if env -i HOME="$vim_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" DOTFILES_TEST_VIM_LOG="$vim_log" \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$bad_vim_pins" vim-plugins \
+    > "$test_root/vim-bad.out" 2>&1; then
+  fail "checksum-mismatched vim-plug install succeeded"
+fi
+[ "$(sh "$pin_script" sha256 "$vim_home/.vim/autoload/plug.vim")" = "$vim_before" ] || \
+  fail "failed vim-plug install changed the existing destination"
+[ ! -s "$vim_log" ] || fail "Vim ran after vim-plug verification failed"
+for leaked in "$vim_home/.vim/autoload"/.pinned.*; do
+  if [ -e "$leaked" ] || [ -L "$leaked" ]; then
+    fail "failed vim-plug install leaked a temporary directory"
+  fi
+done
+
+missing_config_home=$test_root/vim-no-config
+mkdir -p "$missing_config_home/.vim/autoload"
+: > "$curl_log"
+: > "$vim_log"
+if env -i HOME="$missing_config_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_TEST_CURL_LOG="$curl_log" DOTFILES_TEST_FIXTURES="$fixtures" \
+  DOTFILES_TEST_VIM_LOG="$vim_log" \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" vim-plugins \
+    > "$test_root/vim-no-config.out" 2>&1; then
+  fail "vim-plugins succeeded without linked config"
+fi
+grep -F "make link" "$test_root/vim-no-config.out" >/dev/null || \
+  fail "missing Vim config did not name the link phase"
+[ ! -s "$curl_log" ] || fail "missing Vim config accessed the network"
+[ ! -s "$vim_log" ] || fail "missing Vim config started Vim"
+
+repo_copy=$test_root/repo-copy
+mkdir -p "$repo_copy"
+(cd "$repo" && tar -cf - Makefile mk setup vim) | (cd "$repo_copy" && tar -xf -)
+rm -rf "$repo_copy/vim/.vim/autoload"
+mkdir -p "$repo_copy/vim/.vim/autoload"
+for folded_kind in autoload vim vim-missing-autoload; do
+  folded_home=$test_root/folded-$folded_kind
+  mkdir -p "$folded_home/.vim"
+  case $folded_kind in
+    autoload)
+      mkdir -p "$repo_copy/vim/.vim/autoload"
+      : > "$folded_home/.vim/config"
+      rm -f "$folded_home/.vim/config"
+      ln -s "$repo_copy/vim/.vim/config" "$folded_home/.vim/config"
+      ln -s "$repo_copy/vim/.vim/autoload" "$folded_home/.vim/autoload"
+      ;;
+    vim | vim-missing-autoload)
+      mkdir -p "$repo_copy/vim/.vim/autoload"
+      if [ "$folded_kind" = vim-missing-autoload ]; then
+        rm -rf "$repo_copy/vim/.vim/autoload"
+      fi
+      rm -rf "$folded_home/.vim"
+      ln -s "$repo_copy/vim/.vim" "$folded_home/.vim"
+      ;;
+  esac
+  : > "$curl_log"
+  : > "$vim_log"
+  if env -i HOME="$folded_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+    DOTFILES_TEST_CURL_LOG="$curl_log" DOTFILES_TEST_FIXTURES="$fixtures" \
+    DOTFILES_TEST_VIM_LOG="$vim_log" \
+    make -s -C "$repo_copy" DOWNLOAD_PINS_FILE="$fixture_pins" vim-plugins \
+      > "$test_root/folded-$folded_kind.out" 2>&1; then
+    fail "folded $folded_kind layout was accepted"
+  fi
+  grep -F "make link" "$test_root/folded-$folded_kind.out" >/dev/null || \
+    fail "folded $folded_kind refusal did not explain migration"
+  [ ! -s "$curl_log" ] || fail "folded $folded_kind layout accessed the network"
+  [ ! -s "$vim_log" ] || fail "folded $folded_kind layout started Vim"
+  [ ! -e "$repo_copy/vim/.vim/autoload/plug.vim" ] || \
+    fail "folded $folded_kind layout wrote plug.vim into the repository"
+done
+
+printf 'fixture plug.vim\n' > "$vim_home/.vim/autoload/plug.vim"
+fzf_dir=$vim_home/.local/share/vim/plugged/fzf
+mkdir -p "$fzf_dir/bin"
+git -C "$fzf_dir" init -q
+git -C "$fzf_dir" config user.name Fixture
+git -C "$fzf_dir" config user.email fixture@example.invalid
+printf 'bin/fzf\n' > "$fzf_dir/.gitignore"
+printf tracked > "$fzf_dir/bin/fzf-tmux"
+git -C "$fzf_dir" add .gitignore bin/fzf-tmux
+git -C "$fzf_dir" commit -qm fixture
+printf unverified > "$fzf_dir/bin/fzf"
+: > "$vim_log"
+if env -i HOME="$vim_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" DOTFILES_TEST_VIM_LOG="$vim_log" \
+  DOTFILES_REAL_GIT="$real_git" DOTFILES_TEST_GIT_MODE=fail-ls-files \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" vim-plugins \
+    > "$test_root/vim-fzf-inspect.out" 2>&1; then
+  fail "vim-plugins ignored an fzf index inspection failure"
+fi
+[ -f "$fzf_dir/bin/fzf" ] || fail "fzf inspection failure removed the binary"
+[ ! -s "$vim_log" ] || fail "fzf inspection failure started Vim"
+grep -F 'could not inspect plugin-local fzf binary' "$test_root/vim-fzf-inspect.out" >/dev/null || \
+  fail "fzf inspection failure was not actionable"
+
+: > "$curl_log"
+run_vim_plugins > "$test_root/vim-fzf-cleanup.out"
+[ ! -e "$fzf_dir/bin/fzf" ] || fail "untracked plugin-local fzf binary was preserved"
+[ -f "$fzf_dir/bin/fzf-tmux" ] || fail "tracked fzf helper was removed"
+grep -F 'removing plugin-local fzf override' "$test_root/vim-fzf-cleanup.out" >/dev/null || \
+  fail "fzf binary cleanup was not reported"
+
+printf tracked > "$fzf_dir/bin/fzf"
+git -C "$fzf_dir" add -f bin/fzf
+git -C "$fzf_dir" commit -qm 'track fzf fixture'
+run_vim_plugins >/dev/null
+[ -f "$fzf_dir/bin/fzf" ] || fail "tracked fzf binary was removed"
 
 intel_sheldon=$test_root/intel-bin/sheldon
 mkdir -p "$(dirname "$intel_sheldon")"

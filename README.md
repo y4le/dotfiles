@@ -29,13 +29,19 @@ the explicit networked plugin targets.
 The offline link step requires GNU Stow 2.3 or newer. `setup-user` assumes Git,
 curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or `openssl`),
 Vim, and Stow are already available; `setup` installs native prerequisites before
-running the same user-space phases. The mise and Sheldon bootstrap archives are
-version-pinned and checksum-verified before installation.
+running the same user-space phases. The mise and Sheldon bootstrap archives and
+the vim-plug bootstrap file are version-pinned and checksum-verified before
+installation.
 
 `make tools` converges its managed binaries to the reviewed pins. If a managed
 binary has been self-updated, the next run reports and replaces that drift.
 `make plugins` expects `make tools` to have completed; it never installs missing
 tool binaries implicitly.
+`make vim-plugins` converges vim-plug to its reviewed commit before syncing Vim
+plugins. Vim's fzf integration uses the fzf binary installed by mise; if Vim
+offers to download fzf because it is not on `PATH`, answer no and run
+`make tools`. The Vim plugins themselves are still upstream branch checkouts and
+are not yet revision-pinned.
 Zsh plugins are restored at reviewed commits. If a checkout is off-pin or has
 local, untracked, ignored, or hidden-index changes, `make plugins` fails without
 replacing the startup cache. That cache still sources the same checkout paths,
@@ -103,6 +109,11 @@ outside the public packages.
 
 
 ## Vim
+
+  - installs from before the no-folding change may have
+    `~/.vim/autoload -> <dotfiles>/vim/.vim/autoload`; remove the generated
+    `vim/.vim/autoload/plug.vim`, run `make link`, then run `make vim-plugins`
+    to migrate. The plugin target refuses to download through that legacy link.
   - `~/.vimrc` calls into 3 subfiles in `~/.vim/config/`
     - plugins (load and install plugins, do plugin config)
     - settings (configure built in settings)

@@ -58,8 +58,8 @@ MISE_BIN            := $(HOME)/.local/bin/mise
 MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
 DOWNLOAD_PINS_FILE  := setup/pins/downloads.txt
 
-VIM_PLUG_URL        := https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
+VIM_PLUGGED_DIR     := $(HOME)/.local/share/vim/plugged
 LAZY_NVIM_URL       := https://github.com/folke/lazy.nvim.git
 NVIM_DATA_HOME      := $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/share)/nvim
 NVIM_CONFIG_HOME    := $(if $(XDG_CONFIG_HOME),$(XDG_CONFIG_HOME),$(HOME)/.config)/nvim

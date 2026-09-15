@@ -4,10 +4,59 @@ vim-bootstrap: vim-plugins ## [network] alias for vim-plugins
 
 nvim-bootstrap: nvim-plugins ## [network] alias for nvim-plugins
 
-vim-plugins: $(VIM_PLUG_FILE) ## [network] install vim-plug and sync Vim plugins
+vim-plugins: ## [network] install pinned vim-plug and sync Vim plugins
 	@if ! command -v vim >/dev/null 2>&1; then \
 		echo "vim not found. Install it with your system package manager."; \
 		exit 1; \
+	fi
+	@if [ ! -f "$(HOME)/.vim/config/plugins.vim" ]; then \
+		echo "Vim config is not linked; run 'make link' first"; \
+		exit 1; \
+	fi
+	@autoload_dir="$$(dirname "$(VIM_PLUG_FILE)")"; \
+	case "$$autoload_dir" in \
+		"$(CURDIR)"|"$(CURDIR)"/*) \
+			echo "$$autoload_dir is inside the dotfiles repository; run 'make link' first"; \
+			exit 1 ;; \
+		*) ;; \
+	esac; \
+	if [ -L "$$autoload_dir" ]; then \
+		echo "$$autoload_dir is a legacy or broken symlink; run 'make link' first"; \
+		exit 1; \
+	fi; \
+	existing="$$autoload_dir"; \
+	while [ ! -d "$$existing" ]; do \
+		parent="$$(dirname "$$existing")"; \
+		[ "$$parent" != "$$existing" ] || break; \
+		existing="$$parent"; \
+	done; \
+	if [ -d "$$existing" ]; then \
+		repo_physical="$$(cd -P "$(CURDIR)" && pwd -P)" || exit 1; \
+		existing_physical="$$(cd -P "$$existing" && pwd -P)" || exit 1; \
+		case "$$existing_physical/" in \
+			"$$repo_physical/"*) \
+				echo "$$autoload_dir would resolve into $$repo_physical (legacy folded layout)."; \
+				echo "Remove the generated plug.vim, run 'make link', then rerun 'make vim-plugins'."; \
+				exit 1 ;; \
+			*) ;; \
+		esac; \
+	fi
+	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" \
+		sh mk/pinned.sh install vim-plug "$(VIM_PLUG_FILE)" 0644
+	@fzf_dir="$(VIM_PLUGGED_DIR)/fzf"; \
+	fzf_bin="$$fzf_dir/bin/fzf"; \
+	if [ ! -L "$$fzf_dir" ] && [ -d "$$fzf_dir/.git" ] && [ ! -L "$$fzf_dir/.git" ] && \
+		{ [ -e "$$fzf_bin" ] || [ -L "$$fzf_bin" ]; }; then \
+		tracked="$$(GIT_DIR="$$fzf_dir/.git" GIT_WORK_TREE="$$fzf_dir" \
+			git --no-optional-locks --no-replace-objects -c core.fsmonitor=false \
+				ls-files --stage -- bin/fzf)" || { \
+				echo "could not inspect plugin-local fzf binary: $$fzf_bin"; \
+				exit 1; \
+			}; \
+		if [ -z "$$tracked" ]; then \
+			echo "removing plugin-local fzf override: $$fzf_bin (mise supplies fzf)"; \
+			rm -f "$$fzf_bin"; \
+		fi; \
 	fi
 	@bootstrap="$$(mktemp)"; \
 	trap 'rm -f "$$bootstrap"' EXIT HUP INT TERM; \
@@ -134,11 +183,3 @@ _restore-lazy-nvim:
 		echo "lazy.nvim checkout mismatch: expected $(LAZY_NVIM_COMMIT), got $$actual"; \
 		exit 1; \
 	fi
-
-$(VIM_PLUG_FILE):
-	@if ! command -v curl >/dev/null 2>&1; then \
-		echo "curl not found. Install it with your system package manager."; \
-		exit 1; \
-	fi
-	@mkdir -p $(HOME)/.vim/autoload
-	curl -fLo $(VIM_PLUG_FILE) --create-dirs $(VIM_PLUG_URL)
