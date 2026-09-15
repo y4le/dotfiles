@@ -4,4 +4,3 @@ function! quickfix#BuildQuickfix(lines)
   copen
   cc
 endfunction
-

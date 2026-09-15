@@ -6,4 +6,3 @@ function! conceal#toggle_conceal()
     setlocal conceallevel=0
   endif
 endfunction
-

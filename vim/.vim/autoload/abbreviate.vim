@@ -110,4 +110,3 @@ function! s:align_pairs(list)
   let maxlen = min([maxlen, 35])
   return map(pairs, "printf('%-'.maxlen.'s', v:val[0]).' '.v:val[1]")
 endfunction
-

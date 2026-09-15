@@ -20,4 +20,3 @@ nmap <buffer> *                      *<Plug>(w3m-search-end)
 nmap <buffer> #                      #<Plug>(w3m-search-end)
 nmap <buffer> <C-a>                  <Plug>(w3m-address-bar)
 nmap <buffer> f                      <Plug>(w3m-hit-a-hint)
-

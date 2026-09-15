@@ -32,4 +32,3 @@ command! -nargs=* Docs
   \ call fzf#vim#grep(
   \   g:rg_root_command . shellescape(<q-args>) . g:docs_dir, 1,
   \   fzf#vim#with_preview('right:50%:hidden', '?'), 0)
-
