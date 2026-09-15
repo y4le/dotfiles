@@ -1,6 +1,6 @@
 .PHONY: mise mise-tools sheldon sheldon-plugins tmux-plugins brew
 
-mise: $(MISE_BIN) ## install mise binary
+mise: $(MISE_BIN) ## [network] install mise binary
 
 $(MISE_BIN):
 	@if ! command -v curl >/dev/null 2>&1; then \
@@ -10,12 +10,12 @@ $(MISE_BIN):
 	@mkdir -p $(HOME)/.local/bin
 	curl -fsSL $(MISE_INSTALL_URL) | MISE_INSTALL_PATH=$(MISE_BIN) sh
 
-mise-tools: mise ## install tools from mise config
+mise-tools: mise ## [network] install tools from mise config
 	MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) install
 
-sheldon: $(SHELDON_BIN) ## install sheldon binary
+sheldon: $(SHELDON_BIN) ## [network] install sheldon binary
 
-sheldon-plugins: sheldon ## restore zsh plugins and build the startup cache
+sheldon-plugins: sheldon ## [network] restore zsh plugins and build startup cache
 	@if [ ! -f "$(HOME)/.config/sheldon/plugins.toml" ]; then \
 		echo "sheldon config is not linked; run 'make link' first"; \
 		exit 1; \
@@ -36,7 +36,7 @@ sheldon-plugins: sheldon ## restore zsh plugins and build the startup cache
 	mv "$$tmp" "$$cache"; \
 	echo "wrote $$cache"
 
-tmux-plugins: ## restore tmux plugins at pinned commits
+tmux-plugins: ## [network] restore tmux plugins at pinned commits
 	@if ! command -v git >/dev/null 2>&1; then \
 		echo "git not found. Install it with your system package manager."; \
 		exit 1; \
@@ -83,7 +83,7 @@ $(SHELDON_BIN):
 	curl --proto '=https' -fLsS $(SHELDON_URL) | \
 		bash -s -- --repo $(SHELDON_REPO) --to $(HOME)/.local/bin
 
-brew: _require-curl ## install homebrew (macOS only)
+brew: _require-curl ## [sudo, network] install homebrew (macOS only)
 ifeq ($(PLATFORM),macos)
 	@if command -v brew >/dev/null 2>&1; then \
 		echo "brew already installed at $$(command -v brew)"; \

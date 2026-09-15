@@ -34,7 +34,7 @@ else
   [[ -r $HOME/.config/zsh/themes/minimal.zsh-theme ]] && \
     source $HOME/.config/zsh/themes/minimal.zsh-theme
   [[ -o interactive ]] && \
-    print -u2 "dotfiles: zsh plugins not restored; run 'make sheldon-plugins'"
+    print -u2 "dotfiles: zsh plugins not restored; run 'make plugins'"
 fi
 
 # zoxide — frecency-based directory navigation

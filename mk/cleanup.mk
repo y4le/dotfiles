@@ -1,6 +1,6 @@
 .PHONY: clean
 
-clean: _require-stow ## unstow platform-matched packages
+clean: _require-stow ## [offline] unstow platform-matched packages
 	@echo "planning removal of $(PLATFORM) packages: $(PACKAGES)"
 	@$(STOW) -n -v -D $(STOW_FLAGS) $(PACKAGES)
 	@echo "unstowing $(PLATFORM) packages: $(PACKAGES)"

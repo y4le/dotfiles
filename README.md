@@ -15,10 +15,20 @@ I must master it as I must master my life.
 
 - clone from git
 - navigate into directory
-- run `make setup` for portable shell/editor configuration
+- run `make link` first; it is offline and only links portable configuration
+- run `make setup-user` to install user-space tools and plugins without sudo
+- run `make setup` when the machine also permits native package installation
 - use `make DESKTOP=1 setup` only on a personal desktop where the repository
   should manage the Linux X11/i3 session or macOS Karabiner configuration
 - use `make help` to see the other setup and link targets
+
+`make help` labels targets that require network access or sudo. Shell and tmux
+remain usable after the link-only step; missing plugins are restored only by
+the explicit networked plugin targets.
+
+The offline link step requires GNU Stow 2.3 or newer. `setup-user` assumes Git,
+curl, Vim, and Stow are already available; `setup` installs native prerequisites
+before running the same user-space phases.
 
 The desktop choice is also used by `link`, `link-linux`, `link-macos`, and
 `clean`. Pass the same `DESKTOP=1` setting when removing a desktop install.

@@ -14,6 +14,6 @@ include mk/cleanup.mk
 
 .PHONY: help
 
-help: ## show this help
+help: ## [offline] show this help
 	@grep -h -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
-		awk -F ':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
+		awk -F ':.*## ' '{printf "  %-22s %s\n", $$1, $$2}'

@@ -12,7 +12,7 @@ _require-private-agents: _require-stow
 		exit 1; \
 	fi
 
-agents-plan-private: _require-private-agents ## show private agent overlay actions
+agents-plan-private: _require-private-agents ## [offline] show private agent overlay actions
 	@if git -C "$(PRIVATE_AGENTS_DIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
 		artifacts="$$(git -C "$(PRIVATE_AGENTS_DIR)" ls-files --others --directory --no-empty-directory -- "$(PRIVATE_AGENTS_PACKAGE)")" || exit 1; \
 		if [ -n "$$artifacts" ]; then \
@@ -27,11 +27,11 @@ agents-plan-private: _require-private-agents ## show private agent overlay actio
 	@echo "planning private agents from $(PRIVATE_AGENTS_DIR)"
 	@$(STOW) -n -v -R --no-folding -d "$(PRIVATE_AGENTS_DIR)" -t "$(HOME)" $(PRIVATE_AGENTS_PACKAGE)
 
-agents-enable-private: agents-plan-private ## merge private agents into ~/.agents
+agents-enable-private: agents-plan-private ## [offline] merge private agents into ~/.agents
 	@echo "linking private agents from $(PRIVATE_AGENTS_DIR)"
 	@$(STOW) -R --no-folding -d "$(PRIVATE_AGENTS_DIR)" -t "$(HOME)" $(PRIVATE_AGENTS_PACKAGE)
 
-agents-disable-private: _require-stow ## remove private agents from ~/.agents
+agents-disable-private: _require-stow ## [offline] remove private agents from ~/.agents
 	@if [ ! -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
 		echo "private agents package not found at $(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE); nothing to do"; \
 		echo "any dangling links must be removed manually"; \

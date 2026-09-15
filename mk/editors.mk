@@ -1,10 +1,10 @@
 .PHONY: vim-bootstrap vim-plugins nvim-bootstrap nvim-plugins
 
-vim-bootstrap: vim-plugins ## alias for vim-plugins
+vim-bootstrap: vim-plugins ## [network] alias for vim-plugins
 
-nvim-bootstrap: nvim-plugins ## alias for nvim-plugins
+nvim-bootstrap: nvim-plugins ## [network] alias for nvim-plugins
 
-vim-plugins: $(VIM_PLUG_FILE) ## install vim-plug and sync Vim plugins
+vim-plugins: $(VIM_PLUG_FILE) ## [network] install vim-plug and sync Vim plugins
 	@if ! command -v vim >/dev/null 2>&1; then \
 		echo "vim not found. Install it with your system package manager."; \
 		exit 1; \
@@ -18,7 +18,7 @@ vim-plugins: $(VIM_PLUG_FILE) ## install vim-plug and sync Vim plugins
 		echo "syncing Vim plugins"; \
 		vim -Nu NONE -n -S "$$bootstrap" '+PlugInstall --sync' +qa
 
-nvim-plugins: $(LAZY_NVIM_DIR) ## install lazy.nvim and sync Neovim plugins
+nvim-plugins: $(LAZY_NVIM_DIR) ## [network] restore Neovim plugins
 	@ nvim_bin=""; \
 	if [ -x "$(MISE_BIN)" ]; then \
 		nvim_bin="$$(MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) which nvim 2>/dev/null || true)"; \
@@ -27,7 +27,7 @@ nvim-plugins: $(LAZY_NVIM_DIR) ## install lazy.nvim and sync Neovim plugins
 		nvim_bin="$$(command -v nvim 2>/dev/null || true)"; \
 	fi; \
 	if [ -z "$$nvim_bin" ] || [ ! -x "$$nvim_bin" ]; then \
-		echo "Neovim not found. Install it with 'make install'."; \
+		echo "Neovim not found. Install it with 'make tools'."; \
 		exit 1; \
 	fi; \
 	echo "syncing Neovim plugins"; \

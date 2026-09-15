@@ -1,19 +1,19 @@
 .PHONY: check check-actions check-git check-shell check-vim check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-vim check-runtime check-stow check-link check-make ## run repo validation checks
+check: check-git check-shell check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
 
-check-actions: ## lint GitHub Actions workflows
+check-actions: ## [offline] lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
 		echo "actionlint not found. Install it to lint GitHub Actions workflows."; \
 		exit 1; \
 	fi
 	@actionlint
 
-check-git: ## check the tracked tree for whitespace errors
+check-git: ## [offline] check the tracked tree for whitespace errors
 	@empty_tree="$$(git hash-object -t tree /dev/null)" || exit 1; \
 	git diff --check "$$empty_tree"
 
-check-shell: ## syntax-check and lint tracked shell files
+check-shell: ## [offline] syntax-check and lint tracked shell files
 	@fail=0; \
 	sh_files="$$(git ls-files -z | xargs -0 awk \
 		'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)(sh|dash)([[:space:]]|$$)/ { print FILENAME }')" || { \
@@ -86,13 +86,13 @@ check-shell: ## syntax-check and lint tracked shell files
 	fi; \
 	exit $$fail
 
-check-vim: ## validate portable Vim configuration behavior
+check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
 
-check-runtime: ## verify shell startup stays usable and offline
+check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh
 
-check-stow: _require-stow ## dry-run stow package graphs in temp dirs
+check-stow: _require-stow ## [offline] dry-run stow package graphs in temp dirs
 	@fail=0; \
 	check_pkg_set() { \
 		label="$$1"; \
@@ -110,12 +110,30 @@ check-stow: _require-stow ## dry-run stow package graphs in temp dirs
 	check_pkg_set "macos desktop package set" $(MACOS_DESKTOP_PACKAGES); \
 	exit $$fail
 
-check-link: ## test safe linking in isolated temporary homes
+check-link: ## [offline] test safe linking in isolated temporary homes
 	@sh mk/test-link.sh
 
-check-make: ## dry-run make target graph and help output
+check-make: ## [offline] dry-run make target graph and help output
 	@echo "check-make: make -n setup"
 	@$(MAKE) -n setup >/dev/null
+	@echo "check-make: make -n setup-user"
+	@setup_user="$$( $(MAKE) -n setup-user )" || exit $$?; \
+	if printf '%s\n' "$$setup_user" | \
+		grep -Eq '^[[:space:]]*(sudo|doas|apt-get|pacman|brew)[[:space:]]|brew_bin.*[[:space:]]install|/bin/bash -c.*Homebrew/install'; then \
+		echo "check-make: setup-user includes a native package command"; \
+		exit 1; \
+	fi
+	@echo "check-make: make -n tools"
+	@$(MAKE) -n tools >/dev/null
+	@echo "check-make: make -n plugins"
+	@plugin_plan="$$( $(MAKE) -n plugins )" || exit $$?; \
+	sheldon_line="$$(printf '%s\n' "$$plugin_plan" | awk '/ lock \|\| exit/ { print NR; exit }')"; \
+	vim_line="$$(printf '%s\n' "$$plugin_plan" | awk '/syncing Vim plugins/ { print NR; exit }')"; \
+	if [ -z "$$sheldon_line" ] || [ -z "$$vim_line" ] || \
+		[ "$$sheldon_line" -ge "$$vim_line" ]; then \
+		echo "check-make: shell plugins are not restored before editor plugins"; \
+		exit 1; \
+	fi
 	@echo "check-make: make -n link-linux"
 	@$(MAKE) -n link-linux >/dev/null
 	@echo "check-make: make -n link-macos"

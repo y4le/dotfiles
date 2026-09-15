@@ -85,7 +85,7 @@ fi
 [ "$(cat "$test_root/no-cache.out")" = \
   "$test_home/.history|loaded|loaded" ] || \
   fail "interactive zsh skipped normal configuration"
-[ "$(grep -Fc "dotfiles: zsh plugins not restored; run 'make sheldon-plugins'" \
+[ "$(grep -Fc "dotfiles: zsh plugins not restored; run 'make plugins'" \
   "$test_root/no-cache.err")" -eq 1 ] || \
   fail "interactive zsh did not print exactly one restore hint"
 [ ! -s "$runtime_log" ] || fail "zsh startup invoked a network-capable command"

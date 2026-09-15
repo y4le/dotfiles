@@ -1,18 +1,29 @@
-.PHONY: setup install system-packages link link-plan link-linux link-macos _link _link-plan _ensure-git-local-config _print-packages
+.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _ensure-git-local-config _print-packages
 
-setup: ## full bootstrap: system packages + tools + links + shell/tmux/editor plugins
-	@$(MAKE) install
+setup: ## [sudo, network] full bootstrap including system packages
+	@$(MAKE) system-packages
+	@$(MAKE) setup-user
+
+setup-user: ## [network] user-space tools, links, and plugins; no sudo
+	@$(MAKE) tools
 	@$(MAKE) link
+	@$(MAKE) plugins
+
+install: ## [sudo, network] compatibility alias: system packages + tools
+	@$(MAKE) system-packages
+	@$(MAKE) tools
+
+tools: ## [network] install user-space tools
+	@$(MAKE) mise-tools
+	@$(MAKE) sheldon
+
+plugins: ## [network] restore shell, tmux, Vim, and Neovim plugins
+	@$(MAKE) sheldon-plugins
 	@$(MAKE) tmux-plugins
 	@$(MAKE) vim-plugins
 	@$(MAKE) nvim-plugins
-	@$(MAKE) sheldon-plugins
 
-install: ## install system packages + mise-managed tools
-	@$(MAKE) system-packages
-	@$(MAKE) mise-tools
-
-system-packages: ## install packages for the detected package manager
+system-packages: ## [sudo, network] install native packages
 ifeq ($(PACKAGE_MANAGER),brew)
 	@$(MAKE) brew
 	@brew_bin="$$(command -v brew 2>/dev/null || true)"; \
@@ -53,16 +64,16 @@ else
 	exit 1
 endif
 
-link: ## link dotfiles (auto-detect platform)
+link: ## [offline] link dotfiles (auto-detect platform)
 	@$(MAKE) _link LINK_PACKAGES="$(PACKAGES)"
 
-link-plan: ## show link actions without changing anything
+link-plan: ## [offline] show link actions without changing anything
 	@$(MAKE) _link-plan LINK_PACKAGES="$(PACKAGES)"
 
-link-linux: ## force linux package set
+link-linux: ## [offline] force linux package set
 	@$(MAKE) _link LINK_PACKAGES="$(LINUX_PACKAGES)"
 
-link-macos: ## force macos package set
+link-macos: ## [offline] force macos package set
 	@$(MAKE) _link LINK_PACKAGES="$(MACOS_PACKAGES)"
 
 _link-plan: _require-stow
