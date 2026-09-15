@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-stow check-make
+.PHONY: check check-actions check-git check-shell check-stow check-link check-make
 
-check: check-git check-shell check-stow check-make ## run repo validation checks
+check: check-git check-shell check-stow check-link check-make ## run repo validation checks
 
 check-actions: ## lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -93,14 +93,17 @@ check-stow: _require-stow ## dry-run stow package graphs in temp dirs
 		shift; \
 		tmpdir=$$(mktemp -d); \
 		echo "check-stow: $$label"; \
-		if ! $(STOW) -n -t "$$tmpdir" "$$@" >/dev/null 2>&1; then \
-			$(STOW) -n -t "$$tmpdir" "$$@" || fail=1; \
+		if ! $(STOW) -n -R --no-folding -d "$(CURDIR)" -t "$$tmpdir" "$$@" >/dev/null 2>&1; then \
+			$(STOW) -n -R --no-folding -d "$(CURDIR)" -t "$$tmpdir" "$$@" || fail=1; \
 		fi; \
 		rm -rf "$$tmpdir"; \
 	}; \
 	check_pkg_set "linux package set" $(LINUX_PACKAGES); \
 	check_pkg_set "macos package set" $(MACOS_PACKAGES); \
 	exit $$fail
+
+check-link: ## test safe linking in isolated temporary homes
+	@sh mk/test-link.sh
 
 check-make: ## dry-run make target graph and help output
 	@echo "check-make: make -n setup"
@@ -109,6 +112,10 @@ check-make: ## dry-run make target graph and help output
 	@$(MAKE) -n link-linux >/dev/null
 	@echo "check-make: make -n link-macos"
 	@$(MAKE) -n link-macos >/dev/null
+	@echo "check-make: make -n link-plan"
+	@$(MAKE) -n link-plan >/dev/null
+	@echo "check-make: make -n clean"
+	@$(MAKE) -n clean >/dev/null
 	@echo "check-make: make -n nvim-plugins"
 	@$(MAKE) -n nvim-plugins >/dev/null
 	@echo "check-make: make help"

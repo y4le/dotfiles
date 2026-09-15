@@ -1,4 +1,4 @@
-.PHONY: setup install system-packages link link-linux link-macos _normalize-stow-state
+.PHONY: setup install system-packages link link-plan link-linux link-macos _link _link-plan _print-packages
 
 setup: ## full bootstrap: system packages + mise tools + links + editor plugins + sheldon lock
 	@$(MAKE) install
@@ -53,59 +53,39 @@ else
 	exit 1
 endif
 
-link: _require-stow ## link dotfiles (auto-detect platform)
-	@$(MAKE) _normalize-stow-state
-	@echo "linking $(PLATFORM) packages: $(PACKAGES)"
-	@for pkg in $(PACKAGES); do \
-		if [ ! -d "$$pkg" ]; then \
-			echo "  skip $$pkg (missing)"; \
-			continue; \
-		fi; \
-		echo "  stow $$pkg"; \
-		$(STOW) -t $(HOME) $$pkg || exit $$?; \
-	done
-	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
-		$(MAKE) agents-enable-private; \
-	fi
+link: ## link dotfiles (auto-detect platform)
+	@$(MAKE) _link LINK_PACKAGES="$(PACKAGES)"
 
-link-linux: _require-stow ## force linux package set
-	@$(MAKE) _normalize-stow-state
-	@for pkg in $(LINUX_PACKAGES); do \
-		if [ ! -d "$$pkg" ]; then \
-			echo "  skip $$pkg (missing)"; \
-			continue; \
-		fi; \
-		echo "  stow $$pkg"; \
-		$(STOW) -t $(HOME) $$pkg || exit $$?; \
-	done
-	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
-		$(MAKE) agents-enable-private; \
-	fi
+link-plan: ## show link actions without changing anything
+	@$(MAKE) _link-plan LINK_PACKAGES="$(PACKAGES)"
 
-link-macos: _require-stow ## force macos package set
-	@$(MAKE) _normalize-stow-state
-	@for pkg in $(MACOS_PACKAGES); do \
-		if [ ! -d "$$pkg" ]; then \
-			echo "  skip $$pkg (missing)"; \
-			continue; \
-		fi; \
-		echo "  stow $$pkg"; \
-		$(STOW) -t $(HOME) $$pkg || exit $$?; \
-	done
-	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
-		$(MAKE) agents-enable-private; \
-	fi
+link-linux: ## force linux package set
+	@$(MAKE) _link LINK_PACKAGES="$(LINUX_PACKAGES)"
 
-_normalize-stow-state:
-	@target="$(HOME)/.config/sheldon"; \
-	expected="$(CURDIR)/zsh/.config/sheldon"; \
-	if [ -L "$$target" ] && [ "$$(readlink "$$target")" = "$$expected" ]; then \
-		echo "normalizing legacy absolute symlink $$target"; \
-		rm "$$target"; \
-	fi; \
-	target="$(HOME)/.zshenv"; \
-	if [ -f "$$target" ] && [ ! -L "$$target" ]; then \
-		backup="$$target.pre-dotfiles-backup.$$(date +%Y%m%d%H%M%S)"; \
-		echo "backing up existing $$target to $$backup"; \
-		mv "$$target" "$$backup"; \
+link-macos: ## force macos package set
+	@$(MAKE) _link LINK_PACKAGES="$(MACOS_PACKAGES)"
+
+_link-plan: _require-stow
+	@if git -C "$(CURDIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
+		artifacts="$$(git -C "$(CURDIR)" ls-files --others -- $(GUARDED_LINK_PACKAGES))" || exit 1; \
+		if [ -n "$$artifacts" ]; then \
+			echo "untracked package files would be linked into HOME:"; \
+			printf '  %s\n' $$artifacts; \
+			echo "delete or move them before linking"; \
+			exit 1; \
+		fi; \
+	else \
+		echo "warning: artifact guard skipped; not a usable git checkout"; \
 	fi
+	@if [ -n "$${XDG_CONFIG_HOME:-}" ] && [ "$$XDG_CONFIG_HOME" != "$(HOME)/.config" ]; then \
+		echo "warning: XDG_CONFIG_HOME=$$XDG_CONFIG_HOME differs from $(HOME)/.config"; \
+	fi
+	@echo "planning $(PLATFORM) packages: $(LINK_PACKAGES)"
+	@$(STOW) -n -v -R $(STOW_FLAGS) $(LINK_PACKAGES)
+
+_link: _link-plan
+	@echo "linking $(PLATFORM) packages: $(LINK_PACKAGES)"
+	@$(STOW) -R $(STOW_FLAGS) $(LINK_PACKAGES)
+
+_print-packages:
+	@printf '%s\n' "$(PACKAGES)"

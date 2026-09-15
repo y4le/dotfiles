@@ -15,7 +15,8 @@ else
   PACKAGE_MANAGER := unknown
 endif
 
-STOW := $(shell command -v stow 2>/dev/null || command -v xstow 2>/dev/null)
+STOW := $(shell command -v stow 2>/dev/null)
+STOW_FLAGS := --no-folding -d "$(CURDIR)" -t "$(HOME)"
 
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
 PRIVATE_AGENTS_PACKAGE := agents
@@ -32,6 +33,8 @@ ifeq ($(PLATFORM),macos)
 else
   PACKAGES := $(LINUX_PACKAGES)
 endif
+
+GUARDED_LINK_PACKAGES = $(filter-out local,$(LINK_PACKAGES))
 
 SHELDON_BIN   := $(HOME)/.local/bin/sheldon
 SHELDON_REPO  := rossmacarthur/sheldon
