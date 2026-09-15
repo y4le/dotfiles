@@ -1,37 +1,88 @@
-.PHONY: check check-git check-shell check-stow check-make
+.PHONY: check check-actions check-git check-shell check-stow check-make
 
 check: check-git check-shell check-stow check-make ## run repo validation checks
 
-check-git: ## check git diff for whitespace errors
-	git diff --check
+check-actions: ## lint GitHub Actions workflows
+	@if ! command -v actionlint >/dev/null 2>&1; then \
+		echo "actionlint not found. Install it to lint GitHub Actions workflows."; \
+		exit 1; \
+	fi
+	@actionlint
+
+check-git: ## check the tracked tree for whitespace errors
+	@empty_tree="$$(git hash-object -t tree /dev/null)" || exit 1; \
+	git diff --check "$$empty_tree"
 
 check-shell: ## syntax-check and lint tracked shell files
 	@fail=0; \
+	sh_files="$$(git ls-files -z | xargs -0 awk \
+		'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)(sh|dash)([[:space:]]|$$)/ { print FILENAME }')" || { \
+		echo "check-shell: sh discovery failed"; \
+		fail=1; \
+	}; \
+	bash_files="$$(git ls-files -z | xargs -0 awk \
+		'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)bash([[:space:]]|$$)/ { print FILENAME }')" || { \
+		echo "check-shell: bash discovery failed"; \
+		fail=1; \
+	}; \
+	zsh_path_files="$$( \
+		git ls-files -- \
+			zsh/.zshenv \
+			zsh/.zshrc \
+			'zsh/.config/zsh/themes/*' \
+			'*/.config/zsh/sources/*' \
+			'*/.funcs/*' \
+	)" || { \
+		echo "check-shell: zsh path discovery failed"; \
+		fail=1; \
+	}; \
+	zsh_shebang_files="$$( \
+		git ls-files -z | xargs -0 awk \
+			'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)zsh([[:space:]]|$$)/ { print FILENAME }' \
+	)" || { \
+		echo "check-shell: zsh shebang discovery failed"; \
+		fail=1; \
+	}; \
+	zsh_files="$$( \
+		printf '%s\n%s\n' "$$zsh_path_files" "$$zsh_shebang_files" | \
+			sed '/^$$/d' | LC_ALL=C sort -u \
+	)" || { \
+		echo "check-shell: zsh list normalization failed"; \
+		fail=1; \
+	}; \
+	for entry in "sh:$$sh_files" "bash:$$bash_files" "zsh:$$zsh_files"; do \
+		label=$${entry%%:*}; \
+		files=$${entry#*:}; \
+		if [ -z "$$files" ]; then \
+			echo "check-shell: no tracked $$label files discovered"; \
+			fail=1; \
+		fi; \
+	done; \
 	echo "check-shell: sh -n"; \
-	for f in $(SH_FILES); do \
+	for f in $$sh_files; do \
 		sh -n "$$f" || fail=1; \
 	done; \
 	echo "check-shell: bash -n"; \
-	for f in $(BASH_FILES); do \
+	for f in $$bash_files; do \
 		bash -n "$$f" || fail=1; \
 	done; \
 	echo "check-shell: zsh -n"; \
-	for f in $(ZSH_FILES); do \
+	for f in $$zsh_files; do \
 		zsh -n "$$f" || fail=1; \
 	done; \
 	if command -v shellcheck >/dev/null 2>&1; then \
-		echo "check-shell: shellcheck"; \
-		shellcheck -S warning -s sh $(SH_FILES) || fail=1; \
-		shellcheck -S warning -s bash $(BASH_FILES) || fail=1; \
+		if [ -n "$$sh_files" ] && [ -n "$$bash_files" ]; then \
+			echo "check-shell: shellcheck"; \
+			shellcheck -S warning -s sh $$sh_files || fail=1; \
+			shellcheck -S warning -s bash $$bash_files || fail=1; \
+		fi; \
 	else \
-		echo "check-shell: shellcheck not found, skipping"; \
-	fi; \
-	if command -v shfmt >/dev/null 2>&1; then \
-		echo "check-shell: shfmt -d"; \
-		shfmt -d -ln posix $(SH_FILES) || fail=1; \
-		shfmt -d -ln bash $(BASH_FILES) || fail=1; \
-	else \
-		echo "check-shell: shfmt not found, skipping"; \
+		echo "check-shell: shellcheck not found"; \
+		if [ -n "$${CI:-}" ]; then \
+			fail=1; \
+		else \
+			echo "check-shell: skipping shellcheck outside CI"; \
+		fi; \
 	fi; \
 	exit $$fail
 

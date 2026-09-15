@@ -20,11 +20,12 @@ STOW := $(shell command -v stow 2>/dev/null || command -v xstow 2>/dev/null)
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
 PRIVATE_AGENTS_PACKAGE := agents
 
-COMMON  := agents atuin bash git local mise nvim scripts tmux vim zsh
+COMMON  := agents atuin bash git mise nvim scripts tmux vim zsh
+LOCAL_PACKAGES := $(if $(wildcard local/.),local,)
 LINUX   := linux
 MACOS   := osx
-LINUX_PACKAGES := $(COMMON) $(LINUX)
-MACOS_PACKAGES := $(COMMON) $(MACOS)
+LINUX_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(LINUX)
+MACOS_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(MACOS)
 
 ifeq ($(PLATFORM),macos)
   PACKAGES := $(MACOS_PACKAGES)
@@ -53,22 +54,3 @@ PACKAGES_DIR         := setup/packages
 BREW_PACKAGES_FILE   := $(PACKAGES_DIR)/brew.txt
 APT_PACKAGES_FILE    := $(PACKAGES_DIR)/apt.txt
 PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
-
-SH_FILES := linux/.xsessionrc
-BASH_FILES := \
-	linux/bin/i3_switch_workspaces.sh \
-	scripts/bin/benchmark.sh \
-	scripts/bin/compair.sh \
-	scripts/bin/cpy \
-	scripts/bin/filez \
-	scripts/bin/pst \
-	scripts/.funcs/cpst \
-	scripts/.funcs/fzf_sources
-ZSH_FILES := \
-	local/.pre_profile \
-	scripts/.funcs/cpst \
-	scripts/.funcs/fzf_sources \
-	scripts/.funcs/nav \
-	zsh/.config/zsh/themes/minimal.zsh-theme \
-	zsh/.zshenv \
-	zsh/.zshrc
