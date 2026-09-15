@@ -18,6 +18,25 @@ I must master it as I must master my life.
 - run `make setup`
 - use `make help` to see the other setup and link targets
 
+### Git identity
+
+Portable Git behavior lives in `~/.config/git/config`. `make link` creates a
+separate, user-owned `~/.gitconfig` when one does not already exist, so identity
+does not live in or write through to this repository while that local file is
+present. Rerun `make link` if it is removed. Configure each machine after
+linking:
+
+```sh
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+Git will not infer an identity; commits fail until one is configured in an
+applicable config. Existing local or corporate-managed `~/.gitconfig` files are
+preserved. A legacy link to this repo's old `git/.gitconfig` is replaced with an
+empty local file, so its identity must be configured again. Keep
+`XDG_CONFIG_HOME` unset or set to `~/.config` so Git reads the portable config.
+
 
 ## Information Isolation
 

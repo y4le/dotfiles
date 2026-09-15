@@ -1,8 +1,7 @@
+[user]
+	useConfigOnly = true
 [pull]
 	rebase = true
-[user]
-	name = Yale Thomas
-	email = lordchair@gmail.com
 [color]
 	ui = true
 [color "diff-highlight"]
@@ -18,12 +17,12 @@
 	new = green bold
 	whitespace = red reverse
 [merge]
-    tool = vimdiff
+	tool = vimdiff
 [diff]
-    tool = vimdiff
+	tool = vimdiff
 [delta]
-    navigate = true
+	navigate = true
 [difftool]
-    prompt = false
+	prompt = false
 [alias]
-    d = difftool
+	d = difftool

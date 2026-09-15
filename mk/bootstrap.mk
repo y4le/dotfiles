@@ -1,4 +1,4 @@
-.PHONY: setup install system-packages link link-plan link-linux link-macos _link _link-plan _print-packages
+.PHONY: setup install system-packages link link-plan link-linux link-macos _link _link-plan _ensure-git-local-config _print-packages
 
 setup: ## full bootstrap: system packages + mise tools + links + editor plugins + sheldon lock
 	@$(MAKE) install
@@ -86,6 +86,30 @@ _link-plan: _require-stow
 _link: _link-plan
 	@echo "linking $(PLATFORM) packages: $(LINK_PACKAGES)"
 	@$(STOW) -R $(STOW_FLAGS) $(LINK_PACKAGES)
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' git '; then \
+		$(MAKE) _ensure-git-local-config; \
+	fi
+
+_ensure-git-local-config:
+	@target="$(HOME)/.gitconfig"; \
+	legacy_parent="$$(cd "$(CURDIR)/git" && pwd -P)" || exit 1; \
+	legacy="$$legacy_parent/.gitconfig"; \
+	if [ -L "$$target" ]; then \
+		link="$$(readlink "$$target")" || exit 1; \
+		case "$$link" in \
+			/*) linked_path="$$link" ;; \
+			*) linked_path="$(HOME)/$$link" ;; \
+		esac; \
+		linked_parent="$$(cd "$$(dirname "$$linked_path")" 2>/dev/null && pwd -P)" || true; \
+		if [ "$$linked_parent/$$(basename "$$linked_path")" = "$$legacy" ]; then \
+			echo "replacing legacy managed ~/.gitconfig link with a local file"; \
+			rm "$$target" || exit 1; \
+		fi; \
+	fi; \
+	if [ ! -e "$$target" ] && [ ! -L "$$target" ]; then \
+		echo "creating local ~/.gitconfig for machine-specific identity"; \
+		(umask 077; set -C; : > "$$target") || exit 1; \
+	fi
 
 _print-packages:
 	@printf '%s\n' "$(PACKAGES)"

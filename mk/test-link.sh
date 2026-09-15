@@ -11,19 +11,30 @@ test_root=$(mktemp -d) || exit 1
 trap 'rm -rf "$test_root"' EXIT
 trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
 
+git_isolated() {
+  env -i \
+    HOME="$test_root" \
+    PATH="$PATH" \
+    LC_ALL=C \
+    GIT_CONFIG_GLOBAL=/dev/null \
+    GIT_CONFIG_NOSYSTEM=1 \
+    git "$@"
+}
+
 repo=$test_root/home/dev/dotfiles
 mkdir -p "$repo" || exit 1
 
 file_list=$test_root/files
-git ls-files > "$file_list" || exit 1
+source_repo=$(pwd -P) || exit 1
+git_isolated -C "$source_repo" ls-files > "$file_list" || exit 1
 repo_archive=$test_root/repo.tar
 tar -cf "$repo_archive" -T "$file_list" || exit 1
 tar -xf "$repo_archive" -C "$repo" || exit 1
-GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$repo" init -q || exit 1
+git_isolated -C "$repo" init -q || exit 1
 # Preserve paths that are tracked by the source repository despite matching a
 # broad runtime ignore rule. A real clone retains that distinction too.
-GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$repo" add -Af . || exit 1
-GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$repo" \
+git_isolated -C "$repo" add -Af . || exit 1
+git_isolated -C "$repo" \
   -c commit.gpgsign=false -c user.name=test -c user.email=test@example.invalid \
   commit -qm candidate || exit 1
 
@@ -44,7 +55,7 @@ snapshot_home() {
   test_home=$1
   (
     cd "$test_home" || exit 1
-    find . -path ./dev -prune -o -print | LC_ALL=C sort | while IFS= read -r path; do
+    find . -print | LC_ALL=C sort | while IFS= read -r path; do
       if [ -L "$path" ]; then
         printf 'L %s -> %s\n' "$path" "$(readlink "$path")"
       elif [ -d "$path" ]; then
@@ -82,6 +93,18 @@ fi
   fail "fresh link folded .config/nvim"
 [ -L "$fresh_home/.config/nvim/init.lua" ] || \
   fail "fresh link did not create nvim/init.lua"
+[ -L "$fresh_home/.config/git/config" ] || \
+  fail "fresh link did not create the portable Git config"
+[ -f "$fresh_home/.gitconfig" ] && [ ! -L "$fresh_home/.gitconfig" ] || \
+  fail "fresh link did not create a local Git config"
+portable_git_before=$(cksum < "$repo/git/.config/git/config")
+env -i HOME="$fresh_home" PATH="$PATH" LC_ALL=C GIT_CONFIG_NOSYSTEM=1 \
+  git config --global user.name Test || \
+  fail "git config --global could not write local identity"
+grep -q 'name = Test' "$fresh_home/.gitconfig" || \
+  fail "git config --global did not write the local Git config"
+[ "$(cksum < "$repo/git/.config/git/config")" = "$portable_git_before" ] || \
+  fail "git config --global changed the portable Git config"
 assert_no_directory_links "$fresh_home" || fail "fresh link folded directories"
 snapshot_home "$fresh_home" > "$test_root/fresh-before"
 run_make "$fresh_home" link >/dev/null 2>&1 || fail "second link failed"
@@ -101,7 +124,7 @@ fi
 if run_make "$conflict_home" link > "$test_root/conflict-link.log" 2>&1; then
   fail "link accepted a conflicting HOME"
 fi
-grep -q '.zshenv' "$test_root/conflict-link.log" || \
+grep -Fq '.zshenv' "$test_root/conflict-link.log" || \
   fail "conflict failure did not name .zshenv"
 snapshot_home "$conflict_home" > "$test_root/conflict-after"
 cmp -s "$test_root/conflict-before" "$test_root/conflict-after" || \
@@ -128,6 +151,8 @@ for package in $legacy_packages; do
     >/dev/null 2>&1 || fail "legacy layout setup failed for $package"
 done
 [ -L "$legacy_home/.vim" ] || fail "legacy setup did not fold .vim"
+ln -s "$repo/git/.gitconfig" "$legacy_home/.gitconfig" || \
+  fail "legacy Git config setup failed"
 legacy_log=$test_root/legacy-link.log
 if ! run_make "$legacy_home" link > "$legacy_log" 2>&1; then
   cat "$legacy_log" >&2
@@ -135,7 +160,30 @@ if ! run_make "$legacy_home" link > "$legacy_log" 2>&1; then
 fi
 [ -d "$legacy_home/.vim" ] && [ ! -L "$legacy_home/.vim" ] || \
   fail "legacy .vim directory remained folded"
+[ -f "$legacy_home/.gitconfig" ] && [ ! -L "$legacy_home/.gitconfig" ] || \
+  fail "legacy Git config link was not migrated"
 assert_no_directory_links "$legacy_home" || fail "legacy migration left directory links"
+
+echo "check-link: existing local Git identity is preserved"
+identity_home=$test_root/identity-home
+mkdir -p "$identity_home"
+printf '[user]\n  email = corp@example.invalid\n' > "$identity_home/.gitconfig"
+run_make "$identity_home" link >/dev/null 2>&1 || fail "identity link failed"
+grep -q 'corp@example.invalid' "$identity_home/.gitconfig" || \
+  fail "link changed an existing local Git config"
+
+echo "check-link: external Git config links are preserved"
+linked_identity_home=$test_root/linked-identity-home
+linked_identity=$test_root/corporate.gitconfig
+mkdir -p "$linked_identity_home"
+printf '[user]\n  email = managed@example.invalid\n' > "$linked_identity"
+ln -s "$linked_identity" "$linked_identity_home/.gitconfig"
+run_make "$linked_identity_home" link >/dev/null 2>&1 || \
+  fail "linked identity link failed"
+[ "$(readlink "$linked_identity_home/.gitconfig")" = "$linked_identity" ] || \
+  fail "link replaced an external Git config link"
+grep -q 'managed@example.invalid' "$linked_identity" || \
+  fail "link changed an external Git config"
 
 echo "check-link: clean removes managed links"
 clean_home=$test_root/clean-home
