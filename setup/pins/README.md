@@ -58,3 +58,19 @@ networks, add an intercepting CA to the system trust bundle or set
 `SSL_CERT_FILE`; the static Linux binary does not read Git's `http.sslCAInfo`.
 Its musl resolver uses `/etc/resolv.conf`, so hostnames available only through
 NSS modules may not resolve.
+
+## Updating Sheldon plugin revisions
+
+For a branch head, obtain the full commit with `git ls-remote` and review the log
+and sourced-file diff from the old pin in a scratch clone. For a reviewed tag,
+use its peeled `refs/tags/<tag>^{}` commit. The fzf plugin must use the peeled tag
+matching the `aqua:junegunn/fzf` version in the mise config, and its `# v<version>`
+comment must change in the same commit.
+
+After updating a 40-character `rev`, run `make check-pins` and `make plugins`.
+The latter fetches the commit and verifies the final checkout before replacing
+the shell startup cache. If verification reports local changes, the dotfiles do
+not delete them automatically. Either review and remove that checkout, or run
+`SHELDON_DATA_DIR=<dir> ~/.local/bin/sheldon lock --reinstall` and retry. When
+bumping the Sheldon binary, also reconfirm its
+`repos/github.com/<owner>/<repo>` checkout layout.

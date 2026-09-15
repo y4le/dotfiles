@@ -51,6 +51,8 @@ endif
 GUARDED_LINK_PACKAGES = $(filter-out local,$(LINK_PACKAGES))
 
 SHELDON_BIN := $(HOME)/.local/bin/sheldon
+SHELDON_CONFIG_FILE ?= $(HOME)/.config/sheldon/plugins.toml
+SHELDON_DATA_DIR    ?= $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/share)/sheldon
 
 MISE_BIN            := $(HOME)/.local/bin/mise
 MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml

@@ -88,6 +88,7 @@ check-shell: ## [offline] syntax-check and lint tracked shell files
 
 check-pins: ## [offline] validate download pins and the verified installer
 	@sh mk/test-pins.sh
+	@sh mk/test-sheldon-plugins.sh
 
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
@@ -173,7 +174,23 @@ check-make: ## [offline] dry-run make target graph and help output
 	@echo "check-make: make -n nvim-update"
 	@$(MAKE) -n nvim-update >/dev/null
 	@echo "check-make: make -n sheldon-plugins"
-	@$(MAKE) -n sheldon-plugins >/dev/null
+	@sheldon_plan="$$( $(MAKE) -n sheldon-plugins )" || exit $$?; \
+	lock_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/ lock \|\| exit/ { print NR; exit }')"; \
+	source_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/ source > / { print NR; exit }')"; \
+	verify_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/verify-sheldon-plugins\.sh verify/ { print NR; exit }')"; \
+	mv_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/mv "\$$tmp" "\$$cache"/ { print NR; exit }')"; \
+	if [ -z "$$lock_line" ] || [ -z "$$source_line" ] || [ -z "$$verify_line" ] || [ -z "$$mv_line" ] || \
+		[ "$$lock_line" -ge "$$source_line" ] || [ "$$source_line" -ge "$$verify_line" ] || \
+		[ "$$verify_line" -ge "$$mv_line" ]; then \
+		echo "check-make: Sheldon cache is not verified after source and before publish"; \
+		exit 1; \
+	fi; \
+	config_env_count="$$(printf '%s\n' "$$sheldon_plan" | grep -c 'SHELDON_CONFIG_FILE=' || true)"; \
+	data_env_count="$$(printf '%s\n' "$$sheldon_plan" | grep -c 'SHELDON_DATA_DIR=' || true)"; \
+	[ "$$config_env_count" -ge 2 ] && [ "$$data_env_count" -ge 2 ] || { \
+		echo "check-make: Sheldon paths are not explicit for lock and source"; \
+		exit 1; \
+	}
 	@echo "check-make: make -n tmux-plugins"
 	@$(MAKE) -n tmux-plugins >/dev/null
 	@echo "check-make: make help"

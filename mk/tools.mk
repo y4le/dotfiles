@@ -9,12 +9,12 @@ mise-tools: mise ## [network] install tools from mise config
 sheldon: ## [network] install the pinned, verified sheldon binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install sheldon "$(SHELDON_BIN)" 0755
 
-sheldon-plugins: ## [network] restore zsh plugins and build startup cache
+sheldon-plugins: ## [network] restore pinned zsh plugins and build startup cache
 	@if [ ! -x "$(SHELDON_BIN)" ]; then \
 		echo "sheldon not found at $(SHELDON_BIN); run 'make tools' first"; \
 		exit 1; \
 	fi
-	@if [ ! -f "$(HOME)/.config/sheldon/plugins.toml" ]; then \
+	@if [ ! -f "$(SHELDON_CONFIG_FILE)" ]; then \
 		echo "sheldon config is not linked; run 'make link' first"; \
 		exit 1; \
 	fi
@@ -25,12 +25,16 @@ sheldon-plugins: ## [network] restore zsh plugins and build startup cache
 	trap 'rm -f "$$tmp"; exit 1' HUP INT TERM; \
 	umask 077; \
 	mkdir -p "$$dir"; \
-	"$(SHELDON_BIN)" lock || exit $$?; \
-	"$(SHELDON_BIN)" source > "$$tmp" || exit $$?; \
+	SHELDON_CONFIG_FILE="$(SHELDON_CONFIG_FILE)" SHELDON_DATA_DIR="$(SHELDON_DATA_DIR)" \
+		"$(SHELDON_BIN)" lock || exit $$?; \
+	SHELDON_CONFIG_FILE="$(SHELDON_CONFIG_FILE)" SHELDON_DATA_DIR="$(SHELDON_DATA_DIR)" \
+		"$(SHELDON_BIN)" source > "$$tmp" || exit $$?; \
 	if [ ! -s "$$tmp" ]; then \
 		echo "sheldon produced an empty startup cache"; \
 		exit 1; \
 	fi; \
+	sh mk/verify-sheldon-plugins.sh verify "$(SHELDON_CONFIG_FILE)" \
+		"$(SHELDON_DATA_DIR)" "$$tmp" || exit $$?; \
 	mv "$$tmp" "$$cache"; \
 	echo "wrote $$cache"
 

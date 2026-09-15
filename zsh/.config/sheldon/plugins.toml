@@ -7,6 +7,7 @@ defer = "{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}"
 
 [plugins.zsh-defer]
 github = "romkatv/zsh-defer"
+rev = "53a26e287fbbe2dcebb3aa1801546c6de32416fa"
 apply = ["source"]
 
 # -- theme -------------------------------------------------------------------
@@ -19,29 +20,36 @@ use = ["minimal.zsh-theme"]
 
 [plugins.solarized-man]
 github = "zlsun/solarized-man"
+rev = "e69d2cedc3a51031e660f2c3459b08ab62ef9afa"
 
 [plugins.fzf-widgets]
 github = "ytet5uy4/fzf-widgets"
+rev = "cf19c0b2be11520619aa503f7c3a1fb5a8556fbe"
 
 # -- plugins (deferred) ------------------------------------------------------
 
 [plugins.forgit]
 github = "wfxr/forgit"
+rev = "d4bece432b8c4d2be631abf1e2e76b49f5c87f26"
 apply = ["defer"]
 
 [plugins.fzf]
 github = "junegunn/fzf"
+rev = "eacef5ea6e39c6be3fff4e231fc6d10ba2ff9491" # v0.70.0
 use = ["shell/*.zsh"]
 apply = ["defer"]
 
 [plugins.fast-syntax-highlighting]
 github = "zdharma-continuum/fast-syntax-highlighting"
+rev = "3d574ccf48804b10dca52625df13da5edae7f553"
 apply = ["defer"]
 
 [plugins.zsh-autosuggestions]
 github = "zsh-users/zsh-autosuggestions"
+rev = "85919cd1ffa7d2d5412f6d3fe437ebdbeeec4fc5"
 apply = ["defer"]
 
 [plugins.zsh-vimode-visual]
 github = "b4b4r07/zsh-vimode-visual"
+rev = "1e39cf896d87e367f76d84f8db4a79506fc556c1"
 apply = ["defer"]

@@ -36,6 +36,10 @@ version-pinned and checksum-verified before installation.
 binary has been self-updated, the next run reports and replaces that drift.
 `make plugins` expects `make tools` to have completed; it never installs missing
 tool binaries implicitly.
+Zsh plugins are restored at reviewed commits. If a checkout is off-pin or has
+local, untracked, ignored, or hidden-index changes, `make plugins` fails without
+replacing the startup cache. That cache still sources the same checkout paths,
+so review, clean, or reinstall them before starting a new shell.
 
 Sheldon 0.8 does not publish an Intel macOS binary. On those machines, follow the
 documented workaround in `setup/pins/README.md` before running `make plugins`.
