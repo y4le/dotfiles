@@ -1,5 +1,7 @@
 " THEME
-colorscheme sublimemonokai " the apple of my monokeye
+if !empty(globpath(&runtimepath, 'colors/sublimemonokai.vim', 0, 1))
+  colorscheme sublimemonokai " the apple of my monokeye
+endif
 
 " SYSTEM
 set nocompatible " not vi compatible

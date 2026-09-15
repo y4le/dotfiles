@@ -70,9 +70,11 @@ nnoremap <leader>Fg :FzfGit<cr>
 nnoremap <leader>Fpg :FzfGit!<cr>
 
 " most recently used files -> fzf
-call s:FzfFileCmdDef('FzfMru', {'source': 'tail -n +2 ' . MRU_File})
-nnoremap <leader>Fm :FzfMru<cr>
-nnoremap <leader>Fpm :FzfMru!<cr>
+if exists('g:MRU_File')
+  call s:FzfFileCmdDef('FzfMru', {'source': 'tail -n +2 ' . g:MRU_File})
+  nnoremap <leader>Fm :FzfMru<cr>
+  nnoremap <leader>Fpm :FzfMru!<cr>
+endif
 " v:oldfiles is vim's builin equivalent
 call s:FzfFileCmdDefRaw('Oldfiles',
   \ '"source": map(v:oldfiles, "expand(v:val)")',
