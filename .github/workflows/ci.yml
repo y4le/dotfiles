@@ -11,6 +11,31 @@ permissions:
   contents: read
 
 jobs:
+  workflow-lint:
+    name: actionlint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          archive="$RUNNER_TEMP/actionlint.tar.gz"
+          curl -fsSL \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            -o "$archive"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$archive" | sha256sum -c -
+          tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Lint workflows
+        run: make check-actions
+
   check:
     name: make check (${{ matrix.label }})
     runs-on: ${{ matrix.runs_on }}
@@ -21,47 +46,73 @@ jobs:
         include:
           - label: linux
             runs_on: ubuntu-24.04
-            install: |
-              sudo apt-get update
-              sudo apt-get install -y shellcheck shfmt stow zsh
           - label: macos
             runs_on: macos-14
-            install: |
-              HOMEBREW_NO_AUTO_UPDATE=1 brew install shellcheck shfmt stow
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Install check toolchain
-        run: ${{ matrix.install }}
+      - name: Install Linux check toolchain
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends shellcheck stow zsh
+
+      - name: Install macOS check toolchain
+        if: runner.os == 'macOS'
+        run: HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install shellcheck stow
+
+      - name: Show check toolchain
+        run: |
+          make --version | head -1
+          stow --version
+          shellcheck --version
+          zsh --version
+          command -v bash
+          bash --version | head -1
 
       - name: Run repo checks
-        run: make check
+        run: make -k check
+
+      - name: Ensure checks leave the repo clean
+        run: |
+          status="$(git status --porcelain --ignored --untracked-files=all)"
+          if [ -n "$status" ]; then
+            printf '%s\n' "$status"
+            exit 1
+          fi
 
   setup-smoke-linux:
     name: make setup smoke (linux)
     runs-on: ubuntu-24.04
-    needs: check
+    if: github.event_name == 'workflow_dispatch'
+    needs:
+      - check
+      - workflow-lint
     timeout-minutes: 45
-    env:
-      SMOKE_HOME: ${{ runner.temp }}/smoke-home
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare clean HOME
-        run: mkdir -p "$SMOKE_HOME"
+        run: |
+          smoke_home="$RUNNER_TEMP/smoke-home"
+          mkdir -p "$smoke_home"
+          echo "SMOKE_HOME=$smoke_home" >> "$GITHUB_ENV"
 
       - name: Run bootstrap smoke test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: HOME="$SMOKE_HOME" make setup
 
       - name: Verify bootstrap outputs
         run: |
           test -L "$SMOKE_HOME/.vimrc"
           test -L "$SMOKE_HOME/.zshrc"
-          test -L "$SMOKE_HOME/.config/nvim/init.vim"
+          test "$(readlink -f "$SMOKE_HOME/.config/nvim/init.lua")" = \
+            "$(readlink -f "$GITHUB_WORKSPACE/nvim/.config/nvim/init.lua")"
           test -f "$SMOKE_HOME/.vim/autoload/plug.vim"
           test -x "$SMOKE_HOME/.local/bin/mise"
           test -x "$SMOKE_HOME/.local/bin/sheldon"
@@ -70,5 +121,7 @@ jobs:
 
       - name: Ensure bootstrap does not modify the repo
         run: |
-          git diff --exit-code
-          git diff --cached --exit-code
+          git status --porcelain --ignored --untracked-files=all
+          git diff --stat
+          # Ignored generated files are checked after the no-folding migration.
+          test -z "$(git status --porcelain --untracked-files=all)"
