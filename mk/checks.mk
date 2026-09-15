@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-pins check-vim check-runtime check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-pins check-brew check-vim check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-pins check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+check: check-git check-shell check-pins check-brew check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
 
 check-actions: ## [offline] lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -90,6 +90,9 @@ check-pins: ## [offline] validate download pins and the verified installer
 	@sh mk/test-pins.sh
 	@sh mk/test-sheldon-plugins.sh
 
+check-brew: ## [offline] verify Homebrew remains an explicit prerequisite
+	@sh mk/test-brew.sh
+
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
 
@@ -119,11 +122,18 @@ check-link: ## [offline] test safe linking in isolated temporary homes
 
 check-make: ## [offline] dry-run make target graph and help output
 	@echo "check-make: make -n setup"
-	@$(MAKE) -n setup >/dev/null
+	@setup_plan="$$( $(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=apt setup && \
+		$(MAKE) -n PLATFORM=macos PACKAGE_MANAGER=brew setup && \
+		$(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=pacman setup )" || exit $$?; \
+	if printf '%s\n' "$$setup_plan" | \
+		grep -Eq 'Homebrew/install|install\.sh|installer[[:space:]]+-pkg|/bin/bash[[:space:]]+-c'; then \
+		echo "check-make: setup includes an unreviewed native installer"; \
+		exit 1; \
+	fi
 	@echo "check-make: make -n setup-user"
 	@setup_user="$$( $(MAKE) -n setup-user )" || exit $$?; \
 	if printf '%s\n' "$$setup_user" | \
-		grep -Eq '^[[:space:]]*(sudo|doas|apt-get|pacman|brew)[[:space:]]|brew_bin.*[[:space:]]install|/bin/bash -c.*Homebrew/install'; then \
+		grep -Eq '^[[:space:]]*(sudo|doas|apt-get|pacman|brew)[[:space:]]|brew_bin.*[[:space:]]install|Homebrew/install|install\.sh|installer[[:space:]]+-pkg|/bin/bash[[:space:]]+-c'; then \
 		echo "check-make: setup-user includes a native package command"; \
 		exit 1; \
 	fi

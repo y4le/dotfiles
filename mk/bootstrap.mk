@@ -25,23 +25,10 @@ plugins: ## [network] restore shell, tmux, Vim, and Neovim plugins
 
 system-packages: ## [sudo, network] install native packages
 ifeq ($(PACKAGE_MANAGER),brew)
-	@$(MAKE) brew
-	@brew_bin="$$(command -v brew 2>/dev/null || true)"; \
-	if [ -z "$$brew_bin" ]; then \
-		for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do \
-			if [ -x "$$candidate" ]; then \
-				brew_bin="$$candidate"; \
-				break; \
-			fi; \
-		done; \
-	fi; \
-	if [ -z "$$brew_bin" ]; then \
-		echo "brew not found after installation"; \
-		exit 1; \
-	fi; \
+	@brew_bin="$$(BREW_SEARCH_PATHS='$(BREW_SEARCH_PATHS)' sh mk/find-brew.sh)" || exit $$?; \
 	packages="$$(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$$/d' $(BREW_PACKAGES_FILE))"; \
 	if [ -n "$$packages" ]; then \
-		"$$brew_bin" install $$packages; \
+		HOMEBREW_NO_AUTO_UPDATE=1 "$$brew_bin" install $$packages; \
 	fi
 else ifeq ($(PACKAGE_MANAGER),apt)
 	@packages="$$(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$$/d' $(APT_PACKAGES_FILE))"; \

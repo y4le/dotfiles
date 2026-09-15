@@ -28,10 +28,10 @@ the explicit networked plugin targets.
 
 The offline link step requires GNU Stow 2.3 or newer. `setup-user` assumes Git,
 curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or `openssl`),
-Vim, and Stow are already available; `setup` installs native prerequisites before
-running the same user-space phases. The mise and Sheldon bootstrap archives and
-the vim-plug bootstrap file are version-pinned and checksum-verified before
-installation.
+Vim, and Stow are already available. `setup` installs native prerequisites before
+running the same user-space phases, but on macOS Homebrew itself is an explicit
+prerequisite. The mise and Sheldon bootstrap archives and the vim-plug bootstrap
+file are version-pinned and checksum-verified before installation.
 
 `make tools` converges its managed binaries to the reviewed pins. If a managed
 binary has been self-updated, the next run reports and replaces that drift.
@@ -54,6 +54,49 @@ The desktop choice is also used by `link`, `link-linux`, `link-macos`, and
 `clean`. Pass the same `DESKTOP=1` setting when removing a desktop install.
 Existing installs from before the core/desktop split should run
 `make DESKTOP=1 link` once to migrate their managed desktop links.
+
+### macOS prerequisites
+
+This repository detects an existing Homebrew installation but does not install
+Homebrew. Its shell installer fetches and updates additional mutable state, needs
+administrator access, and may install Apple's Command Line Tools, so pinning only
+the installer script would provide a misleading trust boundary. Managed machines
+may already provide Homebrew through IT; that installation is left untouched.
+
+On a clean Apple Silicon Mac running a supported macOS release:
+
+1. Install the Command Line Tools and confirm `xcode-select -p` succeeds.
+2. Install Homebrew manually, preferably from the signed `Homebrew.pkg` attached
+   to a reviewed [Homebrew release](https://github.com/Homebrew/brew/releases).
+3. Run `make system-packages` to install GNU Stow and the other native packages.
+4. Run `make setup-user`, which installs user-space tools, links the dotfiles,
+   and restores plugins. Rerunning `make setup` performs steps 3 and 4 together.
+
+Before installing a package, verify both GitHub's published SHA-256 digest and
+Apple's signature/notarization result. Replace the example version with the
+release you reviewed:
+
+```sh
+version=7.0.2
+curl -fL -o Homebrew.pkg \
+  "https://github.com/Homebrew/brew/releases/download/$version/Homebrew.pkg"
+shasum -a 256 Homebrew.pkg
+gh api "repos/Homebrew/brew/releases/tags/$version" \
+  --jq '.assets[] | select(.name == "Homebrew.pkg") | .digest' | \
+  sed 's/^sha256://'
+pkgutil --check-signature Homebrew.pkg
+spctl --assess --type install -vv Homebrew.pkg
+sudo installer -pkg Homebrew.pkg -target /
+```
+
+Confirm that the computed hash matches the API digest and that macOS reports an
+accepted, notarized Developer ID Installer signature before using `sudo`. The
+package installer supports Apple Silicon only. On Intel Macs, Homebrew is a
+Tier 3 configuration; keep a working `/usr/local/bin/brew` supplied by IT or
+follow Homebrew's current manual guidance. Formulae in `setup/packages/brew.txt`
+are intentionally unversioned and move with Homebrew; this repository prevents
+an automatic Homebrew self-update during the package phase but does not claim
+content-pinned native packages.
 
 ### Git identity
 
