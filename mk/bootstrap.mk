@@ -1,8 +1,9 @@
 .PHONY: setup install system-packages link link-plan link-linux link-macos _link _link-plan _ensure-git-local-config _print-packages
 
-setup: ## full bootstrap: system packages + mise tools + links + editor plugins + sheldon lock
+setup: ## full bootstrap: system packages + tools + links + shell/tmux/editor plugins
 	@$(MAKE) install
 	@$(MAKE) link
+	@$(MAKE) tmux-plugins
 	@$(MAKE) vim-plugins
 	@$(MAKE) nvim-plugins
 	@$(MAKE) sheldon-plugins

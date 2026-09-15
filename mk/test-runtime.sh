@@ -25,13 +25,24 @@ if ! command -v stow >/dev/null 2>&1; then
 fi
 
 test_root=$(mktemp -d) || exit 1
-trap 'rm -rf "$test_root"' EXIT
-trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
+tmux_bin=$(command -v tmux 2>/dev/null || true)
+tmux_missing_socket=/tmp/dotfiles-tmux-missing.$$
+tmux_restored_socket=/tmp/dotfiles-tmux-restored.$$
+cleanup() {
+  if [ -n "$tmux_bin" ]; then
+    "$tmux_bin" -S "$tmux_missing_socket" kill-server >/dev/null 2>&1 || true
+    "$tmux_bin" -S "$tmux_restored_socket" kill-server >/dev/null 2>&1 || true
+  fi
+  rm -f "$tmux_missing_socket" "$tmux_restored_socket"
+  rm -rf "$test_root"
+}
+trap cleanup EXIT
+trap 'cleanup; exit 1' HUP INT TERM
 
 repo=$(pwd -P) || exit 1
 test_home=$test_root/home
 mkdir -p "$test_home"
-stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts >/dev/null 2>&1 || \
+stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts tmux >/dev/null 2>&1 || \
   fail "could not prepare the test HOME"
 
 runtime_log=$test_root/network.log
@@ -147,6 +158,64 @@ DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" run_zsh -c true \
 [ ! -s "$runtime_log" ] || fail ".zshenv invoked an external probe"
 if grep -Eq '\$\(|`' "$repo/zsh/.zshenv"; then
   fail ".zshenv contains command substitution"
+fi
+
+if [ -n "$tmux_bin" ]; then
+  echo "check-runtime: tmux without restored plugins"
+  git_stub=$test_home/bin/git
+  printf '%s\n' \
+    '#!/bin/sh' \
+    'printf "%s\\n" "$0 $*" >> "$DOTFILES_RUNTIME_LOG"' \
+    'exit 97' > "$git_stub"
+  chmod +x "$git_stub"
+  : > "$runtime_log"
+  env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    DOTFILES_RUNTIME_LOG="$runtime_log" \
+    "$tmux_bin" -S "$tmux_missing_socket" -f "$test_home/.tmux.conf" \
+      new-session -d 'sleep 30' || fail "tmux failed without plugins"
+  tpm_state=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_missing_socket" show-option -gv @dotfiles_tpm) || \
+    fail "tmux did not expose the missing-plugin state"
+  [ "$tpm_state" = missing ] || fail "tmux did not mark TPM as missing"
+  [ ! -d "$test_home/.tmux/plugins" ] || \
+    fail "tmux startup created a plugin directory"
+  [ ! -s "$runtime_log" ] || fail "tmux startup invoked git"
+  env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_missing_socket" kill-server
+
+  echo "check-runtime: tmux with restored TPM"
+  fake_tpm=$test_home/.tmux/plugins/tpm/tpm
+  tmux_marker=$test_root/tmux-plugin.marker
+  mkdir -p "$(dirname "$fake_tpm")"
+  printf '%s\n' \
+    '#!/bin/sh' \
+    ': > "$DOTFILES_TMUX_MARKER"' > "$fake_tpm"
+  chmod +x "$fake_tpm"
+  : > "$runtime_log"
+  env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    DOTFILES_RUNTIME_LOG="$runtime_log" DOTFILES_TMUX_MARKER="$tmux_marker" \
+    "$tmux_bin" -S "$tmux_restored_socket" -f "$test_home/.tmux.conf" \
+      new-session -d 'sleep 30' || fail "tmux failed with restored TPM"
+  attempts=0
+  while [ ! -f "$tmux_marker" ] && [ "$attempts" -lt 10 ]; do
+    attempts=$((attempts + 1))
+    sleep 1
+  done
+  [ -f "$tmux_marker" ] || fail "tmux did not run restored TPM"
+  [ ! -s "$runtime_log" ] || fail "restored tmux startup invoked git"
+  env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_restored_socket" kill-server
+else
+  echo "check-runtime: tmux not found"
+  if [ -n "${CI:-}" ]; then
+    exit 1
+  fi
+  echo "check-runtime: skipping tmux cases outside CI"
 fi
 
 echo "check-runtime: ok"
