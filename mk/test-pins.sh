@@ -60,6 +60,9 @@ expect_lint_failure "a six-field pin" "$bad"
 awk '!($1 == "mise" && $3 == "darwin-arm64")' "$real_pins" > "$bad"
 expect_lint_failure "incomplete mise platform coverage" "$bad"
 
+awk '!($1 == "actionlint" && $3 == "linux-amd64")' "$real_pins" > "$bad"
+expect_lint_failure "missing actionlint pin" "$bad"
+
 awk '!($1 == "sheldon" && $3 == "linux-arm64")' "$real_pins" > "$bad"
 expect_lint_failure "incomplete Sheldon platform coverage" "$bad"
 
@@ -95,6 +98,67 @@ legacy_brew=$(
 [ -z "$legacy_brew" ] || fail "legacy Homebrew installer remains in bootstrap code: $legacy_brew"
 if git grep -n 'fzf#install' -- 'vim/*' 'nvim/*' >/dev/null 2>&1; then
   fail "Vim still installs an unverified fzf binary"
+fi
+
+workflow_files=$(git -c core.quotePath=false ls-files \
+  '.github/workflows/*.yml' '.github/workflows/*.yaml') || \
+  fail "could not enumerate workflow files"
+[ -n "$workflow_files" ] || fail "no workflow files found"
+tagged_actions=$(
+  while IFS= read -r file; do
+    grep -HnE 'uses:[[:space:]]*[^@[:space:]]+@v[0-9]' "$file" || true
+  done <<EOF
+$workflow_files
+EOF
+)
+[ -z "$tagged_actions" ] || fail "workflow action uses a mutable tag: $tagged_actions"
+unpinned_actions=$(
+  while IFS= read -r file; do
+    grep -HnE 'uses:' "$file" || true
+  done <<EOF
+$workflow_files
+EOF
+)
+unpinned_actions=$(printf '%s\n' "$unpinned_actions" | \
+  grep -Ev 'uses:[[:space:]]*[^@[:space:]]+@[0-9a-f]{40}[[:space:]]+# v[0-9]' || true)
+[ -z "$unpinned_actions" ] || fail "workflow action lacks a SHA and version comment: $unpinned_actions"
+check_checkout_credentials() {
+  awk '
+    function finish_step() {
+      if (checkout && !credentials) failed = 1
+      checkout = 0
+      with_block = 0
+      credentials = 0
+    }
+    /^[[:space:]]*-[[:space:]]+[A-Za-z0-9_-]+:/ { finish_step() }
+    /uses:[[:space:]]*actions\/checkout@/ { checkout = 1; next }
+    checkout && /^[[:space:]]*with:[[:space:]]*$/ { with_block = 1; next }
+    checkout && with_block && \
+      /^[[:space:]]*persist-credentials:[[:space:]]*false([[:space:]]|$)/ {
+        credentials = 1
+      }
+    END { finish_step(); exit failed }
+  ' "$1"
+}
+while IFS= read -r file; do
+  check_checkout_credentials "$file" || \
+    fail "checkout action lacks persist-credentials: false in its with block: $file"
+done <<EOF
+$workflow_files
+EOF
+action_fixture=$test_root/action.yml
+printf '%s\n' \
+  'steps:' \
+  '  - uses: actions/checkout@v7' \
+  '  - uses: example/action@0123456789012345678901234567890123456789' \
+  > "$action_fixture"
+grep -Eq 'uses:[[:space:]]*[^@[:space:]]+@v[0-9]' "$action_fixture" || \
+  fail "workflow action guard missed a tag-pinned fixture"
+grep -F 'example/action@' "$action_fixture" | \
+  grep -Ev 'uses:[[:space:]]*[^@[:space:]]+@[0-9a-f]{40}[[:space:]]+# v[0-9]' >/dev/null || \
+  fail "workflow action guard missed a SHA without a version comment"
+if check_checkout_credentials "$action_fixture"; then
+  fail "workflow action guard missed checkout credentials"
 fi
 
 download_pattern='(^|[^[:alnum:]_.-])(curl|wget)([[:space:]]|$)'

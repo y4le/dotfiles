@@ -1,8 +1,10 @@
-.PHONY: vim-bootstrap vim-plugins nvim-bootstrap nvim-plugins nvim-update _restore-lazy-nvim
+.PHONY: vim-bootstrap vim-plugins nvim-bootstrap nvim-lazy nvim-plugins nvim-update _restore-lazy-nvim
 
 vim-bootstrap: vim-plugins ## [network] alias for vim-plugins
 
 nvim-bootstrap: nvim-plugins ## [network] alias for nvim-plugins
+
+nvim-lazy: _restore-lazy-nvim ## [network] restore only the pinned lazy.nvim checkout
 
 vim-plugins: ## [network] install pinned vim-plug and sync Vim plugins
 	@if ! command -v vim >/dev/null 2>&1; then \

@@ -185,6 +185,8 @@ check-make: ## [offline] dry-run make target graph and help output
 	@$(MAKE) -n nvim-plugins >/dev/null
 	@echo "check-make: make -n nvim-update"
 	@$(MAKE) -n nvim-update >/dev/null
+	@echo "check-make: make -n nvim-lazy"
+	@$(MAKE) -n nvim-lazy >/dev/null
 	@echo "check-make: make -n vim-plugins"
 	@vim_plan="$$( $(MAKE) -n vim-plugins )" || exit $$?; \
 	install_line="$$(printf '%s\n' "$$vim_plan" | awk '/mk\/pinned\.sh install vim-plug/ { print NR; exit }')"; \

@@ -96,3 +96,19 @@ commit behind a reviewed release tag. Never use the `master` URL.
 
 `:PlugUpgrade` follows upstream master. The next `make vim-plugins` deliberately
 reports and replaces that drift with the reviewed version.
+
+## Updating actionlint
+
+The workflow-lint job installs actionlint through the same verified artifact
+mechanism as the bootstrap binaries. Adopt a release only after reviewing its
+notes and allowing the usual seven-day soak unless it fixes a security issue.
+
+1. Download the release archive and the author's versioned checksums file.
+2. Compare the archive hash in that file with the GitHub release asset `digest`
+   and a locally computed SHA-256.
+3. Extract the regular `actionlint` member and record its SHA-256 separately.
+4. Confirm `actionlint --version` reports the pinned version, update the
+   `linux-amd64` row, and run `make check-pins` and `make check-actions`.
+
+Add other platform rows only when a checked-in workflow needs them; local
+developers can continue to install actionlint through their package manager.

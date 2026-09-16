@@ -193,7 +193,8 @@ if [ -n "$nvim_bin" ]; then
     "$test_root/nvim-missing.log" || fail "Neovim omitted the missing-lazy hint"
   [ ! -s "$runtime_log" ] || fail "Neovim startup invoked git or a downloader"
 
-  lazy_source=${DOTFILES_TEST_LAZY_DIR:-$original_home/.local/share/nvim/lazy/lazy.nvim}
+  lazy_data_home=${XDG_DATA_HOME:-$original_home/.local/share}
+  lazy_source=${DOTFILES_TEST_LAZY_DIR:-$lazy_data_home/nvim/lazy/lazy.nvim}
   if [ -d "$lazy_source" ]; then
     echo "check-runtime: Neovim with lazy.nvim but no restored plugins"
     lazy_dir=$test_home/.local/share/nvim/lazy/lazy.nvim
@@ -265,9 +266,17 @@ if [ -n "$nvim_bin" ]; then
       fail "simulated failure did not reach the Neovim restore process"
     fi
   else
+    if [ -n "${CI:-}" ]; then
+      echo "check-runtime: lazy.nvim fixture is required in CI"
+      exit 1
+    fi
     echo "check-runtime: lazy.nvim fixture not found; skipping restored-state cases"
   fi
 else
+  if [ -n "${CI:-}" ]; then
+    echo "check-runtime: nvim is required in CI"
+    exit 1
+  fi
   echo "check-runtime: nvim not found; skipping Neovim cases"
 fi
 
