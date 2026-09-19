@@ -7,8 +7,8 @@ Debian/Ubuntu (`apt-get`), Arch (`pacman`), and macOS (Homebrew).
 
 Linking requires Git, Make, and GNU Stow 2.3 or newer. `make setup-user` also
 assumes curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or
-`openssl`), and Vim are available. Native packages supply Zsh and tmux;
-user-space tools include Neovim.
+`openssl`), Vim, and tmux 3.1 or newer are available. Native packages supply
+Zsh and tmux; user-space tools include Neovim.
 
 If native prerequisites are missing, run `make system-packages` first; it uses
 sudo on Linux. On macOS it needs Homebrew (see the next section). On a managed

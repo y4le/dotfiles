@@ -36,7 +36,7 @@ Paths under `local/` mirror `HOME`:
 | `~/.zshrc` | `local/.config/zsh/sources/corp.zsh` |
 | `~/.vimrc` | `local/.vim/config/{plugins,maps,settings}.local.vim` |
 | `~/.config/nvim/init.lua` | `local/.config/nvim/lua/local/init.lua` |
-| `~/.tmux.conf` | `local/.tmux.local.conf` |
+| `~/.config/tmux/tmux.conf` | `local/.config/tmux/local.conf` |
 | `~/.example_corp_config` | `local/.example_corp_config` |
 
 Create the files, then run `make link-plan` and `make link`. Each destination

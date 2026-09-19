@@ -340,7 +340,7 @@ if [ -n "$tmux_bin" ]; then
   env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \
     DOTFILES_RUNTIME_LOG="$runtime_log" \
-    "$tmux_bin" -S "$tmux_missing_socket" -f "$test_home/.tmux.conf" \
+    "$tmux_bin" -S "$tmux_missing_socket" \
       new-session -d 'sleep 30' || fail "tmux failed without plugins"
   tpm_state=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \
@@ -366,7 +366,7 @@ if [ -n "$tmux_bin" ]; then
   env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \
     DOTFILES_RUNTIME_LOG="$runtime_log" DOTFILES_TMUX_MARKER="$tmux_marker" \
-    "$tmux_bin" -S "$tmux_restored_socket" -f "$test_home/.tmux.conf" \
+    "$tmux_bin" -S "$tmux_restored_socket" \
       new-session -d 'sleep 30' || fail "tmux failed with restored TPM"
   attempts=0
   while [ ! -f "$tmux_marker" ] && [ "$attempts" -lt 10 ]; do

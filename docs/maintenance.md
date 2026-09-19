@@ -122,6 +122,10 @@ the commands above.
 
 ### Stow layouts
 
+Tmux 3.1 and newer reads `~/.config/tmux/tmux.conf`. `make link` removes the old
+`~/.tmux.conf` only when it is a managed symlink into this checkout. Move a
+machine-local `~/.tmux.local.conf` to `~/.config/tmux/local.conf`.
+
 Installs from before the core/desktop split may have desktop links into the old
 `linux/` package or removed paths in `osx/`. On a desktop, run
 `make DESKTOP=1 link` once to replace them. Elsewhere, `make link` leaves those

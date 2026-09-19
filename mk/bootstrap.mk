@@ -1,4 +1,4 @@
-.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _ensure-git-local-config _print-packages
+.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-tmux-config _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -84,8 +84,28 @@ _link-plan: _require-stow
 _link: _link-plan
 	@echo "linking $(PLATFORM) packages: $(LINK_PACKAGES)"
 	@$(STOW) -R $(STOW_FLAGS) $(LINK_PACKAGES)
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' tmux '; then \
+		$(MAKE) _remove-legacy-tmux-config; \
+	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' git '; then \
 		$(MAKE) _ensure-git-local-config; \
+	fi
+
+_remove-legacy-tmux-config:
+	@target="$(HOME)/.tmux.conf"; \
+	legacy_parent="$$(cd "$(CURDIR)/tmux" && pwd -P)" || exit 1; \
+	legacy="$$legacy_parent/.tmux.conf"; \
+	if [ -L "$$target" ]; then \
+		link="$$(readlink "$$target")" || exit 1; \
+		case "$$link" in \
+			/*) linked_path="$$link" ;; \
+			*) linked_path="$(HOME)/$$link" ;; \
+		esac; \
+		linked_parent="$$(cd "$$(dirname "$$linked_path")" 2>/dev/null && pwd -P)" || true; \
+		if [ "$$linked_parent/$$(basename "$$linked_path")" = "$$legacy" ]; then \
+			echo "removing legacy managed ~/.tmux.conf link"; \
+			rm "$$target" || exit 1; \
+		fi; \
 	fi
 
 _ensure-git-local-config:

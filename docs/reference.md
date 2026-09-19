@@ -83,7 +83,7 @@ running Sheldon or downloading plugins; `make sheldon-plugins` creates it.
 | `~/.vim/config/maps.local.vim` | End of `maps.vim` | Mappings |
 | `~/.vimrc.local` | After plugins, settings, and maps | Final vimrc overrides |
 | `~/.config/nvim/lua/local/init.lua` | After core config, before lazy.nvim | Neovim settings and mappings |
-| `~/.tmux.local.conf` | Before navigation, status bar, and plugin includes | Local settings and extra `@plugin` lines; later includes can override them |
+| `~/.config/tmux/local.conf` | Before navigation, status bar, and plugin includes | Local settings and extra `@plugin` lines; later includes can override them |
 | `~/.gitconfig` | User-owned global Git config | Identity and machine-specific Git settings |
 
 ## Editors and tmux
@@ -114,7 +114,7 @@ does not relocate them.
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
-| tmux | `~/.tmux.conf`, `~/.config/tmux/` | Plugins under `~/.tmux/plugins/` |
+| tmux | `~/.config/tmux/tmux.conf` and supporting files | Plugins under `~/.tmux/plugins/` |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |

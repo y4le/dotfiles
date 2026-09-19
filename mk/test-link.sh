@@ -93,6 +93,10 @@ fi
   fail "fresh link folded .config/nvim"
 [ -L "$fresh_home/.config/nvim/init.lua" ] || \
   fail "fresh link did not create nvim/init.lua"
+[ -L "$fresh_home/.config/tmux/tmux.conf" ] || \
+  fail "fresh link did not create the tmux config"
+[ ! -e "$fresh_home/.tmux.conf" ] || \
+  fail "fresh link created the legacy tmux config path"
 [ -L "$fresh_home/.config/git/config" ] || \
   fail "fresh link did not create the portable Git config"
 [ -f "$fresh_home/.gitconfig" ] && [ ! -L "$fresh_home/.gitconfig" ] || \
@@ -208,6 +212,8 @@ done
 [ -L "$legacy_home/.vim" ] || fail "legacy setup did not fold .vim"
 ln -s "$repo/git/.gitconfig" "$legacy_home/.gitconfig" || \
   fail "legacy Git config setup failed"
+ln -s "$repo/tmux/.tmux.conf" "$legacy_home/.tmux.conf" || \
+  fail "legacy tmux config setup failed"
 legacy_log=$test_root/legacy-link.log
 if ! run_make "$legacy_home" link > "$legacy_log" 2>&1; then
   cat "$legacy_log" >&2
@@ -217,6 +223,10 @@ fi
   fail "legacy .vim directory remained folded"
 [ -f "$legacy_home/.gitconfig" ] && [ ! -L "$legacy_home/.gitconfig" ] || \
   fail "legacy Git config link was not migrated"
+[ ! -e "$legacy_home/.tmux.conf" ] && [ ! -L "$legacy_home/.tmux.conf" ] || \
+  fail "legacy tmux config link was not removed"
+[ -L "$legacy_home/.config/tmux/tmux.conf" ] || \
+  fail "legacy tmux config link was not replaced"
 assert_no_directory_links "$legacy_home" || fail "legacy migration left directory links"
 
 echo "check-link: existing local Git identity is preserved"

@@ -41,9 +41,9 @@ with a migration plan.
 Neovim, Atuin, mise, and Sheldon use XDG configuration paths. Zsh history uses
 XDG state, and user-level npm packages use XDG data. Git is split:
 portable behavior under `~/.config/git/`, identity in `~/.gitconfig` so global
-writes stay out of the checkout while that local file exists. Zsh, tmux, Vim,
-Bash, scripts, and agents keep home-directory entry points by choice; their
-generated state can still use XDG paths.
+writes stay out of the checkout while that local file exists. Tmux uses its XDG
+entry point. Zsh, Vim, Bash, scripts, and agents keep home-directory entry
+points by choice; their generated state can still use XDG paths.
 
 Tmux plugins under `~/.tmux/plugins/` remain a migration candidate. The
 [path reference](reference.md#configuration-and-state-paths) records where
