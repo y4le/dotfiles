@@ -77,6 +77,27 @@ ignored package files are rejected too.
 
 ## Migrate older installs
 
+### Shell data and state
+
+After updating an existing install, migrate npm globals before starting a new
+shell. Copy the history file so shells that are already running can still write
+their old history safely:
+
+```sh
+data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
+state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
+mkdir -p "$data_home"
+mkdir -p -m 700 "$state_home/zsh"
+mv "$HOME/.config/npm/globals" "$data_home/npm"
+cp -p "$HOME/.history" "$state_home/zsh/history"
+```
+
+Run only the commands whose source exists and whose destination does not. Start
+a new shell, confirm npm commands and history are available, then remove the
+legacy history file.
+
+### Stow layouts
+
 Installs from before the core/desktop split may have desktop links into the old
 `linux/` package or removed paths in `osx/`. On a desktop, run
 `make DESKTOP=1 link` once to replace them. Elsewhere, `make link` leaves those

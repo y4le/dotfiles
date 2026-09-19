@@ -30,7 +30,7 @@ path=(
 )
 
 # user-level npm packages
-export NPM_GLOBALS="$HOME/.config/npm/globals"
+export NPM_GLOBALS="${XDG_DATA_HOME:-$HOME/.local/share}/npm"
 export NPM_CONFIG_PREFIX="$NPM_GLOBALS"
 path+=("$NPM_GLOBALS/bin")
 

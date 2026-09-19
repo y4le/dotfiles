@@ -38,16 +38,17 @@ The layout stays mixed on purpose. New configuration uses an application's XDG
 path when supported; an existing path moves only for a concrete benefit and
 with a migration plan.
 
-Neovim, Atuin, mise, and Sheldon use XDG configuration paths. Git is split:
+Neovim, Atuin, mise, and Sheldon use XDG configuration paths. Zsh history uses
+XDG state, and user-level npm packages use XDG data. Git is split:
 portable behavior under `~/.config/git/`, identity in `~/.gitconfig` so global
 writes stay out of the checkout while that local file exists. Zsh, tmux, Vim,
 Bash, scripts, and agents keep home-directory entry points by choice (Zsh and
 tmux load supporting files from `~/.config`).
 
 Vim's undo, swap, and backup files under `~/.vim/` and tmux plugins under
-`~/.tmux/plugins/` are migration candidates; nothing has to move to use the
-repo. The [path reference](reference.md#configuration-and-state-paths) records
-where files actually live.
+`~/.tmux/plugins/` remain migration candidates. The
+[path reference](reference.md#configuration-and-state-paths) records where
+files actually live.
 
 Stow mirrors package paths literally, so `~/.config` is the supported
 configuration root; tools that honor XDG variables for data, state, or cache

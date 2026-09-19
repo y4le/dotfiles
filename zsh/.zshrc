@@ -66,7 +66,14 @@ export CLICOLOR=1 # ANSI colors in iterm2
 
 export SAVEHIST=100000        # keep history longer
 export HISTSIZE=100000        # ditto
-export HISTFILE=~/.history    # potentially share history with other shells
+zsh_state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
+if [[ ! -d "$zsh_state_dir" ]] && ! command mkdir -p -m 700 "$zsh_state_dir"; then
+  print -u2 "dotfiles: could not create $zsh_state_dir; using ~/.history"
+  export HISTFILE="$HOME/.history"
+else
+  export HISTFILE="$zsh_state_dir/history"
+fi
+unset zsh_state_dir
 setopt extended_history       # record timestamp of command in HISTFILE
 setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
 setopt hist_ignore_dups       # ignore duplicated commands history list

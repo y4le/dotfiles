@@ -71,6 +71,25 @@ printf '%s\n' 'typeset -g DOTFILES_SOURCE_MARKER=loaded' > \
 printf '%s\n' 'typeset -g DOTFILES_POST_MARKER=loaded' > \
   "$test_home/.post_profile"
 
+run_zsh_xdg() (
+  test_xdg_data=$1
+  test_xdg_state=$2
+  shift 2
+  env -i \
+    HOME="$test_home" \
+    PATH="${DOTFILES_TEST_PATH_PREFIX:-}/usr/local/bin:/usr/bin:/bin" \
+    XDG_DATA_HOME="$test_xdg_data" \
+    XDG_STATE_HOME="$test_xdg_state" \
+    SHELL=/bin/sh \
+    TERM=dumb \
+    LC_ALL=C \
+    DOTFILES_RUNTIME_LOG="$runtime_log" \
+    HTTPS_PROXY=http://127.0.0.1:9 \
+    HTTP_PROXY=http://127.0.0.1:9 \
+    ALL_PROXY=http://127.0.0.1:9 \
+    zsh "$@"
+)
+
 run_zsh() {
   env -i \
     HOME="$test_home" \
@@ -87,17 +106,46 @@ run_zsh() {
 
 echo "check-runtime: zsh without restored plugins"
 if ! run_zsh -i -c \
-  'print -r -- "$HISTFILE|$DOTFILES_SOURCE_MARKER|$DOTFILES_POST_MARKER"' \
+  'print -r -- "$HISTFILE|$NPM_GLOBALS|$DOTFILES_SOURCE_MARKER|$DOTFILES_POST_MARKER"' \
   > "$test_root/no-cache.out" 2> "$test_root/no-cache.err"; then
   fail "interactive zsh failed without optional tools"
 fi
 [ "$(cat "$test_root/no-cache.out")" = \
-  "$test_home/.history|loaded|loaded" ] || \
+  "$test_home/.local/state/zsh/history|$test_home/.local/share/npm|loaded|loaded" ] || \
   fail "interactive zsh skipped normal configuration"
+[ -d "$test_home/.local/state/zsh" ] || \
+  fail "interactive zsh did not create its state directory"
 [ "$(grep -Fc "dotfiles: zsh plugins not restored; run 'make plugins'" \
   "$test_root/no-cache.err")" -eq 1 ] || \
   fail "interactive zsh did not print exactly one restore hint"
 [ ! -s "$runtime_log" ] || fail "zsh startup invoked a network-capable command"
+
+echo "check-runtime: zsh XDG overrides"
+xdg_data=$test_root/xdg-data
+xdg_state=$test_root/xdg-state
+if ! run_zsh_xdg "$xdg_data" "$xdg_state" -i -c \
+  'print -r -- "$HISTFILE|$NPM_GLOBALS"' \
+  > "$test_root/xdg.out" 2> "$test_root/xdg.err"; then
+  fail "interactive zsh failed with XDG overrides"
+fi
+[ "$(cat "$test_root/xdg.out")" = \
+  "$xdg_state/zsh/history|$xdg_data/npm" ] || \
+  fail "interactive zsh ignored XDG data or state overrides"
+[ -d "$xdg_state/zsh" ] || fail "zsh did not create the overridden state path"
+
+echo "check-runtime: zsh state fallback"
+blocked_state=$test_root/blocked-state
+: > "$blocked_state"
+if ! run_zsh_xdg "$xdg_data" "$blocked_state" -i -c \
+  'print -r -- "$HISTFILE"' \
+  > "$test_root/state-fallback.out" 2> "$test_root/state-fallback.err"; then
+  fail "interactive zsh failed when its state path was unavailable"
+fi
+[ "$(cat "$test_root/state-fallback.out")" = "$test_home/.history" ] || \
+  fail "zsh did not fall back to its legacy history path"
+grep -F "dotfiles: could not create $blocked_state/zsh; using ~/.history" \
+  "$test_root/state-fallback.err" >/dev/null || \
+  fail "zsh did not report its history fallback"
 
 echo "check-runtime: zsh with restored cache"
 cache=$test_home/.cache/dotfiles/sheldon.zsh
