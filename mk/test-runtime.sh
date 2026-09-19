@@ -338,6 +338,8 @@ if [ -n "$tmux_bin" ]; then
   chmod +x "$git_stub"
   : > "$runtime_log"
   env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+    XDG_DATA_HOME="$test_root/custom-data" \
+    XDG_STATE_HOME="$test_root/custom-state" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \
     DOTFILES_RUNTIME_LOG="$runtime_log" \
     "$tmux_bin" -S "$tmux_missing_socket" \
@@ -347,7 +349,21 @@ if [ -n "$tmux_bin" ]; then
     "$tmux_bin" -S "$tmux_missing_socket" show-option -gv @dotfiles_tpm) || \
     fail "tmux did not expose the missing-plugin state"
   [ "$tpm_state" = missing ] || fail "tmux did not mark TPM as missing"
-  [ ! -d "$test_home/.tmux/plugins" ] || \
+  plugin_environment=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_missing_socket" show-environment -g \
+      TMUX_PLUGIN_MANAGER_PATH) || \
+    fail "tmux did not expose its plugin path"
+  plugin_path=${plugin_environment#*=}
+  [ "$plugin_path" = "$test_root/custom-data/tmux/plugins" ] || \
+    fail "tmux plugin path did not honor XDG_DATA_HOME"
+  resurrect_path=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_missing_socket" show-option -gv @resurrect-dir) || \
+    fail "tmux did not expose its resurrect path"
+  [ "$resurrect_path" = "$test_root/custom-state/tmux/resurrect" ] || \
+    fail "tmux resurrect path did not honor XDG_STATE_HOME"
+  [ ! -d "$test_root/custom-data/tmux/plugins" ] || \
     fail "tmux startup created a plugin directory"
   [ ! -s "$runtime_log" ] || fail "tmux startup invoked git"
   env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
@@ -355,7 +371,7 @@ if [ -n "$tmux_bin" ]; then
     "$tmux_bin" -S "$tmux_missing_socket" kill-server
 
   echo "check-runtime: tmux with restored TPM"
-  fake_tpm=$test_home/.tmux/plugins/tpm/tpm
+  fake_tpm=$test_home/.local/share/tmux/plugins/tpm/tpm
   tmux_marker=$test_root/tmux-plugin.marker
   mkdir -p "$(dirname "$fake_tpm")"
   printf '%s\n' \
@@ -374,6 +390,20 @@ if [ -n "$tmux_bin" ]; then
     sleep 1
   done
   [ -f "$tmux_marker" ] || fail "tmux did not run restored TPM"
+  plugin_environment=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_restored_socket" show-environment -g \
+      TMUX_PLUGIN_MANAGER_PATH) || \
+    fail "tmux did not expose its default plugin path"
+  plugin_path=${plugin_environment#*=}
+  [ "$plugin_path" = "$test_home/.local/share/tmux/plugins" ] || \
+    fail "tmux plugin path did not use its XDG default"
+  resurrect_path=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+    SHELL=/bin/sh TERM=xterm LC_ALL=C \
+    "$tmux_bin" -S "$tmux_restored_socket" show-option -gv @resurrect-dir) || \
+    fail "tmux did not expose its default resurrect path"
+  [ "$resurrect_path" = "$test_home/.local/state/tmux/resurrect" ] || \
+    fail "tmux resurrect path did not use its XDG default"
   [ ! -s "$runtime_log" ] || fail "restored tmux startup invoked git"
   env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \

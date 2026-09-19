@@ -126,6 +126,35 @@ Tmux 3.1 and newer reads `~/.config/tmux/tmux.conf`. `make link` removes the old
 `~/.tmux.conf` only when it is a managed symlink into this checkout. Move a
 machine-local `~/.tmux.local.conf` to `~/.config/tmux/local.conf`.
 
+Stop the tmux server before moving its plugins and saved layouts. Move an
+existing plugin tree when the destination does not exist:
+
+```sh
+data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
+state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
+plugin_dest=$data_home/tmux/plugins
+mkdir -p "$data_home/tmux" "$state_home/tmux"
+if [ -d "$HOME/.tmux/plugins" ] && [ ! -e "$plugin_dest" ]; then
+  mv "$HOME/.tmux/plugins" "$plugin_dest"
+fi
+```
+
+Saved layouts may be in either of two older locations. Copy each source that
+exists, then remove it after confirming restore works. The data-path source is
+copied second, so it wins if both sources contain the same filename:
+
+```sh
+state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
+resurrect_dest=$state_home/tmux/resurrect
+mkdir -p "$resurrect_dest"
+chmod 700 "$state_home/tmux" "$resurrect_dest"
+for old in "$HOME/.tmux/resurrect" "$HOME/.local/share/tmux/resurrect"; do
+  [ "$old" != "$resurrect_dest" ] || continue
+  [ ! -d "$old" ] || \
+    cp -Rp "$old/." "$resurrect_dest/"
+done
+```
+
 Installs from before the core/desktop split may have desktop links into the old
 `linux/` package or removed paths in `osx/`. On a desktop, run
 `make DESKTOP=1 link` once to replace them. Elsewhere, `make link` leaves those

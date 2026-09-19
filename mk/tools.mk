@@ -43,7 +43,7 @@ tmux-plugins: ## [network] restore tmux plugins at pinned commits
 		echo "git not found. Install it with your system package manager."; \
 		exit 1; \
 	fi
-	@root="$(HOME)/.tmux/plugins"; \
+	@root="$(TMUX_PLUGIN_DIR)"; \
 	mkdir -p "$$root"; \
 	while read -r name url commit extra || [ -n "$$name$$url$$commit$$extra" ]; do \
 		case "$$name" in ''|'#'*) continue ;; esac; \

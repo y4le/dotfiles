@@ -42,12 +42,11 @@ Neovim, Atuin, mise, and Sheldon use XDG configuration paths. Zsh history uses
 XDG state, and user-level npm packages use XDG data. Git is split:
 portable behavior under `~/.config/git/`, identity in `~/.gitconfig` so global
 writes stay out of the checkout while that local file exists. Tmux uses its XDG
-entry point. Zsh, Vim, Bash, scripts, and agents keep home-directory entry
-points by choice; their generated state can still use XDG paths.
-
-Tmux plugins under `~/.tmux/plugins/` remain a migration candidate. The
-[path reference](reference.md#configuration-and-state-paths) records where
-files actually live.
+entry point, stores plugins under XDG data, and stores saved layouts under XDG
+state. Zsh, Vim, Bash, scripts, and agents keep home-directory entry points by
+choice; their generated state can still use XDG paths. The [path
+reference](reference.md#configuration-and-state-paths) records where files
+actually live.
 
 Stow mirrors package paths literally, so `~/.config` is the supported
 configuration root; tools that honor XDG variables for data, state, or cache

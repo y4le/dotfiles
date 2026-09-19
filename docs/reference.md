@@ -114,7 +114,7 @@ does not relocate them.
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
-| tmux | `~/.config/tmux/tmux.conf` and supporting files | Plugins under `~/.tmux/plugins/` |
+| tmux | `~/.config/tmux/tmux.conf` and supporting files | Plugins under `~/.local/share/tmux/plugins/`; saved layouts under `~/.local/state/tmux/resurrect/` |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
@@ -123,8 +123,9 @@ does not relocate them.
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 
-Zsh history honors `XDG_STATE_HOME`; the npm prefix and Sheldon's data path
-honor `XDG_DATA_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
+Zsh history honors `XDG_STATE_HOME`; the npm prefix, Sheldon's data path, and
+tmux plugin path honor `XDG_DATA_HOME`; tmux saved layouts honor
+`XDG_STATE_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
 Neovim uses its standard config, data, and state paths. Vim keeps legacy config
 entry points but honors `XDG_STATE_HOME` for generated state. See the
 [XDG policy](design.md#xdg-boundary) before changing these defaults.
