@@ -96,6 +96,30 @@ Run only the commands whose source exists and whose destination does not. Start
 a new shell, confirm npm commands and history are available, then remove the
 legacy history file.
 
+### Vim state
+
+Close Vim before migrating state. Create the destination directories, then copy
+each existing source that is present:
+
+```sh
+state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
+mkdir -p -m 700 "$state_home/vim/undo" "$state_home/vim/view" \
+  "$state_home/vim/sessions"
+[ ! -f "$HOME/.viminfo" ] || cp -p "$HOME/.viminfo" "$state_home/vim/viminfo"
+[ ! -f "$HOME/.vim/mru_files" ] || \
+  cp -p "$HOME/.vim/mru_files" "$state_home/vim/mru_files"
+for name in undo view sessions; do
+  [ ! -d "$HOME/.vim/$name" ] || \
+    cp -Rp "$HOME/.vim/$name/." "$state_home/vim/$name/"
+done
+```
+
+The old `~/.vim/tmp/` mixed disposable swap files with backup files. After all
+Vim processes have stopped and any needed recovery is complete, remove it; Vim
+now creates separate `swap/` and `backup/` directories under its state root.
+After confirming the migrated state, remove the other legacy sources copied by
+the commands above.
+
 ### Stow layouts
 
 Installs from before the core/desktop split may have desktop links into the old

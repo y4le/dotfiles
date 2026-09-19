@@ -111,12 +111,13 @@ run_startup() {
   # These expressions are intentionally evaluated by Vim, not this shell.
   # shellcheck disable=SC2016
   env -i HOME="$runtime_home" PATH="$runtime_bin:/usr/local/bin:/usr/bin:/bin" \
+    XDG_STATE_HOME="$runtime_home/xdg-state" \
     LC_ALL=C HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
     ALL_PROXY=http://127.0.0.1:9 DOTFILES_NETWORK_LOG="$network_log" \
     DOTFILES_VIM_MESSAGES="$messages" DOTFILES_VIM_STATE="$state" \
-    vim -Nu "$runtime_home/.vimrc" -i NONE -n -es \
+    vim -Nu "$runtime_home/.vimrc" -n -es \
       -c 'call writefile(split(execute("messages"), "\n"), $DOTFILES_VIM_MESSAGES)' \
-      -c 'call writefile([exists("g:MRU_File"), exists(":FzfMru"), maparg("\<Space>Fm", "n"), maparg("\<Space>Fpm", "n"), get(g:, "colors_name", "")], $DOTFILES_VIM_STATE)' \
+      -c 'call writefile([exists("g:MRU_File"), exists(":FzfMru"), maparg("\<Space>Fm", "n"), maparg("\<Space>Fpm", "n"), get(g:, "colors_name", ""), $VIMSTATE, &viminfofile, &undodir, &directory, &backupdir, &viewdir, get(g:, "MRU_File", "")], $DOTFILES_VIM_STATE)' \
       -c 'qa!' > /dev/null 2> "$runtime_stderr"
 }
 
@@ -140,6 +141,35 @@ fi
 hint_count=$(grep -Fc "plug.vim not found - run 'make vim-plugins'" "$messages" || true)
 [ "$hint_count" -eq 1 ] || fail "startup without vim-plug did not report one recovery hint"
 assert_clean_startup "startup without vim-plug"
+vim_state=$runtime_home/xdg-state/vim
+[ "$(sed -n '6p' "$state")" = "$vim_state" ] || \
+  fail "Vim ignored XDG_STATE_HOME"
+[ "$(sed -n '7p' "$state")" = "$vim_state/viminfo" ] || \
+  fail "Vim used the wrong viminfo path"
+[ "$(sed -n '8p' "$state")" = "$vim_state/undo//" ] || \
+  fail "Vim used the wrong undo path"
+[ "$(sed -n '9p' "$state")" = "$vim_state/swap//" ] || \
+  fail "Vim used the wrong swap path"
+[ "$(sed -n '10p' "$state")" = "$vim_state/backup//" ] || \
+  fail "Vim used the wrong backup path"
+[ "$(sed -n '11p' "$state")" = "$vim_state/view" ] || \
+  fail "Vim used the wrong view path"
+for state_dir in backup sessions swap undo view; do
+  [ -d "$vim_state/$state_dir" ] || fail "Vim did not create $state_dir state"
+done
+[ -f "$vim_state/viminfo" ] || fail "Vim did not write viminfo state"
+
+relative_state_output=$test_root/relative-state.out
+if ! env -i HOME="$runtime_home" PATH="$runtime_bin:/usr/local/bin:/usr/bin:/bin" \
+  XDG_STATE_HOME=relative LC_ALL=C DOTFILES_NETWORK_LOG="$network_log" \
+  DOTFILES_RELATIVE_STATE="$relative_state_output" \
+  vim -Nu "$runtime_home/.vimrc" -i NONE -n -es \
+    -c 'call writefile([$VIMSTATE], $DOTFILES_RELATIVE_STATE)' \
+    -c 'qa!' > /dev/null 2> "$runtime_stderr"; then
+  fail "Vim failed with a relative XDG_STATE_HOME"
+fi
+[ "$(cat "$relative_state_output")" = "$runtime_home/.local/state/vim" ] || \
+  fail "Vim accepted a relative XDG_STATE_HOME"
 
 cat > "$runtime_home/.vim/autoload/plug.vim" <<'EOF'
 function! plug#begin(...) abort
@@ -162,6 +192,8 @@ fi
 [ "$(sed -n '2p' "$state")" = 2 ] || fail "FzfMru was not defined"
 [ "$(sed -n '3p' "$state")" = ':FzfMru<CR>' ] || fail "FzfMru mapping was not defined"
 [ "$(sed -n '4p' "$state")" = ':FzfMru!<CR>' ] || fail "FzfMru preview mapping was not defined"
+[ "$(sed -n '12p' "$state")" = "$vim_state/mru_files" ] || \
+  fail "MRU state used the wrong path"
 assert_clean_startup "startup with stub vim-plug"
 
 mkdir -p "$runtime_home/.vim/colors"

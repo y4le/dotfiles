@@ -1,7 +1,10 @@
 if has('win32') || has ('win64')
   let $VIMHOME = $VIM . "/vimfiles"
+  let $VIMSTATE = $VIMHOME
 else
   let $VIMHOME = $HOME . "/.vim"
+  let $VIMSTATE = (exists('$XDG_STATE_HOME') && $XDG_STATE_HOME =~# '^/'
+    \ ? $XDG_STATE_HOME : $HOME . "/.local/state") . "/vim"
 endif
 
 let mapleader = "\<Space>" " set leader to Space

@@ -21,18 +21,20 @@ set viewoptions=cursor,folds,slash,unix
 " don't save view for these files
 let g:skipview_files = ['*\.vim']
 
-" create $VIMHOME/(tmp|undo|sessions|view) if not present
-for dir in ["/tmp", "/undo", "/sessions", "/view"]
-  if !isdirectory($VIMHOME . dir)
-    call mkdir($VIMHOME . dir, "", 0700)
+" keep generated editor state out of the configuration directory
+for dir in ["/backup", "/sessions", "/swap", "/undo", "/view"]
+  if !isdirectory($VIMSTATE . dir)
+    call mkdir($VIMSTATE . dir, "p", 0700)
   endif
 endfor
 
-set undodir^=$VIMHOME/undo//,. " save undo history here
+let &undodir = $VIMSTATE . "/undo//"
 set undofile " keep undo history
 
-set directory^=$VIMHOME/tmp//,. " save swapfiles here
-set backupdir^=$VIMHOME/tmp//,. " save backups here
+let &directory = $VIMSTATE . "/swap//"
+let &backupdir = $VIMSTATE . "/backup//"
+let &viewdir = $VIMSTATE . "/view"
+let &viminfofile = $VIMSTATE . "/viminfo"
 set backup " keep backups
 
 " LOOK

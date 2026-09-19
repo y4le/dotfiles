@@ -117,5 +117,5 @@ let g:goyo_margin_top = 0
 let g:goyo_margin_bottom = 0
 
 " setup mru
-let MRU_File = $VIMHOME . '/mru_files'
+let MRU_File = $VIMSTATE . '/mru_files'
 let MRU_Max_Entries = 1000

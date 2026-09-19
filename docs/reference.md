@@ -112,7 +112,7 @@ does not relocate them.
 | Sheldon | `~/.config/sheldon/plugins.toml` | `~/.local/share/sheldon/`; startup cache under `~/.cache/dotfiles/` |
 | mise | `~/.config/mise/config.toml` | `~/.local/share/mise/`; bootstrap binary in `~/.local/bin/` |
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
-| Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; undo, swap, backups, sessions, and views under `~/.vim/` |
+| Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
 | tmux | `~/.tmux.conf`, `~/.config/tmux/` | Plugins under `~/.tmux/plugins/` |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
@@ -125,6 +125,6 @@ does not relocate them.
 
 Zsh history honors `XDG_STATE_HOME`; the npm prefix and Sheldon's data path
 honor `XDG_DATA_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
-Neovim uses its standard config, data, and state paths. Vim's paths remain
-explicit. See the [XDG policy](design.md#xdg-boundary) before changing these
-defaults.
+Neovim uses its standard config, data, and state paths. Vim keeps legacy config
+entry points but honors `XDG_STATE_HOME` for generated state. See the
+[XDG policy](design.md#xdg-boundary) before changing these defaults.
