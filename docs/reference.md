@@ -113,6 +113,7 @@ does not relocate them.
 | mise | `~/.config/mise/config.toml` | `~/.local/share/mise/`; bootstrap binary in `~/.local/bin/` |
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
+| IdeaVim | `~/.config/ideavim/ideavimrc` | IDE-managed state |
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
 | tmux | `~/.config/tmux/tmux.conf` and supporting files | Plugins under `~/.local/share/tmux/plugins/`; saved layouts under `~/.local/state/tmux/resurrect/` |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |

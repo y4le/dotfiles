@@ -38,8 +38,8 @@ The layout stays mixed on purpose. New configuration uses an application's XDG
 path when supported; an existing path moves only for a concrete benefit and
 with a migration plan.
 
-Neovim, Atuin, mise, and Sheldon use XDG configuration paths. Zsh history uses
-XDG state, and user-level npm packages use XDG data. Git is split:
+Neovim, IdeaVim, Atuin, mise, and Sheldon use XDG configuration paths. Zsh
+history uses XDG state, and user-level npm packages use XDG data. Git is split:
 portable behavior under `~/.config/git/`, identity in `~/.gitconfig` so global
 writes stay out of the checkout while that local file exists. Tmux uses its XDG
 entry point, stores plugins under XDG data, and stores saved layouts under XDG

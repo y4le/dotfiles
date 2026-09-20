@@ -99,6 +99,10 @@ fi
   fail "fresh link did not create shell helpers under XDG config"
 [ ! -e "$fresh_home/.funcs" ] || \
   fail "fresh link created the legacy shell helper directory"
+[ -L "$fresh_home/.config/ideavim/ideavimrc" ] || \
+  fail "fresh link did not create IdeaVim config under XDG config"
+[ ! -e "$fresh_home/.ideavimrc" ] || \
+  fail "fresh link created the legacy IdeaVim config path"
 [ ! -e "$fresh_home/.tmux.conf" ] || \
   fail "fresh link created the legacy tmux config path"
 [ -L "$fresh_home/.config/git/config" ] || \
@@ -218,6 +222,8 @@ ln -s "$repo/git/.gitconfig" "$legacy_home/.gitconfig" || \
   fail "legacy Git config setup failed"
 ln -s "$repo/tmux/.tmux.conf" "$legacy_home/.tmux.conf" || \
   fail "legacy tmux config setup failed"
+ln -s "$repo/vim/.ideavimrc" "$legacy_home/.ideavimrc" || \
+  fail "legacy IdeaVim config setup failed"
 mkdir -p "$legacy_home/.funcs"
 for name in cpst fzf_sources nav y; do
   ln -s "$repo/scripts/.funcs/$name" "$legacy_home/.funcs/$name" || \
@@ -240,6 +246,10 @@ fi
   fail "legacy shell helper links were not removed"
 [ -L "$legacy_home/.config/shell/functions/cpst" ] || \
   fail "legacy shell helpers were not replaced"
+[ ! -e "$legacy_home/.ideavimrc" ] && [ ! -L "$legacy_home/.ideavimrc" ] || \
+  fail "legacy IdeaVim config link was not removed"
+[ -L "$legacy_home/.config/ideavim/ideavimrc" ] || \
+  fail "legacy IdeaVim config link was not replaced"
 assert_no_directory_links "$legacy_home" || fail "legacy migration left directory links"
 
 folded_helper_home=$test_root/folded-helper-home
@@ -260,6 +270,15 @@ run_make "$external_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected an unrelated helper"
 [ "$(readlink "$external_helper_home/.funcs/cpst")" = "$test_root/external-helper" ] || \
   fail "link removed an unrelated helper"
+
+echo "check-link: unrelated IdeaVim config is preserved"
+external_ideavim_home=$test_root/external-ideavim-home
+mkdir -p "$external_ideavim_home"
+ln -s "$test_root/external-ideavimrc" "$external_ideavim_home/.ideavimrc"
+run_make "$external_ideavim_home" link >/dev/null 2>&1 || \
+  fail "link rejected an unrelated IdeaVim config"
+[ "$(readlink "$external_ideavim_home/.ideavimrc")" = "$test_root/external-ideavimrc" ] || \
+  fail "link removed an unrelated IdeaVim config"
 
 echo "check-link: existing local Git identity is preserved"
 identity_home=$test_root/identity-home

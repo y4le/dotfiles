@@ -127,6 +127,11 @@ now creates separate `swap/` and `backup/` directories under its state root.
 After confirming the migrated state, remove the other legacy sources copied by
 the commands above.
 
+IdeaVim discovers `~/.config/ideavim/ideavimrc` in supported versions. `make link`
+removes the old `~/.ideavimrc` only when it is a managed symlink into this
+checkout; move any user-owned config before linking. Restart the IDE and test
+a custom mapping after migration.
+
 ### Stow layouts
 
 Tmux 3.1 and newer reads `~/.config/tmux/tmux.conf`. `make link` removes the old
