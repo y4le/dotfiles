@@ -84,6 +84,22 @@ checkout. Move any machine-local helpers from `~/.funcs/` to
 `~/.config/shell/functions/` before starting a new shell; the new directory is
 sourced at the same point in Zsh startup.
 
+### Zsh local hooks
+
+Move existing local hooks to their new paths while preserving their contents:
+
+| Old path | New path |
+| --- | --- |
+| `~/.zshenv.local` | `~/.config/zsh/hooks/env.zsh` |
+| `~/.pre_profile` | `~/.config/zsh/hooks/pre.zsh` |
+| `~/.post_profile` | `~/.config/zsh/hooks/post.zsh` |
+
+The new hooks keep their original startup phases. Each old path remains a
+fallback until its new counterpart exists. If a hook is stowed from `local/`,
+move its source into `local/.config/zsh/hooks/` and run `make link`; the target
+path changes with it. `make link` removes a legacy local symlink only after the
+new hook exists, and only when the link points into this checkout.
+
 ### Shell data and state
 
 After updating an existing install, migrate npm globals before starting a new

@@ -392,4 +392,89 @@ if find "$clean_home" -type l -print | grep -q .; then
 fi
 [ -f "$clean_home/.config/user-owned" ] || fail "clean removed a user file"
 
+echo "check-link: local Zsh hook migration"
+# $repo is a disposable archive under $test_root; the source checkout is untouched.
+mkdir -p "$repo/local/.config/zsh/hooks" "$test_root/local-hook-home"
+printf '%s\n' 'export ENV_HOOK_MARKER=legacy' > "$repo/local/.zshenv.local"
+printf '%s\n' 'export HOOK_MARKER=legacy' > "$repo/local/.pre_profile"
+printf '%s\n' 'export POST_HOOK_MARKER=legacy' > "$repo/local/.post_profile"
+printf '%s\n' 'export ENV_HOOK_MARKER=new' > "$repo/local/.config/zsh/hooks/env.zsh"
+printf '%s\n' 'export HOOK_MARKER=new' > "$repo/local/.config/zsh/hooks/pre.zsh"
+ln -s '../home/dev/dotfiles/local/.zshenv.local' \
+  "$test_root/local-hook-home/.zshenv.local"
+ln -s '../home/dev/dotfiles/local/.pre_profile' \
+  "$test_root/local-hook-home/.pre_profile"
+run_make "$test_root/local-hook-home" link \
+  > "$test_root/local-hook-link.log" 2>&1 || \
+  { cat "$test_root/local-hook-link.log" >&2; fail "local hook migration link failed"; }
+[ -L "$test_root/local-hook-home/.config/zsh/hooks/env.zsh" ] || \
+  fail "new local Zsh environment hook was not linked"
+[ -L "$test_root/local-hook-home/.config/zsh/hooks/pre.zsh" ] || \
+  fail "new local Zsh hook was not linked"
+[ ! -L "$test_root/local-hook-home/.zshenv.local" ] || \
+  fail "old managed Zsh environment hook link was not removed"
+[ ! -L "$test_root/local-hook-home/.pre_profile" ] || \
+  fail "old managed Zsh hook link was not removed"
+
+mkdir -p "$test_root/zsh-only-hook-home"
+ln -s '../home/dev/dotfiles/local/.pre_profile' \
+  "$test_root/zsh-only-hook-home/.pre_profile"
+run_make "$test_root/zsh-only-hook-home" _link LINK_PACKAGES=zsh \
+  >/dev/null 2>&1 || fail "zsh-only link failed"
+[ -L "$test_root/zsh-only-hook-home/.pre_profile" ] || \
+  fail "zsh-only link removed a local package hook"
+
+# The old package entries have been moved before a user-owned path is tested.
+rm -f "$repo/local/.zshenv.local" "$repo/local/.pre_profile"
+for kind in file external-link; do
+  protected_home=$test_root/local-hook-$kind-home
+  mkdir -p "$protected_home"
+  if [ "$kind" = file ]; then
+    printf '%s\n' 'keep me' > "$protected_home/.pre_profile"
+  else
+    printf '%s\n' 'keep me' > "$test_root/external-pre-profile"
+    ln -s "$test_root/external-pre-profile" "$protected_home/.pre_profile"
+  fi
+  run_make "$protected_home" link >/dev/null 2>&1 || \
+    fail "local hook link failed with a user-owned legacy $kind"
+  [ -L "$protected_home/.config/zsh/hooks/pre.zsh" ] || \
+    fail "new local Zsh hook was not linked with a user-owned legacy $kind"
+  if [ "$kind" = file ]; then
+    [ "$(cat "$protected_home/.pre_profile")" = 'keep me' ] || \
+      fail "user-owned legacy hook file was changed"
+  else
+    [ "$(readlink "$protected_home/.pre_profile")" = \
+      "$test_root/external-pre-profile" ] || \
+      fail "external legacy hook link was changed"
+  fi
+done
+
+mkdir -p "$test_root/local-hook-fallback-home"
+ln -s '../home/dev/dotfiles/local/.post_profile' \
+  "$test_root/local-hook-fallback-home/.post_profile"
+run_make "$test_root/local-hook-fallback-home" link >/dev/null 2>&1 || \
+  fail "legacy local hook fallback link failed"
+[ -L "$test_root/local-hook-fallback-home/.post_profile" ] || \
+  fail "legacy hook link was removed without a replacement"
+
+printf '%s\n' 'export POST_HOOK_MARKER=new' > \
+  "$repo/local/.config/zsh/hooks/post.zsh"
+mkdir -p "$test_root/local-post-hook-home"
+ln -s '../home/dev/dotfiles/local/.post_profile' \
+  "$test_root/local-post-hook-home/.post_profile"
+run_make "$test_root/local-post-hook-home" link >/dev/null 2>&1 || \
+  fail "local post-hook migration link failed"
+[ -L "$test_root/local-post-hook-home/.config/zsh/hooks/post.zsh" ] || \
+  fail "new local post hook was not linked"
+[ ! -L "$test_root/local-post-hook-home/.post_profile" ] || \
+  fail "old managed post-hook link was not removed"
+
+rm -f "$repo/local/.config/zsh/hooks/env.zsh" \
+  "$repo/local/.config/zsh/hooks/pre.zsh" \
+  "$repo/local/.config/zsh/hooks/post.zsh" \
+  "$repo/local/.zshenv.local" "$repo/local/.pre_profile" \
+  "$repo/local/.post_profile"
+rmdir "$repo/local/.config/zsh/hooks" "$repo/local/.config/zsh" \
+  "$repo/local/.config" "$repo/local" 2>/dev/null || :
+
 echo "check-link: ok"

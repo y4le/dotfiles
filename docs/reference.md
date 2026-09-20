@@ -55,16 +55,18 @@ set, not the host's package manager.
 
 These are the repo's startup stages; system-wide Zsh files are separate.
 
-1. `~/.zshenv` runs in all shells. It first sources `~/.zshenv.local`, then sets
-   editor, pager, and path defaults.
-2. `~/.zshrc` runs in interactive shells. It first sources `~/.pre_profile`,
-   then initializes available tools and loads the Sheldon cache (or fallback
-   prompt).
+1. `~/.zshenv` runs in all shells. It first sources
+   `~/.config/zsh/hooks/env.zsh`, then sets editor, pager, and path defaults.
+2. `~/.zshrc` runs in interactive shells. It first sources
+   `~/.config/zsh/hooks/pre.zsh`, then initializes available tools and loads
+   the Sheldon cache (or fallback prompt).
 3. `~/.config/shell/functions` and `~/.config/zsh/sources` are sourced
    recursively, in that directory order.
 4. The rest of `.zshrc` sets terminal options, history, key bindings, and fzf
    options.
-5. `~/.post_profile` runs last.
+5. `~/.config/zsh/hooks/post.zsh` runs last.
+
+Each hook falls back to its legacy home path when the new file is absent.
 
 The Sheldon startup cache is
 `${XDG_CACHE_HOME:-~/.cache}/dotfiles/sheldon.zsh`. Startup reads it without
@@ -74,10 +76,10 @@ running Sheldon or downloading plugins; `make sheldon-plugins` creates it.
 
 | Hook | When it loads | Use |
 | --- | --- | --- |
-| `~/.zshenv.local` | First inside `.zshenv`, including noninteractive shells | Cheap environment setup; later defaults can overwrite values |
-| `~/.pre_profile` | First inside `.zshrc` | Setup needed before interactive tool initialization |
+| `~/.config/zsh/hooks/env.zsh` | First inside `.zshenv`, including noninteractive shells | Cheap environment setup; later defaults can overwrite values |
+| `~/.config/zsh/hooks/pre.zsh` | First inside `.zshrc` | Setup needed before interactive tool initialization |
 | `~/.config/zsh/sources/*` | After tool initialization, before remaining shell options | Usual place for machine aliases and environment |
-| `~/.post_profile` | Last inside `.zshrc` | Final interactive overrides |
+| `~/.config/zsh/hooks/post.zsh` | Last inside `.zshrc` | Final interactive overrides |
 | `~/.vim/config/plugins.local.vim` | Before `plug#end()` when vim-plug is available | Additional plugin declarations |
 | `~/.vim/config/settings.local.vim` | End of `settings.vim` | Built-in settings |
 | `~/.vim/config/maps.local.vim` | End of `maps.vim` | Mappings |

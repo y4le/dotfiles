@@ -65,11 +65,21 @@ for command_name in sheldon curl wget; do
   chmod +x "$stub"
 done
 
-mkdir -p "$test_home/.config/zsh/sources"
-printf '%s\n' 'typeset -g DOTFILES_SOURCE_MARKER=loaded' > \
+mkdir -p "$test_home/.config/zsh/sources" "$test_home/.config/zsh/hooks"
+printf '%s\n' 'typeset -g DOTFILES_ENV_MARKER=new' \
+  'typeset -g DOTFILES_HOOK_ORDER=env' > \
+  "$test_home/.config/zsh/hooks/env.zsh"
+printf '%s\n' 'typeset -g DOTFILES_PRE_MARKER=new' \
+  'typeset -g DOTFILES_ENV_BEFORE_PRE=$DOTFILES_ENV_MARKER' \
+  'typeset -g DOTFILES_HOOK_ORDER=pre' > \
+  "$test_home/.config/zsh/hooks/pre.zsh"
+printf '%s\n' 'typeset -g DOTFILES_SOURCE_MARKER=loaded' \
+  'typeset -g DOTFILES_PRE_BEFORE_SOURCE=$DOTFILES_PRE_MARKER' \
+  'typeset -g DOTFILES_HOOK_ORDER=sources' > \
   "$test_home/.config/zsh/sources/runtime-test.zsh"
-printf '%s\n' 'typeset -g DOTFILES_POST_MARKER=loaded' > \
-  "$test_home/.post_profile"
+printf '%s\n' 'typeset -g DOTFILES_POST_MARKER=new' \
+  'typeset -g DOTFILES_HOOK_ORDER=post' > \
+  "$test_home/.config/zsh/hooks/post.zsh"
 
 run_zsh_xdg() (
   test_xdg_data=$1
@@ -106,13 +116,41 @@ run_zsh() {
 
 echo "check-runtime: zsh without restored plugins"
 if ! run_zsh -i -c \
-  'print -r -- "$HISTFILE|$NPM_GLOBALS|$DOTFILES_SOURCE_MARKER|$DOTFILES_POST_MARKER"' \
+  'print -r -- "$HISTFILE|$NPM_GLOBALS|$DOTFILES_SOURCE_MARKER|$DOTFILES_ENV_MARKER|$DOTFILES_ENV_BEFORE_PRE|$DOTFILES_PRE_MARKER|$DOTFILES_PRE_BEFORE_SOURCE|$DOTFILES_POST_MARKER|$DOTFILES_HOOK_ORDER"' \
   > "$test_root/no-cache.out" 2> "$test_root/no-cache.err"; then
   fail "interactive zsh failed without optional tools"
 fi
 [ "$(cat "$test_root/no-cache.out")" = \
-  "$test_home/.local/state/zsh/history|$test_home/.local/share/npm|loaded|loaded" ] || \
+  "$test_home/.local/state/zsh/history|$test_home/.local/share/npm|loaded|new|new|new|new|new|post" ] || \
   fail "interactive zsh skipped normal configuration"
+noninteractive_hook_state=$(run_zsh -c \
+  'print -r -- "$DOTFILES_ENV_MARKER|${DOTFILES_PRE_MARKER-unset}|${DOTFILES_POST_MARKER-unset}"' \
+  2> "$test_root/noninteractive-hooks.err") || \
+  fail "noninteractive zsh could not load its environment hook"
+[ "$noninteractive_hook_state" = 'new|unset|unset' ] || \
+  fail "Zsh local hooks ran in the wrong startup phase"
+
+echo "check-runtime: Zsh legacy local hook fallback"
+printf '%s\n' 'typeset -g DOTFILES_ENV_MARKER=legacy' > "$test_home/.zshenv.local"
+printf '%s\n' 'typeset -g DOTFILES_PRE_MARKER=legacy' > "$test_home/.pre_profile"
+printf '%s\n' 'typeset -g DOTFILES_POST_MARKER=legacy' > "$test_home/.post_profile"
+hook_state=$(run_zsh -i -c \
+  'print -r -- "$DOTFILES_ENV_MARKER|$DOTFILES_PRE_MARKER|$DOTFILES_POST_MARKER"' \
+  2> "$test_root/new-hooks.err") || fail "Zsh could not prefer new hooks"
+[ "$hook_state" = 'new|new|new' ] || fail "Zsh sourced legacy hooks before new hooks"
+for name in env pre post; do
+  mv "$test_home/.config/zsh/hooks/$name.zsh" "$test_root/$name.zsh"
+done
+hook_state=$(run_zsh -i -c \
+  'print -r -- "$DOTFILES_ENV_MARKER|$DOTFILES_PRE_MARKER|$DOTFILES_POST_MARKER"' \
+  2> "$test_root/legacy-hooks.err") || fail "Zsh could not load legacy hooks"
+[ "$hook_state" = 'legacy|legacy|legacy' ] || \
+  fail "Zsh did not preserve legacy local hooks"
+for name in env pre post; do
+  mv "$test_root/$name.zsh" "$test_home/.config/zsh/hooks/$name.zsh"
+done
+rm -f "$test_home/.zshenv.local" "$test_home/.pre_profile" \
+  "$test_home/.post_profile"
 helper_state=$(run_zsh -i -c \
   'print -r -- "$+functions[nav]|$+functions[y]|$+functions[cpy]|$+functions[fzf_src]"' \
   2> "$test_root/helpers.err") || fail "interactive zsh could not load shell helpers"

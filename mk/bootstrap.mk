@@ -1,4 +1,4 @@
-.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _ensure-git-local-config _print-packages
+.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -93,6 +93,9 @@ _link: _link-plan
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' tmux '; then \
 		$(MAKE) _remove-legacy-tmux-config; \
 	fi
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' local '; then \
+		$(MAKE) _remove-legacy-zsh-hooks; \
+	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' git '; then \
 		$(MAKE) _ensure-git-local-config; \
 	fi
@@ -106,6 +109,14 @@ _remove-legacy-functions:
 
 _remove-legacy-ideavimrc:
 	@sh mk/remove-legacy-link.sh "$(HOME)/.ideavimrc" "$(CURDIR)" "vim/.ideavimrc"
+
+_remove-legacy-zsh-hooks:
+	@for entry in 'env.zsh .zshenv.local' 'pre.zsh .pre_profile' 'post.zsh .post_profile'; do \
+		set -- $$entry; \
+		if [ -f "$(HOME)/.config/zsh/hooks/$$1" ]; then \
+			sh mk/remove-legacy-link.sh "$(HOME)/$$2" "$(CURDIR)" "local/$$2" || exit $$?; \
+		fi; \
+	done
 
 _remove-legacy-tmux-config:
 	@target="$(HOME)/.tmux.conf"; \

@@ -2,8 +2,12 @@
 # ~/.zshrc is only sourced for interactive shells
 # use ~/.zshenv if you always want to source
 
-# source ~/.pre_profile if present
-[[ -f $HOME/.pre_profile ]] && source $HOME/.pre_profile
+# source machine-local setup before interactive tools
+if [[ -f $HOME/.config/zsh/hooks/pre.zsh ]]; then
+  source $HOME/.config/zsh/hooks/pre.zsh
+elif [[ -f $HOME/.pre_profile ]]; then
+  source $HOME/.pre_profile
+fi
 
 if bat --version >/dev/null 2>&1; then
   export MANPAGER='bat -plman'
@@ -178,5 +182,9 @@ export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,
 type filez &>/dev/null && export FZF_DEFAULT_COMMAND='filez'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
-# source machine specific env/aliases
-[[ -f $HOME/.post_profile ]] && source $HOME/.post_profile
+# source final machine-local overrides
+if [[ -f $HOME/.config/zsh/hooks/post.zsh ]]; then
+  source $HOME/.config/zsh/hooks/post.zsh
+elif [[ -f $HOME/.post_profile ]]; then
+  source $HOME/.post_profile
+fi

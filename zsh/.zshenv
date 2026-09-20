@@ -2,8 +2,12 @@
 # ~/.zshenv is always sourced
 # use ~/.zshrc for interactive-only
 
-# source ~/.zshenv.local if present
-[[ -f $HOME/.zshenv.local ]] && source $HOME/.zshenv.local
+# source machine-local environment before setting portable defaults
+if [[ -f $HOME/.config/zsh/hooks/env.zsh ]]; then
+  source $HOME/.config/zsh/hooks/env.zsh
+elif [[ -f $HOME/.zshenv.local ]]; then
+  source $HOME/.zshenv.local
+fi
 
 export SHELL=${commands[zsh]:-${SHELL:-/bin/zsh}}
 
