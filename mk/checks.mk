@@ -31,7 +31,7 @@ check-shell: ## [offline] syntax-check and lint tracked shell files
 			zsh/.zshrc \
 			'zsh/.config/zsh/themes/*' \
 			'*/.config/zsh/sources/*' \
-			'*/.funcs/*' \
+			'*/.config/shell/functions/*' \
 	)" || { \
 		echo "check-shell: zsh path discovery failed"; \
 		fail=1; \

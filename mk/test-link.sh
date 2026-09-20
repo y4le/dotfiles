@@ -95,6 +95,10 @@ fi
   fail "fresh link did not create nvim/init.lua"
 [ -L "$fresh_home/.config/tmux/tmux.conf" ] || \
   fail "fresh link did not create the tmux config"
+[ -L "$fresh_home/.config/shell/functions/cpst" ] || \
+  fail "fresh link did not create shell helpers under XDG config"
+[ ! -e "$fresh_home/.funcs" ] || \
+  fail "fresh link created the legacy shell helper directory"
 [ ! -e "$fresh_home/.tmux.conf" ] || \
   fail "fresh link created the legacy tmux config path"
 [ -L "$fresh_home/.config/git/config" ] || \
@@ -214,6 +218,11 @@ ln -s "$repo/git/.gitconfig" "$legacy_home/.gitconfig" || \
   fail "legacy Git config setup failed"
 ln -s "$repo/tmux/.tmux.conf" "$legacy_home/.tmux.conf" || \
   fail "legacy tmux config setup failed"
+mkdir -p "$legacy_home/.funcs"
+for name in cpst fzf_sources nav y; do
+  ln -s "$repo/scripts/.funcs/$name" "$legacy_home/.funcs/$name" || \
+    fail "legacy shell helper setup failed"
+done
 legacy_log=$test_root/legacy-link.log
 if ! run_make "$legacy_home" link > "$legacy_log" 2>&1; then
   cat "$legacy_log" >&2
@@ -227,7 +236,30 @@ fi
   fail "legacy tmux config link was not removed"
 [ -L "$legacy_home/.config/tmux/tmux.conf" ] || \
   fail "legacy tmux config link was not replaced"
+[ ! -e "$legacy_home/.funcs" ] || \
+  fail "legacy shell helper links were not removed"
+[ -L "$legacy_home/.config/shell/functions/cpst" ] || \
+  fail "legacy shell helpers were not replaced"
 assert_no_directory_links "$legacy_home" || fail "legacy migration left directory links"
+
+folded_helper_home=$test_root/folded-helper-home
+mkdir -p "$folded_helper_home"
+ln -s "$repo/scripts/.funcs" "$folded_helper_home/.funcs"
+run_make "$folded_helper_home" link >/dev/null 2>&1 || \
+  fail "link rejected a folded legacy helper directory"
+[ ! -L "$folded_helper_home/.funcs" ] || \
+  fail "link left a folded legacy helper directory"
+[ -L "$folded_helper_home/.config/shell/functions/cpst" ] || \
+  fail "link did not replace folded legacy helpers"
+
+echo "check-link: unrelated shell helpers are preserved"
+external_helper_home=$test_root/external-helper-home
+mkdir -p "$external_helper_home/.funcs"
+ln -s "$test_root/external-helper" "$external_helper_home/.funcs/cpst"
+run_make "$external_helper_home" link >/dev/null 2>&1 || \
+  fail "link rejected an unrelated helper"
+[ "$(readlink "$external_helper_home/.funcs/cpst")" = "$test_root/external-helper" ] || \
+  fail "link removed an unrelated helper"
 
 echo "check-link: existing local Git identity is preserved"
 identity_home=$test_root/identity-home

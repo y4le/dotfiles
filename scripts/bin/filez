@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # grab the actual fzf_src function
-# This resolves to the stowed file in ~/.funcs at runtime, not a repo-relative path.
+# This resolves to the stowed file in ~/.config/shell/functions at runtime.
 # shellcheck source=/dev/null
-. ~/.funcs/fzf_sources
+. "$HOME/.config/shell/functions/fzf_sources"
 
 
 # store the parameters in env vars to pass fzf_src

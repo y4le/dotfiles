@@ -113,6 +113,17 @@ fi
 [ "$(cat "$test_root/no-cache.out")" = \
   "$test_home/.local/state/zsh/history|$test_home/.local/share/npm|loaded|loaded" ] || \
   fail "interactive zsh skipped normal configuration"
+helper_state=$(run_zsh -i -c \
+  'print -r -- "$+functions[nav]|$+functions[y]|$+functions[cpy]|$+functions[fzf_src]"' \
+  2> "$test_root/helpers.err") || fail "interactive zsh could not load shell helpers"
+[ "$helper_state" = '1|1|1|1' ] || \
+  fail "interactive zsh skipped shell helpers"
+env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" TERM=xterm \
+  bash -c '. "$HOME/.config/shell/functions/cpst"; declare -F cpy pst >/dev/null' || \
+  fail "Bash could not load clipboard helpers"
+env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" TERM=xterm \
+  bash -c 'root_file=.; hidden=false; color=false; debug=false; . "$HOME/.config/shell/functions/fzf_sources"; declare -F fzf_src >/dev/null' || \
+  fail "Bash could not load file-search helpers"
 [ -d "$test_home/.local/state/zsh" ] || \
   fail "interactive zsh did not create its state directory"
 [ "$(grep -Fc "dotfiles: zsh plugins not restored; run 'make plugins'" \

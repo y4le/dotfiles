@@ -77,6 +77,13 @@ ignored package files are rejected too.
 
 ## Migrate older installs
 
+### Shell helpers
+
+`make link` removes the old `~/.funcs/` links only when they point into this
+checkout. Move any machine-local helpers from `~/.funcs/` to
+`~/.config/shell/functions/` before starting a new shell; the new directory is
+sourced at the same point in Zsh startup.
+
 ### Shell data and state
 
 After updating an existing install, migrate npm globals before starting a new

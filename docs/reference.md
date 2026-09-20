@@ -15,7 +15,7 @@ Each Stow package mirrors paths under `HOME`. Package selection lives in
 | macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner) |
 
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
-`scripts` supplies `~/bin` commands and `~/.funcs` shell helpers.
+`scripts` supplies `~/bin` commands and `~/.config/shell/functions/` helpers.
 
 ## Make targets
 
@@ -60,8 +60,8 @@ These are the repo's startup stages; system-wide Zsh files are separate.
 2. `~/.zshrc` runs in interactive shells. It first sources `~/.pre_profile`,
    then initializes available tools and loads the Sheldon cache (or fallback
    prompt).
-3. `~/.funcs` and `~/.config/zsh/sources` are sourced recursively, in that
-   directory order.
+3. `~/.config/shell/functions` and `~/.config/zsh/sources` are sourced
+   recursively, in that directory order.
 4. The rest of `.zshrc` sets terminal options, history, key bindings, and fzf
    options.
 5. `~/.post_profile` runs last.
@@ -119,7 +119,7 @@ does not relocate them.
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
 | npm | Environment in `~/.zshenv` | Global packages under `~/.local/share/npm/` |
-| Scripts | `~/bin/`, `~/.funcs/` | No shared state directory |
+| Scripts | `~/bin/`, `~/.config/shell/functions/` | No shared state directory |
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 

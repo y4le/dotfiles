@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# This resolves to the stowed file in ~/.funcs at runtime, not a repo-relative path.
+# This resolves to the stowed file in ~/.config/shell/functions at runtime.
 # shellcheck source=/dev/null
-. ~/.funcs/cpst
+. "$HOME/.config/shell/functions/cpst"
 
 pst

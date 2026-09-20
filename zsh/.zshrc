@@ -44,7 +44,7 @@ fi
 
 # source all files in these dirs
 source_dirs=(
-  ~/.funcs
+  ~/.config/shell/functions
   ~/.config/zsh/sources
 )
 

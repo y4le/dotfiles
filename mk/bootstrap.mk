@@ -1,4 +1,4 @@
-.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-tmux-config _ensure-git-local-config _print-packages
+.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-tmux-config _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -84,12 +84,22 @@ _link-plan: _require-stow
 _link: _link-plan
 	@echo "linking $(PLATFORM) packages: $(LINK_PACKAGES)"
 	@$(STOW) -R $(STOW_FLAGS) $(LINK_PACKAGES)
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' scripts '; then \
+		$(MAKE) _remove-legacy-functions; \
+	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' tmux '; then \
 		$(MAKE) _remove-legacy-tmux-config; \
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' git '; then \
 		$(MAKE) _ensure-git-local-config; \
 	fi
+
+_remove-legacy-functions:
+	@for name in cpst fzf_sources nav y; do \
+		sh mk/remove-legacy-link.sh "$(HOME)/.funcs/$$name" "$(CURDIR)" "scripts/.funcs/$$name" || exit $$?; \
+	done
+	@sh mk/remove-legacy-link.sh "$(HOME)/.funcs" "$(CURDIR)" "scripts/.funcs"
+	@rmdir "$(HOME)/.funcs" 2>/dev/null || true
 
 _remove-legacy-tmux-config:
 	@target="$(HOME)/.tmux.conf"; \
