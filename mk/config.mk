@@ -74,5 +74,3 @@ PACKAGES_DIR         := setup/packages
 BREW_PACKAGES_FILE   := $(PACKAGES_DIR)/brew.txt
 APT_PACKAGES_FILE    := $(PACKAGES_DIR)/apt.txt
 PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
-TMUX_PLUGIN_PINS_FILE := setup/pins/tmux-plugins.txt
-TMUX_PLUGIN_DIR       := $(if $(filter /%,$(XDG_DATA_HOME)),$(XDG_DATA_HOME),$(HOME)/.local/share)/tmux/plugins

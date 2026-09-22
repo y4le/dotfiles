@@ -31,8 +31,8 @@ these are the main entry points.
 | `setup` | Run `system-packages`, then `setup-user` | Network; sudo on Linux |
 | `system-packages` | Install the native package list | Network; sudo on Linux |
 | `tools` | Install mise, its tools, and Sheldon | Network |
-| `plugins` | Restore Zsh, tmux, Vim, and Neovim plugins | Network |
-| `sheldon-plugins`, `tmux-plugins`, `vim-plugins`, `nvim-plugins` | Restore one subsystem's plugins | Network |
+| `plugins` | Restore Zsh, Vim, and Neovim plugins | Network |
+| `sheldon-plugins`, `vim-plugins`, `nvim-plugins` | Restore one subsystem's plugins | Network |
 | `nvim-update` | Update Neovim plugins and the tracked lock | Network |
 | `agents-plan-private` | Preview private agent links | Offline |
 | `agents-enable-private` | Link the private agent package | Offline |
@@ -85,7 +85,7 @@ running Sheldon or downloading plugins; `make sheldon-plugins` creates it.
 | `~/.vim/config/maps.local.vim` | End of `maps.vim` | Mappings |
 | `~/.vimrc.local` | After plugins, settings, and maps | Final vimrc overrides |
 | `~/.config/nvim/lua/local/init.lua` | After core config, before lazy.nvim | Neovim settings and mappings |
-| `~/.config/tmux/local.conf` | Before navigation, status bar, and plugin includes | Local settings and extra `@plugin` lines; later includes can override them |
+| `~/.config/tmux/local.conf` | Before navigation and status bar includes | Machine-specific tmux settings; later includes can override them |
 | `~/.gitconfig` | User-owned global Git config | Identity and machine-specific Git settings |
 
 ## Editors and tmux
@@ -98,9 +98,10 @@ Neovim loads `lua/config/`, the local hook, then lazy.nvim with specs from
 `lua/plugins/`. `lazy-lock.json` pins plugin commits; startup does not install
 missing plugins or check for updates.
 
-Tmux uses `Ctrl-B`; prefix `R` reloads the config and prefix `r` enters resize
-mode. `make tmux-plugins` restores only the pinned list; extra plugins declared
-in local config need separate installation.
+Tmux starts with `Ctrl-B`; prefix `a`, `b`, or `Space` changes the active prefix
+to `Ctrl-A`, `Ctrl-B`, or `Ctrl-Space`. Prefix `R` reloads the config and prefix
+`r` enters resize mode. The configuration uses built-in tmux functionality and
+has no plugin restore step.
 
 ## Configuration and state paths
 
@@ -117,7 +118,7 @@ does not relocate them.
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
 | IdeaVim | `~/.config/ideavim/ideavimrc` | IDE-managed state |
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
-| tmux | `~/.config/tmux/tmux.conf` and supporting files | Plugins under `~/.local/share/tmux/plugins/`; saved layouts under `~/.local/state/tmux/resurrect/` |
+| tmux | `~/.config/tmux/tmux.conf` and supporting files | No repo-managed persistent state |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
@@ -126,9 +127,8 @@ does not relocate them.
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 
-Zsh history honors `XDG_STATE_HOME`; the npm prefix, Sheldon's data path, and
-tmux plugin path honor `XDG_DATA_HOME`; tmux saved layouts honor
-`XDG_STATE_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
+Zsh history honors `XDG_STATE_HOME`; the npm prefix and Sheldon's data path
+honor `XDG_DATA_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
 Neovim uses its standard config, data, and state paths. Vim keeps legacy config
 entry points but honors `XDG_STATE_HOME` for generated state. See the
 [XDG policy](design.md#xdg-boundary) before changing these defaults.

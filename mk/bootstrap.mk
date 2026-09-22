@@ -17,9 +17,8 @@ tools: ## [network] install user-space tools
 	@$(MAKE) mise-tools
 	@$(MAKE) sheldon
 
-plugins: ## [network] restore shell, tmux, Vim, and Neovim plugins
+plugins: ## [network] restore shell, Vim, and Neovim plugins
 	@$(MAKE) sheldon-plugins
-	@$(MAKE) tmux-plugins
 	@$(MAKE) vim-plugins
 	@$(MAKE) nvim-plugins
 

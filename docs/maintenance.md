@@ -21,8 +21,7 @@ This reruns `tools`, `link`, and `plugins`. `make tools` restores the mise and
 Sheldon binaries to their pins, replacing self-updated binaries, and installs
 the mise tool versions. `make plugins` needs tools and links in place; it never
 installs a missing tool binary. To restore one subsystem, run
-`make sheldon-plugins`, `make tmux-plugins`, `make vim-plugins`, or
-`make nvim-plugins`.
+`make sheldon-plugins`, `make vim-plugins`, or `make nvim-plugins`.
 
 Vim's fzf integration uses the binary installed by mise. If Vim offers to
 download fzf because it is not on `PATH`, answer no, run `make tools`, and start
@@ -47,10 +46,6 @@ git diff -- nvim/.config/nvim/lazy-lock.json
 Review the lock diff before committing it. Use `make nvim-plugins` to restore
 the checked-in lock; it verifies restored commits and preserves the lock file.
 Treesitter parsers are also installed by these targets.
-
-Tmux plugin commits live in
-[`setup/pins/tmux-plugins.txt`](../setup/pins/tmux-plugins.txt). Review upstream
-changes before replacing a commit, then run `make tmux-plugins`.
 
 ## Recover a rejected Zsh plugin restore
 
@@ -148,40 +143,16 @@ removes the old `~/.ideavimrc` only when it is a managed symlink into this
 checkout; move any user-owned config before linking. Restart the IDE and test
 a custom mapping after migration.
 
-### Stow layouts
+### Tmux configuration
 
 Tmux 3.1 and newer reads `~/.config/tmux/tmux.conf`. `make link` removes the old
 `~/.tmux.conf` only when it is a managed symlink into this checkout. Move a
 machine-local `~/.tmux.local.conf` to `~/.config/tmux/local.conf`.
 
-Stop the tmux server before moving its plugins and saved layouts. Move an
-existing plugin tree when the destination does not exist:
-
-```sh
-data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
-state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
-plugin_dest=$data_home/tmux/plugins
-mkdir -p "$data_home/tmux" "$state_home/tmux"
-if [ -d "$HOME/.tmux/plugins" ] && [ ! -e "$plugin_dest" ]; then
-  mv "$HOME/.tmux/plugins" "$plugin_dest"
-fi
-```
-
-Saved layouts may be in either of two older locations. Copy each source that
-exists, then remove it after confirming restore works. The data-path source is
-copied second, so it wins if both sources contain the same filename:
-
-```sh
-state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
-resurrect_dest=$state_home/tmux/resurrect
-mkdir -p "$resurrect_dest"
-chmod 700 "$state_home/tmux" "$resurrect_dest"
-for old in "$HOME/.tmux/resurrect" "$HOME/.local/share/tmux/resurrect"; do
-  [ "$old" != "$resurrect_dest" ] || continue
-  [ ! -d "$old" ] || \
-    cp -Rp "$old/." "$resurrect_dest/"
-done
-```
+The tmux configuration no longer loads TPM, third-party plugins, or saved
+layouts. Older plugin and resurrect directories are not consumed. Preserve
+them while an older tmux server is still running; inspect and remove them
+manually only after they are no longer needed.
 
 Installs from before the core/desktop split may have desktop links into the old
 `linux/` package or removed paths in `osx/`. On a desktop, run

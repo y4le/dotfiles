@@ -11,9 +11,9 @@ plugins, `setup` for native packages, `DESKTOP=1` for desktop files, and
 `agents-enable-private` for private skills. The command decides what a machine
 gets.
 
-Startup uses installed plugins. Zsh sources a prebuilt cache, Neovim leaves
-missing plugins alone, and tmux runs TPM only if it is present. Opening a
-terminal should not become a package installation.
+Startup uses installed plugins. Zsh sources a prebuilt cache and Neovim leaves
+missing plugins alone. Tmux uses only built-in functionality. Opening a terminal
+should not become a package installation.
 
 ## File ownership and information isolation
 
@@ -38,13 +38,12 @@ The layout stays mixed on purpose. New configuration uses an application's XDG
 path when supported; an existing path moves only for a concrete benefit and
 with a migration plan.
 
-Neovim, IdeaVim, Atuin, mise, and Sheldon use XDG configuration paths. Zsh
-history uses XDG state, and user-level npm packages use XDG data. Git is split:
+Neovim, IdeaVim, Atuin, mise, Sheldon, and tmux use XDG configuration paths.
+Zsh history uses XDG state, and user-level npm packages use XDG data. Git is split:
 portable behavior under `~/.config/git/`, identity in `~/.gitconfig` so global
-writes stay out of the checkout while that local file exists. Tmux uses its XDG
-entry point, stores plugins under XDG data, and stores saved layouts under XDG
-state. Zsh, Vim, Bash, scripts, and agents keep home-directory entry points by
-choice; their generated state can still use XDG paths. The [path
+writes stay out of the checkout while that local file exists. Zsh, Vim, Bash,
+scripts, and agents keep home-directory entry points by choice; their generated
+state can still use XDG paths. The [path
 reference](reference.md#configuration-and-state-paths) records where files
 actually live.
 
@@ -55,10 +54,10 @@ do not make the package layout relocatable.
 ## What pins guarantee
 
 Bootstrap pins verify downloaded bytes and installed payloads for mise,
-Sheldon, and vim-plug. Tool versions live in the mise config. Zsh and tmux
-plugins have commit pins; Neovim plugins have a checked-in lock. These make
-restores reviewable, but they do not make the entire machine reproducible. Vim
-plugin branches and native packages still move upstream.
+Sheldon, and vim-plug. Tool versions live in the mise config. Zsh plugins have
+commit pins; Neovim plugins have a checked-in lock. These make restores
+reviewable, but they do not make the entire machine reproducible. Vim plugin
+branches and native packages still move upstream.
 
 Homebrew remains an explicit prerequisite because its installer can install
 Apple tools and fetch additional mutable state. Pinning just that installer

@@ -89,8 +89,8 @@ such as `~/.config/zsh/` remain real directories.
 make setup-user
 ```
 
-This installs user-space tools, links configuration, and restores shell, tmux,
-Vim, and Neovim plugins. It uses the network but not sudo. Start a new Zsh shell
+This installs user-space tools, links configuration, and restores shell, Vim,
+and Neovim plugins. It uses the network but not sudo. Start a new Zsh shell
 after it finishes.
 
 On a machine where native package installation is permitted, use `make setup`

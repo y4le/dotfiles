@@ -21,9 +21,9 @@ make link-plan
 make link
 ```
 
-Review the plan before linking. This step is offline; shell and tmux config
-remain usable without restored plugins. Keep the checkout in place; the links
-point into it.
+Review the plan before linking. This step is offline; shell and editor config
+remain usable before optional plugins are restored. Keep the checkout in place;
+the links point into it.
 
 Run `make setup-user` to install tools and plugins without sudo, or `make setup`
 to install native packages too. Bootstrap downloads (mise, Sheldon, vim-plug)

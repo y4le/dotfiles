@@ -26,7 +26,10 @@ mkdir -p "$repo" || exit 1
 
 file_list=$test_root/files
 source_repo=$(pwd -P) || exit 1
-git_isolated -C "$source_repo" ls-files > "$file_list" || exit 1
+git_isolated -C "$source_repo" ls-files | while IFS= read -r file; do
+  [ ! -e "$source_repo/$file" ] && [ ! -L "$source_repo/$file" ] || \
+    printf '%s\n' "$file"
+done > "$file_list" || exit 1
 repo_archive=$test_root/repo.tar
 tar -cf "$repo_archive" -T "$file_list" || exit 1
 tar -xf "$repo_archive" -C "$repo" || exit 1

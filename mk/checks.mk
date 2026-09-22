@@ -15,13 +15,17 @@ check-git: ## [offline] check the tracked tree for whitespace errors
 
 check-shell: ## [offline] syntax-check and lint tracked shell files
 	@fail=0; \
-	sh_files="$$(git ls-files -z | xargs -0 awk \
-		'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)(sh|dash)([[:space:]]|$$)/ { print FILENAME }')" || { \
+	sh_files="$$(git ls-files | while IFS= read -r file; do \
+		[ ! -f "$$file" ] || awk \
+			'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)(sh|dash)([[:space:]]|$$)/ { print FILENAME }' "$$file"; \
+	done)" || { \
 		echo "check-shell: sh discovery failed"; \
 		fail=1; \
 	}; \
-	bash_files="$$(git ls-files -z | xargs -0 awk \
-		'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)bash([[:space:]]|$$)/ { print FILENAME }')" || { \
+	bash_files="$$(git ls-files | while IFS= read -r file; do \
+		[ ! -f "$$file" ] || awk \
+			'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)bash([[:space:]]|$$)/ { print FILENAME }' "$$file"; \
+	done)" || { \
 		echo "check-shell: bash discovery failed"; \
 		fail=1; \
 	}; \
@@ -37,8 +41,10 @@ check-shell: ## [offline] syntax-check and lint tracked shell files
 		fail=1; \
 	}; \
 	zsh_shebang_files="$$( \
-		git ls-files -z | xargs -0 awk \
-			'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)zsh([[:space:]]|$$)/ { print FILENAME }' \
+		git ls-files | while IFS= read -r file; do \
+			[ ! -f "$$file" ] || awk \
+				'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)zsh([[:space:]]|$$)/ { print FILENAME }' "$$file"; \
+		done \
 	)" || { \
 		echo "check-shell: zsh shebang discovery failed"; \
 		fail=1; \
@@ -217,7 +223,5 @@ check-make: ## [offline] dry-run make target graph and help output
 		echo "check-make: Sheldon paths are not explicit for lock and source"; \
 		exit 1; \
 	}
-	@echo "check-make: make -n tmux-plugins"
-	@$(MAKE) -n tmux-plugins >/dev/null
 	@echo "check-make: make help"
 	@$(MAKE) help >/dev/null

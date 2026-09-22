@@ -1,4 +1,4 @@
-.PHONY: mise mise-tools sheldon sheldon-plugins tmux-plugins brew
+.PHONY: mise mise-tools sheldon sheldon-plugins brew
 
 mise: ## [network] install the pinned, verified mise binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install mise "$(MISE_BIN)" 0755
@@ -37,44 +37,6 @@ sheldon-plugins: ## [network] restore pinned zsh plugins and build startup cache
 		"$(SHELDON_DATA_DIR)" "$$tmp" || exit $$?; \
 	mv "$$tmp" "$$cache"; \
 	echo "wrote $$cache"
-
-tmux-plugins: ## [network] restore tmux plugins at pinned commits
-	@if ! command -v git >/dev/null 2>&1; then \
-		echo "git not found. Install it with your system package manager."; \
-		exit 1; \
-	fi
-	@root="$(TMUX_PLUGIN_DIR)"; \
-	mkdir -p "$$root"; \
-	while read -r name url commit extra || [ -n "$$name$$url$$commit$$extra" ]; do \
-		case "$$name" in ''|'#'*) continue ;; esac; \
-		if [ -n "$$extra" ] || [ -z "$$url" ] || [ -z "$$commit" ]; then \
-			echo "invalid tmux plugin pin: $$name $$url $$commit $$extra"; \
-			exit 1; \
-		fi; \
-		dir="$$root/$$name"; \
-		if [ -e "$$dir" ] && [ ! -d "$$dir/.git" ]; then \
-			echo "$$dir exists but is not a git checkout"; \
-			exit 1; \
-		fi; \
-		if [ ! -d "$$dir/.git" ]; then \
-			tmp="$$dir.tmp.$$$$"; \
-			trap 'rm -rf "$$tmp"' EXIT; \
-			trap 'rm -rf "$$tmp"; exit 1' HUP INT TERM; \
-			git clone --no-checkout "$$url" "$$tmp" </dev/null || exit $$?; \
-			git -c advice.detachedHead=false -C "$$tmp" checkout --detach "$$commit" </dev/null || exit $$?; \
-			mv "$$tmp" "$$dir" || exit $$?; \
-			trap - EXIT HUP INT TERM; \
-		elif ! git -C "$$dir" cat-file -e "$$commit^{commit}" </dev/null 2>/dev/null; then \
-			git -C "$$dir" fetch origin "$$commit" </dev/null || exit $$?; \
-		fi; \
-		git -c advice.detachedHead=false -C "$$dir" checkout --detach "$$commit" </dev/null || exit $$?; \
-		actual="$$(git -C "$$dir" rev-parse HEAD </dev/null)" || exit 1; \
-		if [ "$$actual" != "$$commit" ]; then \
-			echo "$$name checkout mismatch: expected $$commit, got $$actual"; \
-			exit 1; \
-		fi; \
-		echo "restored $$name at $$commit"; \
-	done < "$(TMUX_PLUGIN_PINS_FILE)"
 
 brew: ## [offline] report the Homebrew installation required by system-packages
 ifeq ($(PLATFORM),macos)

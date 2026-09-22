@@ -35,14 +35,12 @@ if command -v mise >/dev/null 2>&1; then
     nvim_bin=$mise_nvim
   fi
 fi
-tmux_missing_socket=/tmp/dotfiles-tmux-missing.$$
-tmux_restored_socket=/tmp/dotfiles-tmux-restored.$$
+tmux_test_socket=/tmp/dotfiles-tmux-test.$$
 cleanup() {
   if [ -n "$tmux_bin" ]; then
-    "$tmux_bin" -S "$tmux_missing_socket" kill-server >/dev/null 2>&1 || true
-    "$tmux_bin" -S "$tmux_restored_socket" kill-server >/dev/null 2>&1 || true
+    "$tmux_bin" -S "$tmux_test_socket" kill-server >/dev/null 2>&1 || true
   fi
-  rm -f "$tmux_missing_socket" "$tmux_restored_socket"
+  rm -f "$tmux_test_socket"
   rm -rf "$test_root"
 }
 trap cleanup EXIT
@@ -378,7 +376,7 @@ else
 fi
 
 if [ -n "$tmux_bin" ]; then
-  echo "check-runtime: tmux without restored plugins"
+  echo "check-runtime: tmux configuration"
   git_stub=$test_home/bin/git
   printf '%s\n' \
     '#!/bin/sh' \
@@ -387,76 +385,97 @@ if [ -n "$tmux_bin" ]; then
   chmod +x "$git_stub"
   : > "$runtime_log"
   env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
-    XDG_DATA_HOME="$test_root/custom-data" \
-    XDG_STATE_HOME="$test_root/custom-state" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \
     DOTFILES_RUNTIME_LOG="$runtime_log" \
-    "$tmux_bin" -S "$tmux_missing_socket" \
-      new-session -d 'sleep 30' || fail "tmux failed without plugins"
-  tpm_state=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_missing_socket" show-option -gv @dotfiles_tpm) || \
-    fail "tmux did not expose the missing-plugin state"
-  [ "$tpm_state" = missing ] || fail "tmux did not mark TPM as missing"
-  plugin_environment=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_missing_socket" show-environment -g \
-      TMUX_PLUGIN_MANAGER_PATH) || \
-    fail "tmux did not expose its plugin path"
-  plugin_path=${plugin_environment#*=}
-  [ "$plugin_path" = "$test_root/custom-data/tmux/plugins" ] || \
-    fail "tmux plugin path did not honor XDG_DATA_HOME"
-  resurrect_path=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_missing_socket" show-option -gv @resurrect-dir) || \
-    fail "tmux did not expose its resurrect path"
-  [ "$resurrect_path" = "$test_root/custom-state/tmux/resurrect" ] || \
-    fail "tmux resurrect path did not honor XDG_STATE_HOME"
-  [ ! -d "$test_root/custom-data/tmux/plugins" ] || \
-    fail "tmux startup created a plugin directory"
-  [ ! -s "$runtime_log" ] || fail "tmux startup invoked git"
-  env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_missing_socket" kill-server
+    "$tmux_bin" -S "$tmux_test_socket" \
+      new-session -d 'sleep 30' || fail "tmux failed with the minimal configuration"
 
-  echo "check-runtime: tmux with restored TPM"
-  fake_tpm=$test_home/.local/share/tmux/plugins/tpm/tpm
-  tmux_marker=$test_root/tmux-plugin.marker
-  mkdir -p "$(dirname "$fake_tpm")"
-  printf '%s\n' \
-    '#!/bin/sh' \
-    ': > "$DOTFILES_TMUX_MARKER"' > "$fake_tpm"
-  chmod +x "$fake_tpm"
-  : > "$runtime_log"
-  env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    DOTFILES_RUNTIME_LOG="$runtime_log" DOTFILES_TMUX_MARKER="$tmux_marker" \
-    "$tmux_bin" -S "$tmux_restored_socket" \
-      new-session -d 'sleep 30' || fail "tmux failed with restored TPM"
-  attempts=0
-  while [ ! -f "$tmux_marker" ] && [ "$attempts" -lt 10 ]; do
-    attempts=$((attempts + 1))
-    sleep 1
-  done
-  [ -f "$tmux_marker" ] || fail "tmux did not run restored TPM"
-  plugin_environment=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_restored_socket" show-environment -g \
-      TMUX_PLUGIN_MANAGER_PATH) || \
-    fail "tmux did not expose its default plugin path"
-  plugin_path=${plugin_environment#*=}
-  [ "$plugin_path" = "$test_home/.local/share/tmux/plugins" ] || \
-    fail "tmux plugin path did not use its XDG default"
-  resurrect_path=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_restored_socket" show-option -gv @resurrect-dir) || \
-    fail "tmux did not expose its default resurrect path"
-  [ "$resurrect_path" = "$test_home/.local/state/tmux/resurrect" ] || \
-    fail "tmux resurrect path did not use its XDG default"
-  [ ! -s "$runtime_log" ] || fail "restored tmux startup invoked git"
-  env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
-    SHELL=/bin/sh TERM=xterm LC_ALL=C \
-    "$tmux_bin" -S "$tmux_restored_socket" kill-server
+  run_tmux() {
+    env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+      SHELL=/bin/sh TERM=xterm LC_ALL=C \
+      "$tmux_bin" -S "$tmux_test_socket" "$@"
+  }
+  assert_tmux_value() {
+    description=$1
+    expected=$2
+    shift 2
+    actual=$(run_tmux "$@") || fail "could not read tmux $description"
+    [ "$actual" = "$expected" ] || \
+      fail "tmux $description: expected $expected, got $actual"
+  }
+
+  assert_tmux_value history-limit 50000 show-option -gv history-limit
+  assert_tmux_value focus-events on show-option -sv focus-events
+  assert_tmux_value escape-time 0 show-option -sv escape-time
+  assert_tmux_value display-time 4000 show-option -gv display-time
+  assert_tmux_value status-interval 5 show-option -gv status-interval
+  assert_tmux_value status-keys emacs show-option -gv status-keys
+  assert_tmux_value mode-keys vi show-window-option -gv mode-keys
+  assert_tmux_value mouse on show-option -gv mouse
+  assert_tmux_value base-index 1 show-option -gv base-index
+  assert_tmux_value default-terminal screen-256color show-option -gv default-terminal
+  assert_tmux_value allow-passthrough on show-option -gv allow-passthrough
+  assert_tmux_value set-clipboard on show-option -gv set-clipboard
+  assert_tmux_value prefix C-b show-option -gv prefix
+  assert_tmux_value PREFIX PREFIX=C-b show-environment -g PREFIX
+  assert_tmux_value MODE MODE=normal show-environment -g MODE
+
+  run_tmux list-keys -T copy-mode-vi y | grep -q 'copy-pipe-and-cancel cpy' || \
+    fail "tmux copy-mode y does not copy through cpy"
+  run_tmux list-keys -T copy-mode-vi v | grep -q 'begin-selection' || \
+    fail "tmux copy-mode v does not begin selection"
+  run_tmux list-keys -T copy-mode-vi V | grep -q 'rectangle-toggle' || \
+    fail "tmux copy-mode V does not toggle rectangular selection"
+  run_tmux list-keys -T root C-h | grep -q 'select-pane -L' || \
+    fail "tmux navigation does not move left across panes"
+  run_tmux list-keys -T root C-l | grep -q 'select-pane -R' || \
+    fail "tmux navigation does not move right across panes"
+  if run_tmux list-keys | grep -q 'plugins/'; then
+    fail "tmux still has plugin-backed key bindings"
+  fi
+  if run_tmux show-options -g | grep -Eq '^@(plugin|resurrect|continuum|dotfiles_tpm)'; then
+    fail "tmux still exposes plugin options"
+  fi
+  case $(run_tmux show-option -gv status-right) in
+    *'#('* ) fail "tmux status bar still runs a plugin command" ;;
+  esac
+  case $(run_tmux show-option -gv status-left) in
+    *'#{PREFIX}'*'#{MODE}'*) ;;
+    *) fail "tmux status bar does not show prefix and resize state" ;;
+  esac
+  case $(run_tmux show-option -gv status-right) in
+    *'%S'*) ;;
+    *) fail "tmux status bar does not show its clock" ;;
+  esac
+
+  run_tmux source-file "$test_home/.config/tmux/prefix_a.tmux.conf"
+  assert_tmux_value prefix C-a show-option -gv prefix
+  assert_tmux_value PREFIX PREFIX=C-a show-environment -g PREFIX
+  run_tmux list-keys -T prefix a | grep -q 'send-prefix' || \
+    fail "tmux Ctrl-A prefix cannot be sent to an inner multiplexer"
+  run_tmux source-file "$test_home/.config/tmux/prefix_space.tmux.conf"
+  assert_tmux_value prefix C-Space show-option -gv prefix
+  assert_tmux_value PREFIX PREFIX=C-Space show-environment -g PREFIX
+  run_tmux list-keys -T prefix Space | grep -q 'send-prefix' || \
+    fail "tmux Ctrl-Space prefix cannot be sent to an inner multiplexer"
+  run_tmux source-file "$test_home/.config/tmux/prefix_b.tmux.conf"
+  assert_tmux_value prefix C-b show-option -gv prefix
+  assert_tmux_value PREFIX PREFIX=C-b show-environment -g PREFIX
+  run_tmux list-keys -T prefix b | grep -q 'send-prefix' || \
+    fail "tmux Ctrl-B prefix cannot be sent to an inner multiplexer"
+
+  run_tmux source-file "$test_home/.config/tmux/resize_mode_on.tmux.conf"
+  assert_tmux_value MODE MODE=resize show-environment -g MODE
+  run_tmux list-keys -T root h | grep -q 'resize-pane -L 5' || \
+    fail "tmux resize mode did not bind h"
+  run_tmux source-file "$test_home/.config/tmux/resize_mode_off.tmux.conf"
+  assert_tmux_value MODE MODE=normal show-environment -g MODE
+  if run_tmux list-keys -T root h >/dev/null 2>&1; then
+    fail "tmux resize mode left root h bound after exit"
+  fi
+
+  [ ! -s "$runtime_log" ] || fail "tmux startup invoked git"
+  run_tmux kill-server
 else
   echo "check-runtime: tmux not found"
   if [ -n "${CI:-}" ]; then
