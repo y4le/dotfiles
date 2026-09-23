@@ -95,6 +95,22 @@ after it finishes. Herdr is installed from its checksum-pinned release binary.
 Use `make herdr` when you only need to install or repair Herdr; the targeted
 command also validates the tracked Herdr config.
 
+Herdr's agent integrations write hook files and settings into each agent's own
+configuration directory, so they remain an explicit follow-up step. On a host
+that uses the default Claude, Codex, and Antigravity CLI integrations, run:
+
+```sh
+make herdr-integrations
+```
+
+Override the list for a host that uses a subset or another supported target:
+
+```sh
+make herdr-integrations HERDR_INTEGRATIONS="claude codex"
+```
+
+Rerun the target after updating Herdr so its managed hook versions stay current.
+
 On a machine where native package installation is permitted, use `make setup`
 to run `system-packages` followed by `setup-user`.
 

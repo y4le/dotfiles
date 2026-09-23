@@ -44,6 +44,12 @@ validates `herdr/.config/herdr/config.toml`. Rerunning it verifies the installed
 binary and replaces any drift, including a version installed with
 `herdr update`.
 
+Agent integrations are intentionally outside `setup-user` because they modify
+each agent's own settings and hook files. Run `make herdr-integrations` after a
+Herdr update on hosts where those integrations are wanted. Pass
+`HERDR_INTEGRATIONS="..."` on the Make command line to select a different set,
+and use `herdr integration status` to inspect the installed hook versions.
+
 ## Update pins
 
 Edit tool versions in [`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml)
@@ -55,10 +61,9 @@ To update Herdr, change all four platform rows in
 `setup/pins/downloads.txt`, run `make herdr`, and review both the release notes
 and `git diff -- setup/pins/downloads.txt`. Do not use `herdr update`; the
 download pins own the executable. Keep Herdr's background version check enabled
-as notification that
-the pin may need review. A compatible old server can keep its panes running
-after the client update. Restart that server separately only when you need
-server-side changes from the new release.
+as notification that the pin may need review. A compatible old server can keep
+its panes running after the client update. Restart that server separately only
+when you need server-side changes from the new release.
 
 For Neovim:
 

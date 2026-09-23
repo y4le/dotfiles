@@ -32,6 +32,7 @@ these are the main entry points.
 | `system-packages` | Install the native package list | Network; sudo on Linux |
 | `tools` | Install Herdr, mise and its tools, and Sheldon | Network |
 | `herdr` | Install the checksum-pinned Herdr binary and validate its config | Network |
+| `herdr-integrations` | Install the selected agent hooks; opt-in | Network; writes agent config |
 | `plugins` | Restore Zsh, Vim, and Neovim plugins | Network |
 | `sheldon-plugins`, `vim-plugins`, `nvim-plugins` | Restore one subsystem's plugins | Network |
 | `nvim-update` | Update Neovim plugins and the tracked lock | Network |
@@ -46,6 +47,8 @@ these are the main entry points.
 it does not link configuration or restore plugins. `vim-bootstrap` and
 `nvim-bootstrap` alias their respective plugin targets. `mise-tools` installs
 mise and its configured tools; `nvim-lazy` restores only lazy.nvim.
+`HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
+overridden when invoking `herdr-integrations`.
 
 `DESKTOP` accepts `0` (default) or `1`. It affects package selection for linking
 and cleanup, not the native package lists. `DESKTOP=0` leaves previously linked

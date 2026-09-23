@@ -305,6 +305,9 @@ printf '%s\n' \
   'case ${1:-} in' \
   '  --version | -V) echo "herdr 1.2.3" ;;' \
   '  config) [ "${2:-}" = check ] && [ -f "$HERDR_CONFIG_PATH" ] && echo "config: ok" ;;' \
+  '  integration)' \
+  '    [ "${2:-}" = install ] && [ -n "${3:-}" ] || exit 1' \
+  '    printf "%s\n" "$3" >> "$DOTFILES_TEST_HERDR_LOG" ;;' \
   '  *) exit 1 ;;' \
   'esac' > "$herdr_fixture"
 chmod +x "$herdr_fixture"
@@ -529,6 +532,29 @@ grep -F "replacing $herdr_destination" "$test_root/herdr-replace.out" >/dev/null
 [ "$(sh "$pin_script" sha256 "$herdr_destination")" = "$herdr_hash" ] || \
   fail "drifted Herdr install was not repaired"
 [ -x "$herdr_destination" ] || fail "drifted Herdr repair did not restore executable mode"
+
+herdr_integration_log=$test_root/herdr-integrations.log
+: > "$herdr_integration_log"
+: > "$curl_log"
+env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" \
+  DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
+    HERDR_BIN="$herdr_destination" HERDR_INTEGRATIONS="claude codex" \
+    herdr-integrations >/dev/null
+[ "$(cat "$herdr_integration_log")" = "$(printf 'claude\ncodex')" ] || \
+  fail "Herdr integrations did not honor the configured order"
+[ ! -s "$curl_log" ] || fail "Herdr integration restore redownloaded a pinned binary"
+if env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+  DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+  DOTFILES_TEST_FIXTURES="$fixtures" \
+  DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" \
+  make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
+    HERDR_BIN="$herdr_destination" HERDR_INTEGRATIONS= \
+    herdr-integrations >/dev/null 2>&1; then
+  fail "Herdr integrations accepted an empty target list"
+fi
 
 sheldon_destination=$test_root/make-bin/sheldon
 : > "$curl_log"

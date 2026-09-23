@@ -59,6 +59,7 @@ MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
 DOWNLOAD_PINS_FILE  := setup/pins/downloads.txt
 HERDR_BIN           := $(HOME)/.local/bin/herdr
 HERDR_CONFIG_FILE   := $(CURDIR)/herdr/.config/herdr/config.toml
+HERDR_INTEGRATIONS  := claude codex antigravity-cli
 
 VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
 VIM_PLUGGED_DIR     := $(HOME)/.local/share/vim/plugged

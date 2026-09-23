@@ -142,6 +142,10 @@ check-make: ## [offline] dry-run make target graph and help output
 		grep -Eq '^[[:space:]]*(sudo|doas|apt-get|pacman|brew)[[:space:]]|brew_bin.*[[:space:]]install|Homebrew/install|install\.sh|installer[[:space:]]+-pkg|/bin/bash[[:space:]]+-c'; then \
 		echo "check-make: setup-user includes a native package command"; \
 		exit 1; \
+	fi; \
+	if printf '%s\n' "$$setup_user" | grep -F 'integration install' >/dev/null; then \
+		echo "check-make: setup-user installs opt-in Herdr integrations"; \
+		exit 1; \
 	fi
 	@echo "check-make: make -n tools"
 	@tools_plan="$$( $(MAKE) -n tools )" || exit $$?; \
@@ -173,6 +177,27 @@ check-make: ## [offline] dry-run make target graph and help output
 	}; \
 	if printf '%s\n' "$$herdr_plan" | grep -Eq 'mise[[:space:]]+install|install\.sh|(^|[[:space:]])stow[[:space:]]'; then \
 		echo "check-make: Herdr uses an unreviewed installer or links config"; \
+		exit 1; \
+	fi
+	@echo "check-make: make -n herdr-integrations"
+	@integration_plan="$$( $(MAKE) -n herdr-integrations )" || exit $$?; \
+	printf '%s\n' "$$integration_plan" | \
+		grep -F 'for integration in $(HERDR_INTEGRATIONS)' >/dev/null || { \
+		echo "check-make: selected Herdr integrations are incomplete"; \
+		exit 1; \
+	}; \
+	printf '%s\n' "$$integration_plan" | grep -F 'integration install' >/dev/null || { \
+		echo "check-make: Herdr integrations are not installed through Herdr"; \
+		exit 1; \
+	}; \
+	empty_integration_plan="$$( $(MAKE) -n HERDR_INTEGRATIONS= herdr-integrations )" || exit $$?; \
+	printf '%s\n' "$$empty_integration_plan" | \
+		grep -F 'HERDR_INTEGRATIONS must name at least one integration' >/dev/null || { \
+		echo "check-make: empty Herdr integration list has no diagnostic"; \
+		exit 1; \
+	}; \
+	if printf '%s\n' "$$empty_integration_plan" | grep -F 'mk/pinned.sh install herdr' >/dev/null; then \
+		echo "check-make: empty Herdr integration list installs Herdr before failing"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n plugins"
