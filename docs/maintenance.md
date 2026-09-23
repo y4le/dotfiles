@@ -27,10 +27,10 @@ running `make setup-user`.
 make setup-user
 ```
 
-This reruns `tools`, `link`, and `plugins`. `make tools` restores the mise and
-Sheldon binaries to their pins, replacing self-updated binaries, and installs
-the mise tool versions. `make plugins` needs tools and links in place; it never
-installs a missing tool binary. To restore one subsystem, run
+This reruns `tools`, `link`, and `plugins`. `make tools` restores the Herdr,
+mise, and Sheldon binaries to their pins, replacing drifted binaries, and
+installs the mise tool versions. `make plugins` needs tools and links in place;
+it never installs a missing tool binary. To restore one subsystem, run
 `make sheldon-plugins`, `make vim-plugins`, or `make nvim-plugins`.
 
 Vim's fzf integration uses the binary installed by mise. If Vim offers to
@@ -39,12 +39,26 @@ a new shell. `make vim-plugins` also restores the pinned vim-plug file;
 `:PlugUpgrade` drift is replaced on the next run. Vim plugins themselves remain
 upstream branch checkouts.
 
+`make herdr` installs the reviewed release bytes at `~/.local/bin/herdr` and
+validates `herdr/.config/herdr/config.toml`. Rerunning it verifies the installed
+binary and replaces any drift, including a version installed with
+`herdr update`.
+
 ## Update pins
 
 Edit tool versions in [`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml)
 and follow the [pin review procedures](../setup/pins/README.md) for bootstrap
 artifacts and Zsh plugins. Keep the fzf binary version and Zsh plugin revision
 in sync.
+
+To update Herdr, change all four platform rows in
+`setup/pins/downloads.txt`, run `make herdr`, and review both the release notes
+and `git diff -- setup/pins/downloads.txt`. Do not use `herdr update`; the
+download pins own the executable. Keep Herdr's background version check enabled
+as notification that
+the pin may need review. A compatible old server can keep its panes running
+after the client update. Restart that server separately only when you need
+server-side changes from the new release.
 
 For Neovim:
 

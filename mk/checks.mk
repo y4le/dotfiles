@@ -153,8 +153,26 @@ check-make: ## [offline] dry-run make target graph and help output
 		echo "check-make: tools does not use the pinned Sheldon installer"; \
 		exit 1; \
 	}; \
+	printf '%s\n' "$$tools_plan" | grep -F 'mk/pinned.sh install herdr' >/dev/null || { \
+		echo "check-make: tools does not use the pinned Herdr installer"; \
+		exit 1; \
+	}; \
 	if printf '%s\n' "$$tools_plan" | grep -Eq 'mise\.run|crate\.sh|bash -s'; then \
 		echo "check-make: tools still uses an unverified installer"; \
+		exit 1; \
+	fi
+	@echo "check-make: make -n herdr"
+	@herdr_plan="$$( $(MAKE) -n herdr )" || exit $$?; \
+	printf '%s\n' "$$herdr_plan" | grep -F 'mk/pinned.sh install herdr' >/dev/null || { \
+		echo "check-make: Herdr does not use the verified installer"; \
+		exit 1; \
+	}; \
+	printf '%s\n' "$$herdr_plan" | grep -F 'HERDR_CONFIG_PATH=' >/dev/null || { \
+		echo "check-make: Herdr config is not validated"; \
+		exit 1; \
+	}; \
+	if printf '%s\n' "$$herdr_plan" | grep -Eq 'mise[[:space:]]+install|install\.sh|(^|[[:space:]])stow[[:space:]]'; then \
+		echo "check-make: Herdr uses an unreviewed installer or links config"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n plugins"

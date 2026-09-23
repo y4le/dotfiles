@@ -57,6 +57,8 @@ SHELDON_DATA_DIR    ?= $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/sha
 MISE_BIN            := $(HOME)/.local/bin/mise
 MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
 DOWNLOAD_PINS_FILE  := setup/pins/downloads.txt
+HERDR_BIN           := $(HOME)/.local/bin/herdr
+HERDR_CONFIG_FILE   := $(CURDIR)/herdr/.config/herdr/config.toml
 
 VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
 VIM_PLUGGED_DIR     := $(HOME)/.local/share/vim/plugged

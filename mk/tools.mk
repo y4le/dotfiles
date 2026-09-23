@@ -1,10 +1,14 @@
-.PHONY: mise mise-tools sheldon sheldon-plugins brew
+.PHONY: mise mise-tools herdr sheldon sheldon-plugins brew
 
 mise: ## [network] install the pinned, verified mise binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install mise "$(MISE_BIN)" 0755
 
 mise-tools: mise ## [network] install tools from mise config
 	MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) install
+
+herdr: ## [network] install the pinned Herdr binary and validate its config
+	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install herdr "$(HERDR_BIN)" 0755
+	@HERDR_CONFIG_PATH="$(HERDR_CONFIG_FILE)" "$(HERDR_BIN)" config check
 
 sheldon: ## [network] install the pinned, verified sheldon binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install sheldon "$(SHELDON_BIN)" 0755

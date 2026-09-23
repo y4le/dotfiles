@@ -1,5 +1,11 @@
 # name  version  platform      archive_sha256                                                   url                                                                                         member         member_sha256
 actionlint 1.7.12 linux-amd64 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz actionlint c872d6db8c6bf83a8eaa704fc93999f027d55dffbc63b8a6abdccb47df5f4cd4
+# Herdr v0.9.1 asset digests retrieved from the GitHub release API on 2026-09-23.
+# All four digests were independently verified against downloaded release assets.
+herdr 0.9.1 linux-amd64 2a02fed16beb651ef006e1d43f048f652ca4dc58ad053cd2d44450563d5c54b7 https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-linux-x86_64
+herdr 0.9.1 linux-arm64 f4ccf4de745f2cb9a39a983e9ba3703dad50ec2a58dea83026ceab721bbd8d9e https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-linux-aarch64
+herdr 0.9.1 darwin-amd64 053be0639935fe54ab5efbdb46651054e4f6a753a5b43153c88bd6912bce1e94 https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-macos-x86_64
+herdr 0.9.1 darwin-arm64 5fc7a7e7adfaca56fa80aa89dcb025693357268dab8285b9ce2d08a2313c89de https://github.com/herdrdev/herdr/releases/download/v0.9.1/herdr-macos-aarch64
 mise 2026.9.0 linux-amd64 9499e503b866130b2f19bb11ec04d87a11ed81acc8d6032b8832ea08d4db7ce8 https://github.com/jdx/mise/releases/download/v2026.9.0/mise-v2026.9.0-linux-x64.tar.gz mise/bin/mise c9b089f2be1db4d4262eacaf367e480e7a328848adcc37d9d1612996902485d0
 mise 2026.9.0 linux-arm64 00714b9c7449a91b8b053f86391fb23f19901250c609920847a56f842c41b810 https://github.com/jdx/mise/releases/download/v2026.9.0/mise-v2026.9.0-linux-arm64.tar.gz mise/bin/mise 0b5c4586353010378d9caca62c95166588c3dc4e310eb2d276aac1068397faec
 mise 2026.9.0 darwin-amd64 2f2040638a897e5f3d54a29ca52aecbe050bc2e8eaad5880d79b2f50fa7c3653 https://github.com/jdx/mise/releases/download/v2026.9.0/mise-v2026.9.0-macos-x64.tar.gz mise/bin/mise d4c68596addfd102717699243acfb795177dc025e7895bad581317c43fadb4ef

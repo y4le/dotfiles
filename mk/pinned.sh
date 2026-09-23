@@ -126,6 +126,10 @@ lint() {
     END {
       for (name in any) if (name in specific) bad("any cannot be mixed with specific platforms for " name)
       need[++n] = "actionlint linux-amd64"
+      need[++n] = "herdr linux-amd64"
+      need[++n] = "herdr linux-arm64"
+      need[++n] = "herdr darwin-amd64"
+      need[++n] = "herdr darwin-arm64"
       need[++n] = "mise linux-amd64"
       need[++n] = "mise linux-arm64"
       need[++n] = "mise darwin-amd64"

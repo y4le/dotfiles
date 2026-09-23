@@ -30,7 +30,8 @@ these are the main entry points.
 | `setup-user` | Run `tools`, `link`, then `plugins` | Network; no sudo |
 | `setup` | Run `system-packages`, then `setup-user` | Network; sudo on Linux |
 | `system-packages` | Install the native package list | Network; sudo on Linux |
-| `tools` | Install mise, its tools, and Sheldon | Network |
+| `tools` | Install Herdr, mise and its tools, and Sheldon | Network |
+| `herdr` | Install the checksum-pinned Herdr binary and validate its config | Network |
 | `plugins` | Restore Zsh, Vim, and Neovim plugins | Network |
 | `sheldon-plugins`, `vim-plugins`, `nvim-plugins` | Restore one subsystem's plugins | Network |
 | `nvim-update` | Update Neovim plugins and the tracked lock | Network |
@@ -114,13 +115,13 @@ does not relocate them.
 | Zsh | `~/.zshenv`, `~/.zshrc`, `~/.config/zsh/` | History under `~/.local/state/zsh/`; fallback at `~/.history` |
 | Sheldon | `~/.config/sheldon/plugins.toml` | `~/.local/share/sheldon/`; startup cache under `~/.cache/dotfiles/` |
 | mise | `~/.config/mise/config.toml` | `~/.local/share/mise/`; bootstrap binary in `~/.local/bin/` |
+| Herdr | `~/.config/herdr/config.toml` | Pinned binary in `~/.local/bin/`; sockets, logs, session snapshots, and `.plugins.lock` stay local under `~/.config/herdr/`; downloaded agent manifests and client state use `~/.local/state/herdr/` |
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
 | IdeaVim | `~/.config/ideavim/ideavimrc` | IDE-managed state |
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
 | tmux | `~/.config/tmux/tmux.conf` and supporting files | No repo-managed persistent state |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
-| Herdr | `~/.config/herdr/config.toml` | Sockets, logs, session snapshots, and `.plugins.lock` stay local under `~/.config/herdr/`; downloaded agent manifests and client state use `~/.local/state/herdr/` |
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
 | npm | Environment in `~/.zshenv` | Global packages under `~/.local/share/npm/` |

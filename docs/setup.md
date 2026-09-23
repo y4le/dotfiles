@@ -91,7 +91,9 @@ make setup-user
 
 This installs user-space tools, links configuration, and restores shell, Vim,
 and Neovim plugins. It uses the network but not sudo. Start a new Zsh shell
-after it finishes.
+after it finishes. Herdr is installed from its checksum-pinned release binary.
+Use `make herdr` when you only need to install or repair Herdr; the targeted
+command also validates the tracked Herdr config.
 
 On a machine where native package installation is permitted, use `make setup`
 to run `system-packages` followed by `setup-user`.

@@ -63,6 +63,9 @@ expect_lint_failure "incomplete mise platform coverage" "$bad"
 awk '!($1 == "actionlint" && $3 == "linux-amd64")' "$real_pins" > "$bad"
 expect_lint_failure "missing actionlint pin" "$bad"
 
+awk '!($1 == "herdr" && $3 == "darwin-amd64")' "$real_pins" > "$bad"
+expect_lint_failure "incomplete Herdr platform coverage" "$bad"
+
 awk '!($1 == "sheldon" && $3 == "linux-arm64")' "$real_pins" > "$bad"
 expect_lint_failure "incomplete Sheldon platform coverage" "$bad"
 
@@ -85,6 +88,10 @@ expect_lint_failure "an unsafe archive member" "$bad"
 
 if grep -n 'mise\.run' Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
   fail "mise.run remains in bootstrap code"
+fi
+if grep -Eiq '^[[:space:]]*("[^"]*herdr[^"]*"|herdr)[[:space:]]*=' \
+  mise/.config/mise/config.toml 2>/dev/null; then
+  fail "Herdr remains configured through mise instead of verified download pins"
 fi
 if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|VIM_PLUG_URL|vim-plug/master|bash -s' \
   Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
@@ -292,6 +299,20 @@ printf '%s\n' \
   "sheldon 1.2.3 linux-amd64 $sheldon_archive_hash https://github.com/example/sheldon/releases/download/v1.2.3/sheldon-1.2.3.tar.gz sheldon $sheldon_member_hash" \
   >> "$fixture_pins"
 
+herdr_fixture=$fixtures/herdr-linux-x86_64
+printf '%s\n' \
+  '#!/bin/sh' \
+  'case ${1:-} in' \
+  '  --version | -V) echo "herdr 1.2.3" ;;' \
+  '  config) [ "${2:-}" = check ] && [ -f "$HERDR_CONFIG_PATH" ] && echo "config: ok" ;;' \
+  '  *) exit 1 ;;' \
+  'esac' > "$herdr_fixture"
+chmod +x "$herdr_fixture"
+herdr_hash=$(sh "$pin_script" sha256 "$herdr_fixture")
+printf '%s\n' \
+  "herdr 1.2.3 linux-amd64 $herdr_hash https://github.com/example/herdr/releases/download/v1.2.3/herdr-linux-x86_64" \
+  >> "$fixture_pins"
+
 printf 'fixture plug.vim\n' > "$fixtures/plug.vim"
 vim_plug_hash=$(sh "$pin_script" sha256 "$fixtures/plug.vim")
 printf '%s\n' \
@@ -478,6 +499,36 @@ env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
   DOTFILES_TEST_FIXTURES="$fixtures" \
   make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" MISE_BIN="$make_destination" mise >/dev/null
 [ ! -s "$curl_log" ] || fail "make mise rerun accessed the network"
+
+herdr_destination=$test_root/make-bin/herdr
+run_make_herdr() {
+  env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
+    DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
+    DOTFILES_TEST_FIXTURES="$fixtures" \
+    make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
+      HERDR_BIN="$herdr_destination" herdr
+}
+
+: > "$curl_log"
+run_make_herdr >/dev/null
+[ -x "$herdr_destination" ] || fail "make herdr did not install the fixture"
+[ "$(sh "$pin_script" sha256 "$herdr_destination")" = "$herdr_hash" ] || \
+  fail "make herdr installed the wrong binary"
+[ "$(wc -l < "$curl_log" | tr -d ' ')" -eq 1 ] || \
+  fail "fresh Herdr install did not download once"
+
+: > "$curl_log"
+run_make_herdr >/dev/null
+[ ! -s "$curl_log" ] || fail "pinned Herdr rerun accessed the network"
+
+printf drifted > "$herdr_destination"
+: > "$curl_log"
+run_make_herdr > "$test_root/herdr-replace.out"
+grep -F "replacing $herdr_destination" "$test_root/herdr-replace.out" >/dev/null || \
+  fail "drifted Herdr replacement was not reported"
+[ "$(sh "$pin_script" sha256 "$herdr_destination")" = "$herdr_hash" ] || \
+  fail "drifted Herdr install was not repaired"
+[ -x "$herdr_destination" ] || fail "drifted Herdr repair did not restore executable mode"
 
 sheldon_destination=$test_root/make-bin/sheldon
 : > "$curl_log"

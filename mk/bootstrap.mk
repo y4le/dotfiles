@@ -16,6 +16,7 @@ install: ## [sudo, network] compatibility alias: system packages + tools
 tools: ## [network] install user-space tools
 	@$(MAKE) mise-tools
 	@$(MAKE) sheldon
+	@$(MAKE) herdr
 
 plugins: ## [network] restore shell, Vim, and Neovim plugins
 	@$(MAKE) sheldon-plugins

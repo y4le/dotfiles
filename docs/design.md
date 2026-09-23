@@ -53,8 +53,8 @@ do not make the package layout relocatable.
 
 ## What pins guarantee
 
-Bootstrap pins verify downloaded bytes and installed payloads for mise,
-Sheldon, and vim-plug. Tool versions live in the mise config. Zsh plugins have
+Bootstrap pins verify downloaded bytes and installed payloads for Herdr, mise,
+Sheldon, and vim-plug. Other tool versions live in the mise config. Zsh plugins have
 commit pins; Neovim plugins have a checked-in lock. These make restores
 reviewable, but they do not make the entire machine reproducible. Vim plugin
 branches and native packages still move upstream.

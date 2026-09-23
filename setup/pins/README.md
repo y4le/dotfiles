@@ -14,6 +14,21 @@ extracting anything, verifies the installed payload independently, and replaces
 the destination atomically. The offline `make check-pins` target validates this
 file and the installer behavior.
 
+## Updating Herdr
+
+Herdr is installed directly because Herdr 0.9.1 expects a mise-managed binary
+under `installs/herdr/<version>/bin/herdr`, while mise's supported Herdr
+backends place the release binary at the version-directory root. Revisit this
+choice when Herdr recognizes the supported mise layout.
+
+For an update, review the release notes and retrieve the release metadata with
+`gh api repos/herdrdev/herdr/releases/tags/v<VERSION>`. Compare each Linux and
+macOS asset's published digest with a locally computed SHA-256, and confirm the
+downloaded binary reports the expected version. Update all four platform rows
+together, run `make check-pins`, then run `make herdr` twice to cover the real
+install and no-download rerun. The pin remains authoritative; do not use
+`herdr update`.
+
 ## Updating mise
 
 Adopt a release only after reviewing its upstream notes. Prefer a release that
