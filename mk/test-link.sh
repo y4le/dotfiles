@@ -98,6 +98,12 @@ fi
   fail "fresh link did not create nvim/init.lua"
 [ -L "$fresh_home/.config/tmux/tmux.conf" ] || \
   fail "fresh link did not create the tmux config"
+[ -d "$fresh_home/.config/herdr" ] && [ ! -L "$fresh_home/.config/herdr" ] || \
+  fail "fresh link folded the Herdr config directory"
+[ -L "$fresh_home/.config/herdr/config.toml" ] || \
+  fail "fresh link did not create the Herdr config"
+[ ! -e "$fresh_home/.local/state/herdr" ] || \
+  fail "fresh link created Herdr runtime state"
 [ -L "$fresh_home/.config/shell/functions/cpst" ] || \
   fail "fresh link did not create shell helpers under XDG config"
 [ ! -e "$fresh_home/.funcs" ] || \
@@ -124,6 +130,11 @@ grep -q 'name = Test' "$fresh_home/.gitconfig" || \
   fail "git config --global did not write the local Git config"
 [ "$(cksum < "$repo/git/.config/git/config")" = "$portable_git_before" ] || \
   fail "git config --global changed the portable Git config"
+mkdir -p "$fresh_home/.config/herdr/sessions/dev"
+printf 'runtime lock\n' > "$fresh_home/.config/herdr/.plugins.lock"
+printf 'runtime log\n' > "$fresh_home/.config/herdr/herdr.log"
+printf 'runtime socket placeholder\n' > "$fresh_home/.config/herdr/herdr.sock"
+printf 'runtime session\n' > "$fresh_home/.config/herdr/sessions/dev/session.json"
 assert_no_directory_links "$fresh_home" || fail "fresh link folded directories"
 snapshot_home "$fresh_home" > "$test_root/fresh-before"
 run_make "$fresh_home" link >/dev/null 2>&1 || fail "second link failed"
@@ -195,6 +206,25 @@ grep -Fq '.zshenv' "$test_root/conflict-link.log" || \
 snapshot_home "$conflict_home" > "$test_root/conflict-after"
 cmp -s "$test_root/conflict-before" "$test_root/conflict-after" || \
   fail "conflicting link changed HOME"
+
+echo "check-link: existing Herdr config conflict is non-mutating"
+herdr_conflict_home=$test_root/herdr-conflict-home
+mkdir -p "$herdr_conflict_home/.config/herdr"
+printf 'keep this config\n' > "$herdr_conflict_home/.config/herdr/config.toml"
+snapshot_home "$herdr_conflict_home" > "$test_root/herdr-conflict-before"
+if run_make "$herdr_conflict_home" _link-plan LINK_PACKAGES=herdr \
+  > "$test_root/herdr-conflict-plan.log" 2>&1; then
+  fail "link-plan accepted an existing Herdr config"
+fi
+if run_make "$herdr_conflict_home" _link LINK_PACKAGES=herdr \
+  > "$test_root/herdr-conflict-link.log" 2>&1; then
+  fail "link accepted an existing Herdr config"
+fi
+grep -Fq '.config/herdr/config.toml' "$test_root/herdr-conflict-link.log" || \
+  fail "Herdr conflict failure did not name config.toml"
+snapshot_home "$herdr_conflict_home" > "$test_root/herdr-conflict-after"
+cmp -s "$test_root/herdr-conflict-before" "$test_root/herdr-conflict-after" || \
+  fail "Herdr config conflict changed HOME"
 
 echo "check-link: package artifact guard"
 artifact_home=$test_root/artifact-home
@@ -389,11 +419,20 @@ clean_home=$test_root/clean-home
 mkdir -p "$clean_home"
 run_make "$clean_home" link >/dev/null 2>&1 || fail "clean setup link failed"
 printf 'keep me\n' > "$clean_home/.config/user-owned"
+mkdir -p "$clean_home/.config/herdr/sessions/dev"
+printf 'runtime lock\n' > "$clean_home/.config/herdr/.plugins.lock"
+printf 'runtime session\n' > "$clean_home/.config/herdr/sessions/dev/session.json"
 run_make "$clean_home" clean >/dev/null 2>&1 || fail "clean failed"
 if find "$clean_home" -type l -print | grep -q .; then
   fail "clean left managed links"
 fi
 [ -f "$clean_home/.config/user-owned" ] || fail "clean removed a user file"
+[ ! -e "$clean_home/.config/herdr/config.toml" ] || \
+  fail "clean left the managed Herdr config"
+[ -f "$clean_home/.config/herdr/.plugins.lock" ] || \
+  fail "clean removed the Herdr plugin lock"
+[ -f "$clean_home/.config/herdr/sessions/dev/session.json" ] || \
+  fail "clean removed Herdr session state"
 
 echo "check-link: local Zsh hook migration"
 # $repo is a disposable archive under $test_root; the source checkout is untouched.

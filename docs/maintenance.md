@@ -8,6 +8,16 @@ After updating the checkout, run `make link-plan` and `make link` to include new
 files. Use `DESKTOP=1` for a desktop installation. Restart the shell or editor;
 tmux reloads with prefix `R`.
 
+Herdr reads its tracked configuration through
+`~/.config/herdr/config.toml`. Reload it with `herdr server reload-config` after
+pulling a change. Settings changed inside Herdr may write through that link, so
+review `git diff -- herdr/` before committing them. Logs, sockets, session
+snapshots, plugin state, and downloaded agent manifests remain machine-local.
+On a host where Herdr already created a regular config file, compare it with
+`herdr/.config/herdr/config.toml`, move the old file to a backup outside the
+Herdr directory, then rerun `make link`. The link step refuses to overwrite an
+existing file.
+
 ## Restore tools and plugins
 
 On Intel Macs, follow the [Sheldon workaround](setup.md#intel-macs) instead of

@@ -7,7 +7,7 @@ Each Stow package mirrors paths under `HOME`. Package selection lives in
 
 | Package set | Contents |
 | --- | --- |
-| Common | `agents`, `atuin`, `bash`, `git`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
+| Common | `agents`, `atuin`, `bash`, `git`, `herdr`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
 | Machine-local | `local`, included when present |
 | Linux core | Common and machine-local packages |
 | macOS core | Common and machine-local packages, plus `osx` |
@@ -120,6 +120,7 @@ does not relocate them.
 | Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
 | tmux | `~/.config/tmux/tmux.conf` and supporting files | No repo-managed persistent state |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
+| Herdr | `~/.config/herdr/config.toml` | Sockets, logs, session snapshots, and `.plugins.lock` stay local under `~/.config/herdr/`; downloaded agent manifests and client state use `~/.local/state/herdr/` |
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
 | npm | Environment in `~/.zshenv` | Global packages under `~/.local/share/npm/` |
@@ -132,3 +133,10 @@ honor `XDG_DATA_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
 Neovim uses its standard config, data, and state paths. Vim keeps legacy config
 entry points but honors `XDG_STATE_HOME` for generated state. See the
 [XDG policy](design.md#xdg-boundary) before changing these defaults.
+
+Herdr's config directory remains a real directory; Stow links only
+`config.toml`. Settings changes made inside Herdr can therefore write through
+the link into this checkout. Inspect `git diff -- herdr/` after changing Herdr
+settings. Herdr plugins and their lock file are intentionally not tracked.
+Herdr's sockets, logs, and session snapshots under the config directory are an
+upstream layout exception to this repo's normal XDG state boundary.

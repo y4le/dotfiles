@@ -21,7 +21,7 @@ STOW_FLAGS := --no-folding -d "$(CURDIR)" -t "$(HOME)"
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
 PRIVATE_AGENTS_PACKAGE := agents
 
-COMMON := agents atuin bash git mise nvim scripts tmux vim zsh
+COMMON := agents atuin bash git herdr mise nvim scripts tmux vim zsh
 LOCAL_PACKAGES := $(if $(wildcard local/.),local,)
 LINUX_CORE :=
 MACOS_CORE := osx
