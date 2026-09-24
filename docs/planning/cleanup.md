@@ -2,7 +2,7 @@
 
 ## Status
 
-Active remaining-work list, updated against the repo state on 2026-09-18.
+Active remaining-work list, updated against the repo state on 2026-09-24.
 
 The [local/private configuration guide](../local-config.md) and
 [XDG policy](../design.md#xdg-boundary) cover the former documentation tasks.
@@ -23,5 +23,3 @@ Only do these if they prove valuable in practice:
 - migrate active wiki content from `vimwiki` markup to org files as needed
 - re-evaluate optional Neovim add-backs only if missed in practice:
   `oil.nvim`, `mini.surround`, `mini.ai`, distraction-free writing mode
-- migrate the Linux rofi config to the newer rasi format when that config is
-  touched next

@@ -50,9 +50,9 @@ bindsym $mod+x split horizontal
 bindsym $mod+v split vertical
 
 # volume keys
-bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5% && killall -SIGUSR1 i3status
-bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5% && killall -SIGUSR1 i3status
-bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle && killall -SIGUSR1 i3status
+bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 
 # media keys
 bindsym XF86AudioPlay exec playerctl play
@@ -188,15 +188,13 @@ mode "scratchpad" {
   bindsym $mod+Shift+s move scratchpad; mode "default"
 
   # change focus between tiling / floating windows
-  bindsym Return focus mode_toggle
+  bindsym Return focus mode_toggle; mode "default"
 
   # switch window between floating and normal mode
-  bindsym Space floating toggle
+  bindsym space floating toggle
 
-  # back to normal: Enter or Escape or $mod+r
-  bindsym Return mode "default"
+  # back to normal
   bindsym Escape mode "default"
-  bindsym $mod+s mode "default"
 }
 
 bindsym $mod+s mode "scratchpad"

@@ -1,1 +1,0 @@
-export XSECURELOCK_SAVER="${XSECURELOCK_SAVER:-saver_xscreensaver}"

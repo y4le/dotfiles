@@ -1,0 +1,17 @@
+configuration {
+    modes: [window, run, combi];
+    matching: "fuzzy";
+    font: "mono 10";
+}
+
+@theme "Monokai"
+
+window {
+    width: 30%;
+    border: 1px;
+}
+
+listview {
+    lines: 8;
+    scrollbar: true;
+}
