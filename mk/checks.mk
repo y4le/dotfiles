@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-vim check-runtime check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-vim check-nvim-bin check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-pins check-brew check-system-packages check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+check: check-git check-shell check-pins check-brew check-system-packages check-vim check-nvim-bin check-runtime check-stow check-link check-make ## [offline] run repo validation checks
 
 check-actions: ## [offline] lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -104,6 +104,9 @@ check-system-packages: ## [offline] verify native package command failure handli
 
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
+
+check-nvim-bin: ## [offline] verify Neovim binary selection
+	@sh mk/test-nvim-bin.sh
 
 check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh

@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -eu
+
+fail() {
+  echo "check-nvim-bin: $*" >&2
+  exit 1
+}
+
+repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P) || exit 1
+test_root=$(mktemp -d) || exit 1
+trap 'rm -rf "$test_root"' EXIT
+trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
+mkdir -p "$test_root/bin" "$test_root/empty"
+
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_root/preferred-nvim"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_root/bin/nvim"
+cat > "$test_root/mise" <<'EOF'
+#!/bin/sh
+[ "$MISE_GLOBAL_CONFIG_FILE" = "$DOTFILES_EXPECTED_MISE_CONFIG" ] || exit 1
+[ "$1" = which ] && [ "$2" = nvim ] || exit 1
+printf '%s\n' "$DOTFILES_MISE_NVIM"
+EOF
+chmod +x "$test_root/preferred-nvim" "$test_root/bin/nvim" "$test_root/mise"
+
+find_nvim() {
+  env -i PATH="$2" DOTFILES_MISE_NVIM="$1" \
+    DOTFILES_EXPECTED_MISE_CONFIG="$test_root/config.toml" \
+    /bin/sh "$repo/mk/find-nvim.sh" "$test_root/mise" "$test_root/config.toml"
+}
+
+echo "check-nvim-bin: prefer the executable selected by mise"
+selected=$(find_nvim "$test_root/preferred-nvim" "$test_root/bin") || \
+  fail "mise selection failed"
+[ "$selected" = "$test_root/preferred-nvim" ] || \
+  fail "mise Neovim was not preferred"
+
+echo "check-nvim-bin: fall back when mise returns an unusable path"
+selected=$(find_nvim "$test_root/missing-nvim" "$test_root/bin") || \
+  fail "PATH fallback failed"
+[ "$selected" = "$test_root/bin/nvim" ] || \
+  fail "PATH Neovim was not selected"
+
+echo "check-nvim-bin: report when no executable is available"
+if find_nvim "$test_root/missing-nvim" "$test_root/empty" \
+  > "$test_root/missing.out" 2>&1; then
+  fail "missing Neovim was accepted"
+fi
+grep -F "Install it with 'make tools'" "$test_root/missing.out" >/dev/null || \
+  fail "missing Neovim had no actionable diagnostic"
+
+echo "check-nvim-bin: ok"

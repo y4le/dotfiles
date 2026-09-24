@@ -78,25 +78,9 @@ nvim-plugins: ## [network] restore Neovim plugins from the lock
 		echo "Neovim verifier is missing: $(CURDIR)/mk/verify-nvim-plugins.lua"; \
 		exit 1; \
 	fi
-	@nvim_bin=""; \
-	if [ -x "$(MISE_BIN)" ]; then \
-		nvim_bin="$$(MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) which nvim 2>/dev/null || true)"; \
-	fi; \
-	if [ -z "$$nvim_bin" ]; then \
-		nvim_bin="$$(command -v nvim 2>/dev/null || true)"; \
-	fi; \
-	if [ -z "$$nvim_bin" ] || [ ! -x "$$nvim_bin" ]; then \
-		echo "Neovim not found. Install it with 'make tools'."; \
-		exit 1; \
-	fi
+	@sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" >/dev/null
 	@$(MAKE) _restore-lazy-nvim
-	@nvim_bin=""; \
-	if [ -x "$(MISE_BIN)" ]; then \
-		nvim_bin="$$(MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) which nvim 2>/dev/null || true)"; \
-	fi; \
-	if [ -z "$$nvim_bin" ]; then \
-		nvim_bin="$$(command -v nvim 2>/dev/null || true)"; \
-	fi; \
+	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
 	snapshot="$$(mktemp)" || exit 1; \
 	if ! cp "$(LAZY_NVIM_LOCK_FILE)" "$$snapshot"; then \
 		rm -f "$$snapshot"; \
@@ -136,19 +120,9 @@ nvim-update: ## [network] update Neovim pins and show the lock diff
 		echo "Neovim config is not linked; run 'make link' first"; \
 		exit 1; \
 	fi
-	@nvim_bin="$$(command -v nvim 2>/dev/null || true)"; \
-	if [ -x "$(MISE_BIN)" ]; then \
-		nvim_bin="$$(MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) which nvim 2>/dev/null || printf '%s' "$$nvim_bin")"; \
-	fi; \
-	if [ -z "$$nvim_bin" ] || [ ! -x "$$nvim_bin" ]; then \
-		echo "Neovim not found. Install it with 'make tools'."; \
-		exit 1; \
-	fi
+	@sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" >/dev/null
 	@$(MAKE) _restore-lazy-nvim
-	@nvim_bin="$$(command -v nvim 2>/dev/null || true)"; \
-	if [ -x "$(MISE_BIN)" ]; then \
-		nvim_bin="$$(MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) which nvim 2>/dev/null || printf '%s' "$$nvim_bin")"; \
-	fi; \
+	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
 	DOTFILES_NVIM_BOOTSTRAP=1 "$$nvim_bin" --headless "+Lazy! sync" \
 		"+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" +qa || exit $$?; \
 	git diff --stat -- "$(LAZY_NVIM_LOCK_FILE)"
