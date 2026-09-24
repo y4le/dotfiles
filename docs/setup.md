@@ -83,6 +83,11 @@ The plan changes nothing. It prints the selected packages, links, and conflicts;
 After linking, `~/.zshrc` and `~/.vimrc` point into the checkout, and directories
 such as `~/.config/zsh/` remain real directories.
 
+On macOS, linking preserves an existing `~/.zprofile` as
+`~/.zprofile.local` and sources it from the managed profile. The plan reports
+this move without changing files. If both profile paths already exist, merge
+them yourself before linking.
+
 ## Install tools and plugins
 
 ```sh

@@ -158,6 +158,40 @@ run_make "$macos_core_home" PLATFORM=macos link \
   fail "macOS core link omitted shell config"
 [ ! -e "$macos_core_home/.config/karabiner/karabiner.json" ] || \
   fail "macOS core link included desktop config"
+[ -L "$macos_core_home/.zprofile" ] || \
+  fail "macOS core link omitted login profile"
+
+echo "check-link: existing macOS profile is preserved"
+macos_profile_home=$test_root/macos-profile-home
+mkdir -p "$macos_profile_home"
+printf '%s\n' 'export EXISTING_PROFILE=kept' > "$macos_profile_home/.zprofile"
+run_make "$macos_profile_home" PLATFORM=macos link-plan >/dev/null 2>&1 || \
+  fail "macOS plan rejected a preservable profile"
+[ -f "$macos_profile_home/.zprofile" ] && \
+  [ ! -e "$macos_profile_home/.zprofile.local" ] || \
+  fail "macOS plan changed existing profile"
+run_make "$macos_profile_home" PLATFORM=macos link >/dev/null 2>&1 || \
+  fail "macOS link could not preserve existing profile"
+[ -L "$macos_profile_home/.zprofile" ] || \
+  fail "macOS link omitted managed profile"
+grep -Fqx 'export EXISTING_PROFILE=kept' \
+  "$macos_profile_home/.zprofile.local" || \
+  fail "macOS link changed the preserved profile"
+run_make "$macos_profile_home" PLATFORM=macos link >/dev/null 2>&1 || \
+  fail "second macOS link failed"
+
+macos_profile_conflict_home=$test_root/macos-profile-conflict-home
+mkdir -p "$macos_profile_conflict_home"
+printf '%s\n' 'first' > "$macos_profile_conflict_home/.zprofile"
+printf '%s\n' 'second' > "$macos_profile_conflict_home/.zprofile.local"
+if run_make "$macos_profile_conflict_home" PLATFORM=macos link \
+  > "$test_root/macos-profile-conflict.log" 2>&1; then
+  fail "macOS link overwrote an existing local profile"
+fi
+grep -Fqx 'first' "$macos_profile_conflict_home/.zprofile" || \
+  fail "macOS profile conflict changed original"
+grep -Fqx 'second' "$macos_profile_conflict_home/.zprofile.local" || \
+  fail "macOS profile conflict changed local backup"
 
 linux_desktop_home=$test_root/linux-desktop-home
 mkdir -p "$linux_desktop_home"

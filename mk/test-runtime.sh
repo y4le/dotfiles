@@ -298,6 +298,32 @@ if grep -Eq '\$\(|`' "$repo/zsh/.zshenv"; then
   fail ".zshenv contains command substitution"
 fi
 
+echo "check-runtime: mise Rust shims stay ahead of cargo tools"
+mkdir -p "$test_home/.local/share/mise/shims" "$test_home/.cargo/bin"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_home/.local/share/mise/shims/cargo"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_home/.cargo/bin/cargo"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_home/.cargo/bin/cargo-tool"
+chmod +x "$test_home/.local/share/mise/shims/cargo" \
+  "$test_home/.cargo/bin/cargo" "$test_home/.cargo/bin/cargo-tool"
+printf '%s\n' 'path=("$HOME/.cargo/bin" $path)' > "$test_home/.cargo/env"
+cargo_paths=$(run_zsh -c 'print -r -- "$commands[cargo]|$commands[cargo-tool]"') || \
+  fail "could not inspect Rust tool path order"
+[ "$cargo_paths" = \
+  "$test_home/.local/share/mise/shims/cargo|$test_home/.cargo/bin/cargo-tool" ] || \
+  fail "cargo env overrode pinned Rust or hid cargo-installed tools"
+
+echo "check-runtime: macOS login restores user tool precedence"
+printf '%s\n' 'typeset -g LOCAL_PROFILE_MARKER=loaded' > "$test_home/.zprofile.local"
+profile_paths=$(env -i HOME="$test_home" PATH=/usr/bin:/bin \
+  DOTFILES_REPO="$repo" zsh -f -c '
+    path=(/usr/bin /bin)
+    source "$DOTFILES_REPO/osx/.zprofile"
+    print -r -- "$path[1]|$path[2]|$path[3]|$path[4]|$LOCAL_PROFILE_MARKER"
+  ') || fail "macOS login profile failed"
+[ "$profile_paths" = \
+  "$test_home/bin|$test_home/.local/bin|$test_home/.local/share/mise/shims|/opt/homebrew/bin|loaded" ] || \
+  fail "macOS login profile lost user tools or existing profile"
+
 echo "check-runtime: interactive startup uses command presence without probes"
 : > "$runtime_log"
 startup_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \

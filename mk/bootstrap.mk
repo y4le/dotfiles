@@ -75,9 +75,17 @@ _link-plan: _require-stow
 		echo "warning: XDG_CONFIG_HOME=$$XDG_CONFIG_HOME differs from $(HOME)/.config"; \
 	fi
 	@echo "planning $(PLATFORM) packages: $(LINK_PACKAGES)"
-	@$(STOW) -n -v -R $(STOW_FLAGS) $(LINK_PACKAGES)
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
+		sh mk/prepare-zprofile.sh --plan "$(HOME)" "$(CURDIR)" || exit $$?; \
+		$(STOW) -n -v -R $(STOW_FLAGS) --ignore='^\.zprofile$$' $(LINK_PACKAGES); \
+	else \
+		$(STOW) -n -v -R $(STOW_FLAGS) $(LINK_PACKAGES); \
+	fi
 
 _link: _link-plan
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
+		sh mk/prepare-zprofile.sh --apply "$(HOME)" "$(CURDIR)" || exit $$?; \
+	fi
 	@echo "linking $(PLATFORM) packages: $(LINK_PACKAGES)"
 	@$(STOW) -R $(STOW_FLAGS) $(LINK_PACKAGES)
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' scripts '; then \

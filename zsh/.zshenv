@@ -47,12 +47,12 @@ fi
 
 # add packages controlled by brew to PATH if present
 if [[ -d /opt/homebrew/bin ]]; then
-  path=('/opt/homebrew/bin' $path)
+  path=("$HOME/bin" "$HOME/.local/bin" "$HOME/.local/share/mise/shims" /opt/homebrew/bin $path)
 fi
 
-# source rust package manager if present
-if [[ -f $HOME/.cargo/env ]]; then
-  source $HOME/.cargo/env
+# Keep cargo-installed utilities available after mise's pinned Rust shims.
+if [[ -d $HOME/.cargo/bin ]]; then
+  path+=("$HOME/.cargo/bin")
 fi
 
 export PATH

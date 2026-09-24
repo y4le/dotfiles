@@ -33,6 +33,7 @@ check-shell: ## [offline] syntax-check and lint tracked shell files
 		git ls-files -- \
 			zsh/.zshenv \
 			zsh/.zshrc \
+			osx/.zprofile \
 			'zsh/.config/zsh/themes/*' \
 			'*/.config/zsh/sources/*' \
 			'*/.config/shell/functions/*' \
