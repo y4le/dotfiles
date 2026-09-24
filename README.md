@@ -28,16 +28,17 @@ setup, optionally save `lite` with any add-ons before linking:
 make profile-set PROFILE=lite WITH=yazi
 ```
 
-Then preview and link the selected configuration:
+Preview the selected configuration, then install the user-space tools, links,
+and plugins:
 
 ```sh
 make plan
-make link
+make setup-user
 ```
 
-Review the plan before linking. This step is offline; shell and editor config
-remain usable before optional plugins are restored. Keep the checkout in place;
-the links point into it.
+Review the plan before setup. To apply only the links, run `make link` instead;
+that step is offline, and shell and editor config remain usable before optional
+plugins are restored. Keep the checkout in place; the links point into it.
 
 [`setup/profiles.yaml`](setup/profiles.yaml) lists each component's Stow
 packages and mise tools. `make profile` shows the resolved selection; a saved
@@ -47,8 +48,8 @@ Profiles select links, tool installs, and plugin steps; they do not change the
 native package lists. See the [setup guide](docs/setup.md#choose-a-profile)
 for one-command overrides and switching back to `full`.
 
-Run `make setup-user` to install tools and plugins without sudo, or `make setup`
-to install native packages too. Bootstrap downloads (Herdr, mise, Sheldon, vim-plug)
+`make setup-user` needs no sudo; use `make setup` to install native packages too.
+Bootstrap downloads (Herdr, mise, Sheldon, vim-plug)
 are version-pinned and checksum-verified. Use `DESKTOP=1` only where these
 dotfiles should manage the Linux X11/i3 session or macOS Karabiner configuration.
 Read the [setup guide](docs/setup.md) for prerequisites, Git identity, and the

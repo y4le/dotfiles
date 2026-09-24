@@ -84,6 +84,10 @@ assert_no_directory_links() {
 echo "check-link: fresh and idempotent link"
 fresh_home=$test_root/fresh-home
 mkdir -p "$fresh_home"
+run_make "$fresh_home" link-plan > "$test_root/fresh-plan.log" 2>&1 || \
+  fail "fresh link plan failed"
+grep -Fq 'LINK: .zshrc => ' "$test_root/fresh-plan.log" || \
+  fail "fresh plan hid a new link"
 fresh_log=$test_root/fresh-link.log
 if ! run_make "$fresh_home" link > "$fresh_log" 2>&1; then
   cat "$fresh_log" >&2
@@ -141,6 +145,27 @@ run_make "$fresh_home" link >/dev/null 2>&1 || fail "second link failed"
 snapshot_home "$fresh_home" > "$test_root/fresh-after"
 cmp -s "$test_root/fresh-before" "$test_root/fresh-after" || \
   fail "second link changed HOME"
+run_make "$fresh_home" link-plan > "$test_root/linked-plan.log" 2>&1 || \
+  fail "linked plan failed"
+grep -Fqx 'no Stow link changes' "$test_root/linked-plan.log" || \
+  fail "linked plan did not summarize restow churn"
+if grep -Fq '(reverts previous action)' "$test_root/linked-plan.log"; then
+  fail "linked plan showed unchanged restow actions"
+fi
+run_make "$fresh_home" PLAN_VERBOSE=1 link-plan \
+  > "$test_root/verbose-plan.log" 2>&1 || fail "verbose link plan failed"
+grep -Fq '(reverts previous action)' "$test_root/verbose-plan.log" || \
+  fail "verbose link plan hid Stow's full trace"
+rm "$fresh_home/.zshrc" || fail "could not set up a mixed link plan"
+run_make "$fresh_home" link-plan > "$test_root/mixed-plan.log" 2>&1 || \
+  fail "mixed link plan failed"
+grep -Fq 'LINK: .zshrc => ' "$test_root/mixed-plan.log" || \
+  fail "mixed plan hid a new link among unchanged links"
+if grep -Fq '(reverts previous action)' "$test_root/mixed-plan.log"; then
+  fail "mixed plan showed unchanged restow actions"
+fi
+run_make "$fresh_home" link >/dev/null 2>&1 || \
+  fail "could not restore the mixed-plan link"
 
 echo "check-link: desktop packages are opt-in"
 linux_core_home=$test_root/linux-core-home
@@ -232,6 +257,13 @@ snapshot_home "$conflict_home" > "$test_root/conflict-before"
 if run_make "$conflict_home" link-plan > "$test_root/conflict-plan.log" 2>&1; then
   fail "link-plan accepted a conflicting HOME"
 fi
+grep -Fq '.zshenv' "$test_root/conflict-plan.log" || \
+  fail "conflict plan hid the conflicting path"
+if run_make "$conflict_home" link-plan > /dev/null 2> "$test_root/conflict-stderr.log"; then
+  fail "conflict plan accepted a conflicting HOME with stdout discarded"
+fi
+grep -Fq '.zshenv' "$test_root/conflict-stderr.log" || \
+  fail "conflict plan did not report Stow diagnostics on stderr"
 if run_make "$conflict_home" link > "$test_root/conflict-link.log" 2>&1; then
   fail "link accepted a conflicting HOME"
 fi
@@ -566,6 +598,8 @@ run_make "$profile_home" PROFILE=lite WITH=yazi link-plan \
   > "$test_root/profile-plan.log" 2>&1 || fail "lite link plan failed"
 grep -Fq 'planning removal of unselected add-on links: atuin nvim herdr' \
   "$test_root/profile-plan.log" || fail "lite plan omitted add-on removals"
+grep -Fq 'UNLINK: .config/nvim/init.lua' "$test_root/profile-plan.log" || \
+  fail "lite plan hid a managed link removal"
 snapshot_home "$profile_home" > "$test_root/profile-after-plan"
 cmp -s "$test_root/profile-before-plan" "$test_root/profile-after-plan" || \
   fail "lite plan modified HOME"

@@ -60,14 +60,14 @@ else
 endif
 
 plan: ## [offline] preview selected tools, plugins, and link changes
-	@$(MAKE) profile
-	@$(MAKE) link-plan
+	@$(MAKE) --no-print-directory profile
+	@$(MAKE) --no-print-directory link-plan
 
 link: ## [offline] link selected dotfiles and remove unselected add-on links
-	@$(MAKE) _link LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
+	@$(MAKE) --no-print-directory _link LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
 
 link-plan: ## [offline] show link actions without changing anything
-	@$(MAKE) _link-plan LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
+	@$(MAKE) --no-print-directory _link-plan LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
 
 link-linux: ## [offline] force linux package set
 	@$(MAKE) _link LINK_PACKAGES="$(LINUX_PACKAGES)" REMOVE_PACKAGES="$(filter-out $(LINUX_PACKAGES),$(KNOWN_PROFILE_PACKAGES))"
@@ -107,10 +107,11 @@ _link-plan: _require-stow
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
 		sh mk/prepare-zprofile.sh --plan "$(HOME)" "$(CURDIR)" || exit $$?; \
-		$(STOW) -n -v -R $(STOW_FLAGS) --ignore='^\.zprofile$$' $(LINK_PACKAGES); \
+		set -- --ignore='^\.zprofile$$'; \
 	else \
-		$(STOW) -n -v -R $(STOW_FLAGS) $(LINK_PACKAGES); \
-	fi
+		set --; \
+	fi; \
+	sh mk/stow-plan.sh "$(PLAN_VERBOSE)" "$(STOW)" -n -v -R $(STOW_FLAGS) "$$@" $(LINK_PACKAGES)
 
 _link: _link-plan
 	@if [ -n "$(REMOVE_PACKAGES)" ]; then \

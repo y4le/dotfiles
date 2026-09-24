@@ -57,6 +57,10 @@ these are the main entry points.
 
 `mise-tools` installs mise and only the selected tool names; `nvim-lazy`
 restores only lazy.nvim.
+
+`make PLAN_VERBOSE=1 plan` shows the full Stow dry-run trace; the default plan
+hides restow operations that leave existing links unchanged.
+
 `WITH` adds components to `PROFILE` for one invocation. Pass both as Make
 arguments (`make PROFILE=lite WITH=yazi plan`); environment variables with
 those names are ignored. `profile-set` saves the choice for this checkout;

@@ -102,19 +102,22 @@ prerequisites are already available. `DESKTOP=1` independently selects the
 platform's desktop links; it is not saved by `profile-set`, so pass it each
 time you link desktop files. `local/` and private agent links remain separate.
 
-## Link the configuration
+## Preview the configuration
 
 ```sh
 make plan
-make link
 ```
 
 The plan changes nothing. It prints the selected tools, plugin steps, packages,
 links, and conflicts; [resolve conflicts](maintenance.md#resolve-link-conflicts)
-before linking. When changing from full to lite, it also previews removal of
-managed add-on links. `make link` removes those links, but leaves installed
-tools, plugins, runtime data, and user-owned files alone. Use `make link-plan`
-for a link-only preview.
+before applying the configuration. When changing from full to lite, it also
+previews removal of managed add-on links. Run `make PLAN_VERBOSE=1 plan` for the
+full Stow trace. Use `make link-plan` for a link-only preview.
+
+To apply only the links without installing tools or plugins, run `make link`.
+It removes unselected managed add-on links, but leaves installed tools, plugins,
+runtime data, and user-owned files alone. `make setup-user` in the next section
+also links the configuration, so there is no need to run `make link` first.
 After linking, `~/.zshrc` and `~/.vimrc` point into the checkout, and directories
 such as `~/.config/zsh/` remain real directories.
 
