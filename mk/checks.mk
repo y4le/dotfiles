@@ -271,4 +271,9 @@ check-make: ## [offline] dry-run make target graph and help output
 		exit 1; \
 	}
 	@echo "check-make: make help"
-	@$(MAKE) help >/dev/null
+	@help_output="$$( $(MAKE) --no-print-directory help )" || exit $$?; \
+	duplicates="$$(printf '%s\n' "$$help_output" | awk '{ if (seen[$$1]++) print $$1 }')"; \
+	if [ -n "$$duplicates" ]; then \
+		echo "check-make: duplicate help targets: $$duplicates"; \
+		exit 1; \
+	fi

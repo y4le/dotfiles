@@ -10,12 +10,13 @@ herdr: ## [network] install the pinned Herdr binary and validate its config
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install herdr "$(HERDR_BIN)" 0755
 	@HERDR_CONFIG_PATH="$(HERDR_CONFIG_FILE)" "$(HERDR_BIN)" config check
 
-ifeq ($(strip $(HERDR_INTEGRATIONS)),)
 herdr-integrations: ## [network] install selected Herdr agent integrations
+ifeq ($(strip $(HERDR_INTEGRATIONS)),)
+herdr-integrations:
 	@echo "HERDR_INTEGRATIONS must name at least one integration"; \
 	exit 1
 else
-herdr-integrations: herdr ## [network] install selected Herdr agent integrations
+herdr-integrations: herdr
 	@set -eu; \
 	for integration in $(HERDR_INTEGRATIONS); do \
 		echo "installing Herdr integration: $$integration"; \
