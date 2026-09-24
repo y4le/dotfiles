@@ -17,6 +17,7 @@ function! s:YaziOpen(...) abort
 
   botright 15new
   call term_start(l:cmd, {
+        \ 'curwin': 1,
         \ 'exit_cb': function('s:OnYaziExit', [l:cwd_file, l:chooser_file]),
         \ 'term_finish': 'close',
         \ })

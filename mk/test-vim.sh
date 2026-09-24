@@ -60,6 +60,10 @@ run_case literal-dollar "$test_root/home" "$test_root/price\$5" '' \
 run_case global "$test_root/home" "$test_root/environment wiki" \
   "$test_root/global wiki" "$test_root/global wiki"
 
+echo "check-vim: command-line abbreviations"
+env DOTFILES_REPO="$repo" vim -Nu NONE -i NONE -n -es \
+  -S "$repo/mk/test-vim-abbrev.vim" || fail "Vim abbreviations changed commands or word motions"
+
 if ! command -v stow >/dev/null 2>&1; then
   echo "check-vim: stow not found"
   if [ -n "${CI:-}" ]; then

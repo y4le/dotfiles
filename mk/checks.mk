@@ -106,7 +106,7 @@ check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
 	@sh mk/test-clipboard.sh
 	@if command -v nvim >/dev/null 2>&1; then \
-		DOTFILES_REPO="$(CURDIR)" nvim --headless -u NONE -n -l mk/test-nvim-config.lua; \
+		DOTFILES_REPO="$(CURDIR)" nvim --headless -u NONE -i NONE -n -l mk/test-nvim-config.lua; \
 	elif [ -n "$${CI:-}" ]; then \
 		echo "check-vim: Neovim required in CI" >&2; exit 1; \
 	fi

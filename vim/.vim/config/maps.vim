@@ -1,6 +1,3 @@
-let mapleader = "\<Space>" " set leader to Space
-let g:mapleader = "\<Space>" " repeat leader mapping globally
-
 nnoremap <leader>; @:|" repeat last command mode command. e.g. :buffernext
 
 " improve defaults
@@ -65,11 +62,6 @@ cnoreabbr <expr> %% expand('%:p:h')
 call abbreviate#Cnoreabbr('to', 'TabooOpen', 'open tab with name')
 call abbreviate#Cnoreabbr('tr', 'TabooRename', 'rename current tab')
 call abbreviate#Cnoreabbr('tR', 'TabooReset', 'reset tab name to default')
-
-" diff
-nnoremap <leader>Dn ]c|" d(iff) n(ext)
-nnoremap <leader>Dp [c|" d(iff) p(revious)
-nnoremap <leader>Dg :diffget |" d(iff) g(et)
 
 " navigation
 nnoremap <leader>gf :call nav#OpenInPrevSplit()<cr>

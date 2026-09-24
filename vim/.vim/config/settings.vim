@@ -67,7 +67,7 @@ set foldenable " enable folds
 set ignorecase " ignore case while searching
 set smartcase " stop ignoring case if >0 capitals
 set hlsearch " highlight search results
-set incsearch " search as you type - incsearch plugin
+set incsearch " search as you type
 set magic " better regex
 
 " TABS

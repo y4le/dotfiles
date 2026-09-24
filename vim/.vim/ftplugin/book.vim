@@ -8,7 +8,7 @@ runtime! ftplugin/markdown.vim
 
 " DEFER SWITCHING TO vimwiki SYNTAX
 augroup bookSyntax
-  au!
+  au! * <buffer>
   autocmd Syntax   <buffer> call SetBookSyntax()
 augroup END
 function! SetBookSyntax()

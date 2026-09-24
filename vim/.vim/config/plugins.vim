@@ -4,12 +4,8 @@ if !filereadable($VIMHOME . '/autoload/plug.vim')
   finish
 endif
 
-if has('nvim')
-  call plug#begin(stdpath('data') . '/plugged')
-else
-  call plug#begin(expand('~/.local/share/vim/plugged'))
-  Plug 'gpanders/vim-man' " :Man pages in vim, nvim builtin
-endif
+call plug#begin(expand('~/.local/share/vim/plugged'))
+Plug 'gpanders/vim-man' " :Man pages in vim
 
 " theme plugins
 Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
@@ -33,7 +29,6 @@ Plug 'wellle/targets.vim' " di' -> delete inside '
 Plug 'jeetsukumaran/vim-indentwise' " [= / ]= -> prev/next equal indent
 
 " search plugins
-Plug 'haya14busa/incsearch.vim' " show all incremental search results while typing
 Plug 'markonm/traces.vim' " %s/live preview/substitute commands/
 Plug 'wincent/ferret' " :Ack -> multi file search | quickfix pane
 
@@ -72,7 +67,6 @@ Plug 'tpope/vim-fugitive' " git integration
 " system plugins
 Plug 'HerringtonDarkholme/w3m.vim' " w3m cli browser plugin
 Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
-Plug 'kana/vim-submode' " define modes that temporarily override maps
 Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
 Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
@@ -91,7 +85,7 @@ call plug#end()
 
 " PLUGIN CONFIG
 
-let g:peekaboo_prefix = '<leader>'
+let g:gundo_prefer_python3 = 1
 let g:signify_vcs_list = ['git'] " vim-signify plugin - only check these VCS
 let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
 let g:better_whitespace_filetypes_blacklist=
@@ -105,11 +99,6 @@ let g:w3m#disable_default_keymap = 1
 " airline - tab/status line
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
-
-" submodes
-" setup airline to show submode
-let g:airline_section_y = '%{submode#current()}'
-let g:submode_always_show_submode = 1 " make submode status available to airline
 
 " setup goyo
 let g:goyo_height='100%'

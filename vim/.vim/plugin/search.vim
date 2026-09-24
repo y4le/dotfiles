@@ -7,12 +7,7 @@ let g:rg_root_command = 'rg
   \ --column --line-number --no-heading --fixed-strings --ignore-case
   \ --no-ignore --hidden --follow --color "always" '
 
-let g:rg_command = g:rg_root_command . '
-  \ -g "*.{js,coffee,json,php,styl,jade,html}"
-  \ -g "*.{md,markdown,config,py,cpp,c,go,hs,rb,conf,java,vim}"
-  \ -g "!*.{min.js,swp,o,zip}"
-  \ -g "!*{.documentation,Logs}*"
-  \ -g "!{.git,node_modules,vendor,.venv}/*" '
+let g:rg_command = g:rg_root_command . ' -g "!.git/**" '
 
 " :Fw  - rg -> (F)zf through fulltext in (w)orking dir, `?` opens preview pane
 command! -nargs=* Fw
@@ -23,7 +18,7 @@ command! -nargs=* Fw
 " :Fl  - rg -> (F)zf through fulltext in (l)ocal buffer dir, `?` for preview
 command! -nargs=* Fl
   \ call fzf#vim#grep(
-  \   g:rg_command . shellescape(<q-args>) . ' ' . expand('%:p:h'), 1,
+  \   g:rg_command . shellescape(<q-args>) . ' ' . shellescape(expand('%:p:h')), 1,
   \   fzf#vim#with_preview('right:50%:hidden', '?'), 0)
 
 " :Docs  - rg through ~/.documentation folder

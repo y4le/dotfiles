@@ -77,7 +77,7 @@ if exists('g:MRU_File')
 endif
 " v:oldfiles is vim's builin equivalent
 call s:FzfFileCmdDefRaw('Oldfiles',
-  \ '"source": map(v:oldfiles, "expand(v:val)")',
+  \ '"source": map(copy(v:oldfiles), "expand(v:val)")',
   \ { 'down': '100%', 'options': ['--multi', '--preview', 'bat {} || cat {}'] })
 
 " open buffers -> fzf

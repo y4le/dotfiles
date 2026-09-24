@@ -1,15 +1,12 @@
-" save these things when we save a vim session
-set sessionoptions=blank,buffers,curdir,folds,globals,help,options,tabpages,winsize
-
 " quick toggle minimal/maximal saving options
-command SessionSaveMin :set sessionoptions=buffers,tabpages
-command SessionSaveMax :set sessionoptions=blank,buffers,curdir,folds,globals,help,options,tabpages,winsize
+command! SessionSaveMin :set sessionoptions=buffers,tabpages
+command! SessionSaveMax :set sessionoptions=blank,buffers,curdir,folds,globals,help,options,tabpages,winsize
 
 " (s)ession (s)ave - :ss/dotfiles
-cnoreabbrev ss mks! $VIMSTATE/sessions
+cnoreabbrev <expr> ss getcmdtype() ==# ':' && getcmdline() ==# 'ss' ? 'mks! $VIMSTATE/sessions' : 'ss'
 
 " (s)ession (l)oad - :sl/dotfiles
-cnoreabbrev sl source $VIMSTATE/sessions
+cnoreabbrev <expr> sl getcmdtype() ==# ':' && getcmdline() ==# 'sl' ? 'source $VIMSTATE/sessions' : 'sl'
 
 
 " :Sessions - saved vim sessions -> fzf

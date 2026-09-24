@@ -26,7 +26,7 @@ if command -v nvim >/dev/null 2>&1; then
   echo 'check-clipboard: Neovim mappings'
   env DOTFILES_REPO="$repo" DOTFILES_TEST_CLIPBOARD="$test_root/clipboard" \
     PATH="$test_root/bin:$PATH" \
-    nvim --headless -u NONE -n -l "$repo/mk/test-clipboard.lua"
+    nvim --headless -u NONE -i NONE -n -l "$repo/mk/test-clipboard.lua"
 elif [ -n "${CI:-}" ]; then
   echo 'check-clipboard: Neovim required in CI' >&2
   exit 1
@@ -34,12 +34,25 @@ fi
 
 if command -v vim >/dev/null 2>&1; then
   echo 'check-clipboard: Vim paste failure'
+  printf 'REPLACED' > "$test_root/clipboard"
   env DOTFILES_REPO="$repo" DOTFILES_TEST_CLIPBOARD="$test_root/clipboard" \
     DOTFILES_TEST_FAIL_PASTE=1 DOTFILES_TEST_OUTPUT="$test_root/vim.out" \
     PATH="$test_root/bin:$PATH" \
-    vim -Nu NONE -n -es -S "$repo/mk/test-clipboard.vim"
-  [ "$(cat "$test_root/vim.out")" = 'KEEP THIS' ] || {
+    vim -Nu NONE -i NONE -n -es -S "$repo/mk/test-clipboard.vim"
+  [ "$(wc -l < "$test_root/vim.out")" -eq 2 ] &&
+    [ "$(sed -n '1p' "$test_root/vim.out")" = 'KEEP THIS' ] &&
+    [ "$(sed -n '2p' "$test_root/vim.out")" = '' ] || {
     echo 'check-clipboard: failed paste changed Vim text' >&2
+    exit 1
+  }
+  echo 'check-clipboard: Vim paste success'
+  env DOTFILES_REPO="$repo" DOTFILES_TEST_CLIPBOARD="$test_root/clipboard" \
+    DOTFILES_TEST_OUTPUT="$test_root/vim.out" PATH="$test_root/bin:$PATH" \
+    vim -Nu NONE -i NONE -n -es -S "$repo/mk/test-clipboard.vim"
+  [ "$(wc -l < "$test_root/vim.out")" -eq 2 ] &&
+    [ "$(sed -n '1p' "$test_root/vim.out")" = 'REPLACED' ] &&
+    [ "$(sed -n '2p' "$test_root/vim.out")" = '' ] || {
+    echo 'check-clipboard: successful paste failed or leaked unnamed register' >&2
     exit 1
   }
 elif [ -n "${CI:-}" ]; then

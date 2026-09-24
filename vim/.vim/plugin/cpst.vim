@@ -39,7 +39,11 @@ function! s:DoAction(algorithm,type)
   endif
   " restore saved settings and register value
   finally
-    call setreg('"', reg_save)
+    if empty(reg_save)
+      call setreg('"', '')
+    else
+      call setreg('"', reg_save)
+    endif
     let &selection = sel_save
     let &clipboard = cb_save
   endtry
