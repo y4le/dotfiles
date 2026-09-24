@@ -18,14 +18,6 @@ use = ["minimal.zsh-theme"]
 
 # -- plugins (immediate) -----------------------------------------------------
 
-[plugins.solarized-man]
-github = "zlsun/solarized-man"
-rev = "e69d2cedc3a51031e660f2c3459b08ab62ef9afa"
-
-[plugins.fzf-widgets]
-github = "ytet5uy4/fzf-widgets"
-rev = "cf19c0b2be11520619aa503f7c3a1fb5a8556fbe"
-
 # -- plugins (deferred) ------------------------------------------------------
 
 [plugins.forgit]

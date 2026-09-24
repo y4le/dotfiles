@@ -105,6 +105,7 @@ run_zsh() {
     SHELL=/bin/sh \
     TERM=dumb \
     LC_ALL=C \
+    TMUX="${DOTFILES_TEST_TMUX:-}" \
     DOTFILES_RUNTIME_LOG="$runtime_log" \
     HTTPS_PROXY=http://127.0.0.1:9 \
     HTTP_PROXY=http://127.0.0.1:9 \
@@ -281,7 +282,7 @@ cmp -s "$cache" "$test_root/cache.before" || \
 
 echo "check-runtime: non-interactive zshenv"
 : > "$runtime_log"
-for command_name in bat delta mise; do
+for command_name in bat delta mise tmux; do
   stub=$test_home/bin/$command_name
   printf '%s\n' \
     '#!/bin/sh' \
@@ -296,6 +297,84 @@ DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" run_zsh -c true \
 if grep -Eq '\$\(|`' "$repo/zsh/.zshenv"; then
   fail ".zshenv contains command substitution"
 fi
+
+echo "check-runtime: interactive startup uses command presence without probes"
+: > "$runtime_log"
+startup_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
+  DOTFILES_TEST_TMUX=stub-session run_zsh -i -c \
+  'print -r -- "$MANPAGER|$GIT_PAGER|$MANROFFOPT|$ATUIN_TMUX_POPUP"' \
+  2> "$test_root/startup-probes.err") || fail "interactive zsh failed with available tools"
+[ "$startup_state" = 'bat -plman|delta|-c|true' ] || \
+  fail "interactive zsh ignored available bat, delta or tmux"
+if grep -Eq '/(bat|delta|mise|tmux) ' "$runtime_log"; then
+  fail "interactive startup ran a version, mise or tmux capability probe"
+fi
+cat > "$test_home/bin/fzf-tmux" <<'EOF'
+#!/bin/sh
+printf '%s\n' 'fzf-tmux invoked' >> "$DOTFILES_RUNTIME_LOG"
+exit 97
+EOF
+chmod +x "$test_home/bin/fzf-tmux"
+widget_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
+  DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
+  function zle() { :; }
+  BUFFER=before; CURSOR=6
+  atuin-success-history
+  print -r -- "$BUFFER|$CURSOR"
+'  2> "$test_root/legacy-tmux-widget.err") || \
+  fail "successful-history widget failed without tmux popup support"
+[ "$widget_state" = 'chosen command|14' ] || \
+  fail "successful-history widget did not fall back to fzf"
+if grep -Fq 'fzf-tmux invoked' "$runtime_log"; then
+  fail "successful-history widget used unsupported tmux popup"
+fi
+
+echo "check-runtime: prompt redraw reuses git status"
+cat > "$test_home/bin/git" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$*" >> "$DOTFILES_RUNTIME_LOG"
+case $1 in
+  rev-parse)
+    case $PWD in
+      */other) printf '%s\n' other-branch ;;
+      *) printf '%s\n' review-branch ;;
+    esac
+    ;;
+  status) printf '%s\n' ' M tracked' ;;
+esac
+EOF
+chmod +x "$test_home/bin/git"
+for command_name in sed basename hostname; do
+  stub=$test_home/bin/$command_name
+  printf '%s\n' \
+    '#!/bin/sh' \
+    'printf "%s %s\n" "${0##*/}" "$*" >> "$DOTFILES_RUNTIME_LOG"' \
+    'exit 97' > "$stub"
+  chmod +x "$stub"
+done
+mkdir -p "$test_home/other"
+: > "$runtime_log"
+prompt_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" run_zsh -i -c '
+  source "$HOME/.config/zsh/themes/minimal.zsh-theme"
+  _mnml_git_precmd
+  mnml_git; mnml_git
+  cd "$HOME/other"
+  mnml_git
+  VIRTUAL_ENV=/tmp/project.env; SSH_TTY=/dev/tty
+  mnml_status; mnml_jobs; mnml_pyenv; mnml_ssh
+'  2> "$test_root/prompt.err") || fail "prompt components failed"
+case $prompt_state in
+  *review-branch*review-branch*other-branch*project* ) : ;;
+  *) fail "prompt did not refresh the branch on cd or retain the environment" ;;
+esac
+[ "$(grep -Ec '^(rev-parse|status)' "$runtime_log")" -eq 4 ] || \
+  fail "prompt did not refresh exactly once per directory change"
+if grep -Eq '^(sed|basename|hostname) ' "$runtime_log"; then
+  fail "prompt component spawned a basic command"
+fi
+for command_name in sed basename hostname; do
+  rm "$test_home/bin/$command_name"
+done
 
 if [ -n "$nvim_bin" ]; then
   git_stub=$test_home/bin/git

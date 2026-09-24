@@ -9,21 +9,19 @@ elif [[ -f $HOME/.pre_profile ]]; then
   source $HOME/.pre_profile
 fi
 
-if bat --version >/dev/null 2>&1; then
+if (( $+commands[bat] )); then
   export MANPAGER='bat -plman'
+  export MANROFFOPT=-c
 else
   export MANPAGER=$PAGER
 fi
-if delta --version >/dev/null 2>&1; then
+if (( $+commands[delta] )); then
   export GIT_PAGER='delta'
 else
   export GIT_PAGER=$PAGER
 fi
 
-# mise — pinned runtimes and cross-platform CLI tools
-if command -v mise &>/dev/null; then
-  eval "$(mise activate zsh)"
-fi
+# mise shims are on PATH in .zshenv for all shell types.
 
 # fzf is loaded asynchronously; keep it from taking ctrl-R back from atuin
 if command -v atuin &>/dev/null; then
@@ -101,13 +99,12 @@ function yazinav() {
 zle -N yazinav
 bindkey '^g' yazinav
 
-# ctrl-R history search (atuin with fzf fallback)
+# ctrl-R history search
 if command -v atuin &>/dev/null; then
   export ATUIN_NOBIND="true"
   eval "$(atuin init zsh --disable-up-arrow --disable-ai)"
 
-  # use a popup only when this tmux server provides display-popup
-  if [[ -n "$TMUX" ]] && tmux list-commands 2>/dev/null | command grep -q '^display-popup '; then
+  if [[ -n "$TMUX" ]]; then
     export ATUIN_TMUX_POPUP="true"
   else
     export ATUIN_TMUX_POPUP="false"
@@ -126,7 +123,9 @@ if command -v atuin &>/dev/null; then
 
     zle -I
     local -a selector=(fzf)
-    if [[ "$ATUIN_TMUX_POPUP" == "true" ]] && command -v fzf-tmux &>/dev/null; then
+    if [[ "$ATUIN_TMUX_POPUP" == "true" ]] && \
+      command -v fzf-tmux &>/dev/null && \
+      tmux list-commands 2>/dev/null | command grep -q '^display-popup '; then
       selector=(
         fzf-tmux
         -p "${ATUIN_TMUX_POPUP_WIDTH:-90%},${ATUIN_TMUX_POPUP_HEIGHT:-70%}"
@@ -150,11 +149,6 @@ if command -v atuin &>/dev/null; then
   bindkey -M emacs '^Xo' atuin-success-history
   bindkey -M viins '^Xo' atuin-success-history
   bindkey -M vicmd '^Xo' atuin-success-history
-else
-  if (( $+widgets[fzf-insert-history] )); then
-    bindkey -M viins '^r' fzf-insert-history
-    bindkey -M vicmd '^r' fzf-insert-history
-  fi
 fi
 
 # ctrl-X ctrl-e edit current command in vim

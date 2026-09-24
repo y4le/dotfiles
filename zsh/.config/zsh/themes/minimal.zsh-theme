@@ -23,7 +23,7 @@ function mnml_status {
 	local uchar="$MNML_USER_CHAR"
 
 	local job_ansi="0"
-	if [ -n "$(jobs | sed -n '$=')" ]; then
+	if (( ${#jobstates} > 0 )); then
 		job_ansi="$MNML_BGJOB_MODE"
 	fi
 
@@ -73,14 +73,18 @@ function mnml_cwd {
 }
 
 function mnml_git {
-	local statc="%{\e[0;3${MNML_OK_COLOR}m%}" # assume clean
-	local bname="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
+	printf '%b' "$MNML_GIT_PROMPT"
+}
 
-	if [ -n "$bname" ]; then
-		if [ -n "$(git status --porcelain 2> /dev/null)" ]; then
+function _mnml_git_precmd {
+	local bname="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
+	MNML_GIT_PROMPT=''
+	if [[ -n "$bname" ]]; then
+		local statc="%{\e[0;3${MNML_OK_COLOR}m%}"
+		if [[ -n "$(git status --porcelain 2> /dev/null)" ]]; then
 			statc="%{\e[0;3${MNML_ERR_COLOR}m%}"
 		fi
-		printf '%b' "$statc$bname%{\e[0m%}"
+		MNML_GIT_PROMPT="$statc$bname%{\e[0m%}"
 	fi
 }
 
@@ -95,13 +99,13 @@ function mnml_uhp {
 
 function mnml_ssh {
 	if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-		printf '%b' "$(hostname -s)"
+		printf '%b' "${HOST%%.*}"
 	fi
 }
 
 function mnml_pyenv {
 	if [ -n "$VIRTUAL_ENV" ]; then
-		_venv="$(basename $VIRTUAL_ENV)"
+		local _venv="${VIRTUAL_ENV:t}"
 		printf '%b' "${_venv%%.*}"
 	fi
 }
@@ -119,7 +123,7 @@ function mnml_jobs {
 	local _w="%{\e[0m%}"
 	local _g="%{\e[38;5;244m%}"
 
-	local job_n="$(jobs | sed -n '$=')"
+	local job_n=${#jobstates}
 	if [ "$job_n" -gt 0 ]; then
 		printf '%b' "$_g$job_n$_w&"
 	fi
@@ -254,6 +258,9 @@ function _mnml_bind_widgets() {
 # Setup
 autoload -U colors && colors
 setopt prompt_subst
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _mnml_git_precmd
+add-zsh-hook chpwd _mnml_git_precmd
 
 PROMPT='$(_mnml_wrap MNML_PROMPT) '
 RPROMPT='$(_mnml_wrap MNML_RPROMPT)'
