@@ -1,0 +1,32 @@
+local repo = os.getenv("DOTFILES_REPO")
+vim.opt.rtp:prepend(repo .. "/nvim/.config/nvim")
+vim.g.mapleader = " "
+
+local sessions = require("config.sessions")
+local original = vim.fn.getcwd()
+local root = vim.fn.tempname()
+vim.fn.mkdir(root .. "/one/app", "p")
+vim.fn.mkdir(root .. "/two/app", "p")
+vim.fn.chdir(root .. "/one/app")
+local first = sessions.default_name()
+vim.fn.chdir(root .. "/two/app")
+local second = sessions.default_name()
+vim.fn.chdir(original)
+vim.fn.delete(root, "rf")
+assert(first ~= second, "same-basename checkouts share a session name")
+assert(first:match("^app%-") and second:match("^app%-"), "session name lost basename")
+
+dofile(repo .. "/nvim/.config/nvim/lua/config/keymaps.lua")
+vim.fn.setqflist({})
+vim.v.errmsg = ""
+vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Space>qq", true, false, true), "xt", false)
+assert(vim.fn.getqflist({ winid = 0 }).winid ~= 0, "quickfix toggle did not open")
+assert(vim.v.errmsg == "", "opening an empty quickfix list raised " .. vim.v.errmsg)
+
+local target = vim.fn.tempname()
+vim.fn.writefile({ "match" }, target)
+vim.fn.setqflist({}, "r", { items = { { filename = target, lnum = 1, text = "match" } } })
+vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Space>qq", true, false, true), "xt", false)
+vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Space>qq", true, false, true), "xt", false)
+assert(vim.fn.expand("%:p") == target, "nonempty quickfix did not jump to its current entry")
+vim.fn.delete(target)

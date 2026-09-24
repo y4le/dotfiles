@@ -75,7 +75,7 @@ end
 
 function M.keymaps()
   builtin().keymaps({
-    default_text = "<leader>",
+    default_text = "<Space>",
   })
 end
 

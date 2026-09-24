@@ -111,7 +111,6 @@ return {
         bash = { "shellcheck" },
         python = { "ruff" },
         sh = { "shellcheck" },
-        zsh = { "shellcheck" },
       }
 
       local group = vim.api.nvim_create_augroup("dotfiles_lint", { clear = true })

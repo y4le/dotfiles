@@ -13,12 +13,12 @@ local function with_extension(name)
 end
 
 function M.default_name()
-  local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
-  if cwd == "" then
-    return "session"
+  local cwd = vim.fn.getcwd()
+  local basename = vim.fn.fnamemodify(cwd, ":t")
+  if basename == "" then
+    basename = "session"
   end
-
-  return cwd
+  return basename .. "-" .. vim.fn.sha256(cwd):sub(1, 10)
 end
 
 function M.path(name)

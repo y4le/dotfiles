@@ -9,7 +9,9 @@ local function toggle_quickfix(height)
   end
 
   vim.cmd((height or 8) .. "copen")
-  vim.cmd.cc()
+  if #vim.fn.getqflist() > 0 then
+    vim.cmd.cc()
+  end
 end
 
 local function edit_cfile(win_cmd)

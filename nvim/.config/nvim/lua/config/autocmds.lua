@@ -4,7 +4,7 @@ local checktime_group = api.nvim_create_augroup("dotfiles_checktime", { clear = 
 api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
   group = checktime_group,
   callback = function()
-    if vim.fn.mode() ~= "c" then
+    if vim.fn.mode() ~= "c" and vim.fn.getcmdwintype() == "" then
       vim.cmd.checktime()
     end
   end,
