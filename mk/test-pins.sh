@@ -475,14 +475,6 @@ env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
 [ -x "$raw_executable_destination" ] || fail "pinned rerun did not repair executable mode"
 [ ! -s "$curl_log" ] || fail "mode repair accessed the network"
 
-fetch_destination=$test_root/fetched.txt
-env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
-  DOTFILES_PLATFORM=linux-amd64 DOTFILES_PINS_FILE="$raw_pins" \
-  DOTFILES_TEST_CURL_LOG="$curl_log" DOTFILES_TEST_FIXTURES="$fixtures" \
-  sh "$pin_script" fetch raw-tool "$fetch_destination"
-[ "$(sh "$pin_script" sha256 "$fetch_destination")" = "$raw_hash" ] || \
-  fail "fetch has the wrong content"
-
 if env DOTFILES_PLATFORM=darwin-arm64 DOTFILES_PINS_FILE="$fixture_pins" \
   sh "$pin_script" status mise "$destination" >/dev/null 2>&1; then
   fail "accepted a pin for the wrong platform"

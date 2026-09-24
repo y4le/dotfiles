@@ -53,7 +53,7 @@ sheldon-plugins: ## [network] restore pinned zsh plugins and build startup cache
 	fi; \
 	sh mk/verify-sheldon-plugins.sh verify "$(SHELDON_CONFIG_FILE)" \
 		"$(SHELDON_DATA_DIR)" "$$tmp" || exit $$?; \
-	mv "$$tmp" "$$cache"; \
+	mv "$$tmp" "$$cache" || exit $$?; \
 	echo "wrote $$cache"
 
 brew: ## [offline] report the Homebrew installation required by system-packages

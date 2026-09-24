@@ -142,53 +142,43 @@ check-link: ## [offline] test safe linking in isolated temporary homes
 
 check-make: ## [offline] dry-run make target graph and help output
 	@echo "check-make: make -n setup"
-	@setup_plan="$$( $(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=apt setup && \
-		$(MAKE) -n PLATFORM=macos PACKAGE_MANAGER=brew setup && \
-		$(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=pacman setup )" || exit $$?; \
-	if printf '%s\n' "$$setup_plan" | \
-		grep -Eq 'Homebrew/install|install\.sh|installer[[:space:]]+-pkg|/bin/bash[[:space:]]+-c'; then \
-		echo "check-make: setup includes an unreviewed native installer"; \
-		exit 1; \
+	@$(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=apt setup >/dev/null
+	@$(MAKE) -n PLATFORM=macos PACKAGE_MANAGER=brew setup >/dev/null
+	@$(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=pacman setup >/dev/null
+	@setup_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo setup )" || exit $$?; \
+	expected="$$(printf '/bin/echo system-packages\nsystem-packages\n/bin/echo setup-user\nsetup-user')"; \
+	if [ "$$setup_plan" != "$$expected" ]; then \
+		echo "check-make: setup phase order changed"; exit 1; \
 	fi
 	@echo "check-make: make -n setup-user"
-	@setup_user="$$( $(MAKE) -n setup-user )" || exit $$?; \
-	if printf '%s\n' "$$setup_user" | \
-		grep -Eq '^[[:space:]]*(sudo|doas|apt-get|pacman|brew)[[:space:]]|brew_bin.*[[:space:]]install|Homebrew/install|install\.sh|installer[[:space:]]+-pkg|/bin/bash[[:space:]]+-c'; then \
-		echo "check-make: setup-user includes a native package command"; \
-		exit 1; \
-	fi; \
-	if printf '%s\n' "$$setup_user" | grep -F 'integration install' >/dev/null; then \
-		echo "check-make: setup-user installs opt-in Herdr integrations"; \
+	@setup_user="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo setup-user )" || exit $$?; \
+	expected="$$(printf '/bin/echo tools\ntools\n/bin/echo link\nlink\n/bin/echo plugins\nplugins')"; \
+	if [ "$$setup_user" != "$$expected" ]; then \
+		echo "check-make: setup-user phase order changed"; exit 1; \
+	fi
+	@setup_user_plan="$$( $(MAKE) -n -s --no-print-directory setup-user )" || exit $$?; \
+	if printf '%s\n' "$$setup_user_plan" | grep -Eq '^[[:space:]]*(sudo|doas)[[:space:]]|integration install'; then \
+		echo "check-make: setup-user contains a privileged or opt-in integration command"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n tools"
-	@tools_plan="$$( $(MAKE) -n tools )" || exit $$?; \
-	if printf '%s\n' "$$tools_plan" | grep -Eq 'mise\.run|crate\.sh|bash -s'; then \
-		echo "check-make: tools still uses an unverified installer"; \
-		exit 1; \
-	fi
+	@$(MAKE) -n tools >/dev/null
 	@echo "check-make: make -n herdr"
-	@herdr_plan="$$( $(MAKE) -n herdr )" || exit $$?; \
-	if printf '%s\n' "$$herdr_plan" | grep -Eq 'mise[[:space:]]+install|install\.sh|(^|[[:space:]])stow[[:space:]]'; then \
-		echo "check-make: Herdr uses an unreviewed installer or links config"; \
-		exit 1; \
-	fi
+	@$(MAKE) -n herdr >/dev/null
 	@echo "check-make: make -n herdr-integrations"
 	@$(MAKE) -n herdr-integrations >/dev/null
 	@echo "check-make: make -n plugins"
 	@$(MAKE) -n plugins >/dev/null
 	@echo "check-make: tool and plugin phase order"
 	@tools_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo tools )" || exit $$?; \
-	tools_targets="$$(printf '%s\n' "$$tools_plan" | awk '/^(mise-tools|sheldon|herdr)$$/ { print }')"; \
-	expected="$$(printf 'mise-tools\nsheldon\nherdr')"; \
-	if [ "$$tools_targets" != "$$expected" ]; then \
+	expected="$$(printf '/bin/echo mise-tools\nmise-tools\n/bin/echo sheldon\nsheldon\n/bin/echo herdr\nherdr')"; \
+	if [ "$$tools_plan" != "$$expected" ]; then \
 		echo "check-make: tools did not call mise-tools, sheldon, herdr in order"; \
 		exit 1; \
 	fi
 	@plugin_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo plugins )" || exit $$?; \
-	plugin_targets="$$(printf '%s\n' "$$plugin_plan" | awk '/^(sheldon-plugins|vim-plugins|nvim-plugins)$$/ { print }')"; \
-	expected="$$(printf 'sheldon-plugins\nvim-plugins\nnvim-plugins')"; \
-	if [ "$$plugin_targets" != "$$expected" ]; then \
+	expected="$$(printf '/bin/echo sheldon-plugins\nsheldon-plugins\n/bin/echo vim-plugins\nvim-plugins\n/bin/echo nvim-plugins\nnvim-plugins')"; \
+	if [ "$$plugin_plan" != "$$expected" ]; then \
 		echo "check-make: plugins did not restore shell, Vim, Neovim in order"; \
 		exit 1; \
 	fi

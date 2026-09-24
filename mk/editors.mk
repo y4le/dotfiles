@@ -1,8 +1,4 @@
-.PHONY: vim-bootstrap vim-plugins nvim-bootstrap nvim-lazy nvim-plugins nvim-update _restore-lazy-nvim
-
-vim-bootstrap: vim-plugins ## [network] alias for vim-plugins
-
-nvim-bootstrap: nvim-plugins ## [network] alias for nvim-plugins
+.PHONY: vim-plugins nvim-lazy nvim-plugins nvim-update _restore-lazy-nvim
 
 nvim-lazy: _restore-lazy-nvim ## [network] restore only the pinned lazy.nvim checkout
 

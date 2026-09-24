@@ -17,6 +17,11 @@ Each Stow package mirrors paths under `HOME`. Package selection lives in
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
 `scripts` supplies `~/bin` commands and `~/.config/shell/functions/` helpers.
 
+Neovim uses `stylua` for Lua formatting and `taplo` for TOML formatting when
+those commands are installed. `shellcheck` enables Bash and POSIX shell linting
+in Neovim and local `make check` runs; CI installs it explicitly. These three
+tools are optional and are not installed by `make tools`.
+
 ## Make targets
 
 `make` defaults to `make help`. The help output is the complete target list;
@@ -43,10 +48,7 @@ these are the main entry points.
 | `check` | Run repository validation | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |
 
-`install` is a compatibility target for `system-packages` followed by `tools`;
-it does not link configuration or restore plugins. `vim-bootstrap` and
-`nvim-bootstrap` alias their respective plugin targets. `mise-tools` installs
-mise and its configured tools; `nvim-lazy` restores only lazy.nvim.
+`mise-tools` installs mise and its configured tools; `nvim-lazy` restores only lazy.nvim.
 `HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
 overridden when invoking `herdr-integrations`.
 

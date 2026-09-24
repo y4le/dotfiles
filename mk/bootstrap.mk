@@ -1,4 +1,4 @@
-.PHONY: setup setup-user install tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
+.PHONY: setup setup-user tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -8,10 +8,6 @@ setup-user: ## [network] user-space tools, links, and plugins; no sudo
 	@$(MAKE) tools
 	@$(MAKE) link
 	@$(MAKE) plugins
-
-install: ## [sudo, network] compatibility alias: system packages + tools
-	@$(MAKE) system-packages
-	@$(MAKE) tools
 
 tools: ## [network] install user-space tools
 	@$(MAKE) mise-tools

@@ -1,16 +1,14 @@
-.POSIX:
 SHELL = /bin/sh
 .DEFAULT_GOAL := help
 
 include mk/config.mk
 include mk/guards.mk
-include mk/checks.mk
 include mk/bootstrap.mk
 include mk/tools.mk
 include mk/editors.mk
 include mk/agents.mk
-include mk/optional.mk
 include mk/cleanup.mk
+include mk/checks.mk
 
 .PHONY: help
 

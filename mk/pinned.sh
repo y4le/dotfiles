@@ -225,23 +225,6 @@ download_pin() {
   fi
 }
 
-fetch() {
-  [ "$#" -eq 2 ] || fail "fetch requires a name and destination"
-  read_pin "$1"
-  destination=$2
-  if [ -L "$destination" ] || { [ -e "$destination" ] && [ ! -f "$destination" ]; }; then
-    fail "refusing non-regular destination: $destination"
-  fi
-  destination_dir=$(dirname "$destination")
-  mkdir -p "$destination_dir"
-  tmp_dir=$(mktemp -d "$destination_dir/.pinned.XXXXXX") || fail "could not create temporary directory"
-  download_pin "$tmp_dir/download"
-  chmod 0600 "$tmp_dir/download"
-  mv -f "$tmp_dir/download" "$destination"
-  cleanup
-  tmp_dir=
-}
-
 status() {
   [ "$#" -eq 2 ] || fail "status requires a name and destination"
   read_pin "$1"
@@ -329,13 +312,9 @@ case $command in
     shift
     status "$@"
     ;;
-  fetch)
-    shift
-    fetch "$@"
-    ;;
   install)
     shift
     install "$@"
     ;;
-  *) fail "usage: $0 {platform|sha256 FILE|lint|status NAME DEST|fetch NAME DEST|install NAME DEST MODE}" ;;
+  *) fail "usage: $0 {platform|sha256 FILE|lint|status NAME DEST|install NAME DEST MODE}" ;;
 esac
