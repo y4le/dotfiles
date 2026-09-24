@@ -17,8 +17,18 @@ else
 fi
 # mise shims are on PATH in .zshenv for all shell types.
 
+# Atuin creates a regular config file when an old shell hook runs after its
+# package is unlinked. Only config linked into the Atuin package selects it.
+atuin_config=$HOME/.config/atuin/config.toml
+atuin_managed=0
+if [[ -f $atuin_config && ${atuin_config:A} != ${atuin_config:a} &&
+  ${atuin_config:A} == */atuin/.config/atuin/config.toml ]]; then
+  atuin_managed=1
+fi
+unset atuin_config
+
 # fzf is loaded asynchronously; keep it from taking ctrl-R back from atuin
-if [[ -e $HOME/.config/atuin/config.toml ]] && command -v atuin &>/dev/null; then
+if (( atuin_managed )) && command -v atuin &>/dev/null; then
   export FZF_CTRL_R_COMMAND=""
 fi
 
@@ -94,7 +104,7 @@ zle -N yazinav
 bindkey '^g' yazinav
 
 # ctrl-R history search
-if [[ -e $HOME/.config/atuin/config.toml ]] && command -v atuin &>/dev/null; then
+if (( atuin_managed )) && command -v atuin &>/dev/null; then
   export ATUIN_NOBIND="true"
   eval "$(atuin init zsh --disable-up-arrow --disable-ai)"
 
@@ -144,6 +154,7 @@ if [[ -e $HOME/.config/atuin/config.toml ]] && command -v atuin &>/dev/null; the
   bindkey -M viins '^Xo' atuin-success-history
   bindkey -M vicmd '^Xo' atuin-success-history
 fi
+unset atuin_managed
 
 # ctrl-X ctrl-e edit current command in vim
 autoload -z edit-command-line

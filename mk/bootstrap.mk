@@ -92,9 +92,19 @@ _link-plan: _require-stow
 	fi
 	@if [ -n "$(REMOVE_PACKAGES)" ]; then \
 		echo "planning removal of unselected add-on links: $(REMOVE_PACKAGES)"; \
-		$(STOW) -n -v -D $(STOW_FLAGS) $(REMOVE_PACKAGES) || exit $$?; \
+		sh mk/unstow.sh --plan "$(CURDIR)" "$(HOME)" "$(STOW)" $(REMOVE_PACKAGES) || exit $$?; \
 	fi
 	@echo "planning $(PLATFORM) packages: $(LINK_PACKAGES)"
+	@repo_root="$$(CDPATH='' cd -- "$(CURDIR)" && pwd -P)" || exit 1; \
+	atuin_dir="$$(CDPATH='' cd -- "$(HOME)/.config/atuin" 2>/dev/null && pwd -P)" || atuin_dir=; \
+	if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' atuin ' && \
+		[ -f "$(HOME)/.config/atuin/config.toml" ] && \
+		[ ! -L "$(HOME)/.config/atuin/config.toml" ] && \
+		[ "$$atuin_dir/config.toml" != "$$repo_root/atuin/.config/atuin/config.toml" ]; then \
+		echo "cannot select Atuin: ~/.config/atuin/config.toml is a regular file" >&2; \
+		echo "move it aside, then rerun 'make link-plan'" >&2; \
+		exit 1; \
+	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
 		sh mk/prepare-zprofile.sh --plan "$(HOME)" "$(CURDIR)" || exit $$?; \
 		$(STOW) -n -v -R $(STOW_FLAGS) --ignore='^\.zprofile$$' $(LINK_PACKAGES); \
@@ -105,7 +115,7 @@ _link-plan: _require-stow
 _link: _link-plan
 	@if [ -n "$(REMOVE_PACKAGES)" ]; then \
 		echo "removing unselected add-on links: $(REMOVE_PACKAGES)"; \
-		$(STOW) -D $(STOW_FLAGS) $(REMOVE_PACKAGES) || exit $$?; \
+		sh mk/unstow.sh --apply "$(CURDIR)" "$(HOME)" "$(STOW)" $(REMOVE_PACKAGES) || exit $$?; \
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
 		sh mk/prepare-zprofile.sh --apply "$(HOME)" "$(CURDIR)" || exit $$?; \

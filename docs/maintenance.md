@@ -131,9 +131,14 @@ Existing checkouts without `profile.mk` continue using `full`, so no profile
 migration is needed. To switch, follow [Choose a profile](setup.md#choose-a-profile)
 and run `make plan` before linking. Moving to lite unlinks managed Atuin,
 Neovim, and Herdr configuration unless you select those add-ons; their
-binaries, plugins, and user data remain. Atuin's Zsh bindings turn off when
-its config file is absent. Review and commit any Herdr settings written through
-its tracked config link (`git diff -- herdr/`) before removing that link.
+binaries, plugins, and user data remain. New Zsh shells turn off Atuin's
+bindings when its managed config link is absent. Restart shells that already
+loaded Atuin: their hooks can recreate `~/.config/atuin/config.toml` as a
+regular file after the switch. Lite relinks and `make clean` preserve that file.
+Move it aside before returning to full, then rerun `make link-plan`; review it
+for settings you want to keep. Review and commit any Herdr settings written
+through its tracked config link (`git diff -- herdr/`) before removing that
+link.
 
 To return to full, run `make profile-set PROFILE=full`, `make plan`, and
 `make setup-user`. Deleting the ignored `profile.mk` also restores the default
