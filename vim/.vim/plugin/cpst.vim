@@ -6,7 +6,8 @@ function! s:DoAction(algorithm,type)
   " make selection and clipboard work the way we need
   set selection=inclusive clipboard-=unnamed clipboard-=unnamedplus
   " backup the unnamed register, which we will be yanking into
-  let reg_save = @@
+  let reg_save = getreginfo('"')
+  try
   " yank the relevant text, and also set the visual selection (which will be reused if the text
   " needs to be replaced)
   if a:type =~ '^\d\+$'
@@ -37,9 +38,11 @@ function! s:DoAction(algorithm,type)
     normal! gvp
   endif
   " restore saved settings and register value
-  let @@ = reg_save
-  let &selection = sel_save
-  let &clipboard = cb_save
+  finally
+    call setreg('"', reg_save)
+    let &selection = sel_save
+    let &clipboard = cb_save
+  endtry
 endfunction
 
 function! s:ActionOpfunc(type)
@@ -70,9 +73,15 @@ call MapAction('CBCpy', '<leader>y')
 
 function! s:CBPaste(str)
   let out = system('command pst')
+  if v:shell_error
+    echohl ErrorMsg
+    echomsg 'pst failed: ' . trim(out)
+    echohl None
+    return v:null
+  endif
   let out = substitute(out, '\n$', '', '')
   return out
 endfunction
 call MapAction('CBPaste', '<leader>p')
 
-nnoremap <leader>i i<Space><Esc><leader>pl
+nmap <leader>i i<Space><Esc><leader>pl

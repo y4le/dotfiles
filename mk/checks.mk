@@ -104,6 +104,7 @@ check-system-packages: ## [offline] verify native package command failure handli
 
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
+	@sh mk/test-clipboard.sh
 
 check-nvim-bin: ## [offline] verify Neovim binary selection
 	@sh mk/test-nvim-bin.sh

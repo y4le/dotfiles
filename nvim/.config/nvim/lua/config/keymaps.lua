@@ -81,23 +81,17 @@ map("n", "<leader>Do", ":diffget other<CR>", { desc = "Diff get other" })
 map("n", "<leader>Db", ":diffget base<CR>", { desc = "Diff get base" })
 map("n", "<leader>Du", ":diffput<CR>", { desc = "Diff put" })
 
-map("n", "<leader>y", function()
-  return require("config.clipboard").copy_motion()
-end, { desc = "Copy motion to system clipboard", expr = true })
-map("x", "<leader>y", function()
-  require("config.clipboard").copy_visual()
-end, { desc = "Copy selection to system clipboard" })
-map("n", "<leader>yy", function()
-  vim.go.operatorfunc = "v:lua.require'config.clipboard'.copy_operator"
-  return "g@_"
-end, { desc = "Copy line to system clipboard", expr = true })
+map("n", "<leader>y", '"+y', { desc = "Copy motion to system clipboard" })
+map("x", "<leader>y", '"+y', { desc = "Copy selection to system clipboard" })
+map("n", "<leader>yy", '"+yy', { desc = "Copy line to system clipboard" })
 
 map("n", "<leader>p", function()
-  return require("config.clipboard").paste_motion()
+  vim.go.operatorfunc = "v:lua.require'config.clipboard'.paste_operator"
+  return "g@"
 end, { desc = "Paste system clipboard over motion", expr = true })
 map("x", "<leader>p", function()
-  require("config.clipboard").paste_visual()
-end, { desc = "Paste system clipboard over selection" })
+  return require("config.clipboard").can_paste() and '"+P' or "<Esc>"
+end, { desc = "Paste system clipboard over selection", expr = true })
 map("n", "<leader>pp", function()
   vim.go.operatorfunc = "v:lua.require'config.clipboard'.paste_operator"
   return "g@_"
