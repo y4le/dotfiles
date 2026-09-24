@@ -82,8 +82,8 @@ assert_missing() {
   fi
   grep -F 'Homebrew is required' "$test_root/missing.out" >/dev/null || \
     fail "$label did not name Homebrew"
-  grep -F 'README.md' "$test_root/missing.out" >/dev/null || \
-    fail "$label did not name the README"
+  grep -F 'docs/setup.md' "$test_root/missing.out" >/dev/null || \
+    fail "$label did not name the setup guide"
   grep -F 'make setup-user' "$test_root/missing.out" >/dev/null || \
     fail "$label did not name setup-user"
   grep -Fx 'Searched: PATH' "$test_root/missing.out" >/dev/null || \

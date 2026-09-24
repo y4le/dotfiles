@@ -1,5 +1,3 @@
-/google
-/amazon
 /local
 /.claude/
 /.parley/
@@ -10,12 +8,6 @@
 .pre_profile
 .post_profile
 .tmux.local.conf
-lua/local/
+nvim/.config/nvim/lua/local/
 
 /vimwiki
-vim/.vim/autoload
-vim/.vim/mru_files
-vim/.vim/plugged
-vim/.vim/tmp
-vim/.vim/undo
-vim/.vim/view

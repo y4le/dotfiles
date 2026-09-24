@@ -31,7 +31,7 @@ cat >&2 <<EOF
 Homebrew is required for 'make system-packages' on macOS but was not found.
 This repository does not install Homebrew: its installer is unpinnable, needs
 admin sudo, and can install the Command Line Tools.
-Install it yourself (see "macOS prerequisites" in README.md), then rerun.
+Install it yourself (see "macOS prerequisites" in docs/setup.md), then rerun.
 'make setup-user' needs no Homebrew, but it does need stow, git, and vim.
 Searched: PATH${search_paths:+, $search_paths}
 EOF
