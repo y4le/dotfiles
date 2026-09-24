@@ -43,11 +43,16 @@ end
 
 function M.setup_servers()
   local capabilities = M.capabilities()
-  local servers = {
-    basedpyright = {},
-    rust_analyzer = {},
-    ts_ls = {},
-  }
+  local servers = {}
+  for server, command in pairs({
+    basedpyright = "basedpyright-langserver",
+    rust_analyzer = "rust-analyzer",
+    ts_ls = "typescript-language-server",
+  }) do
+    if vim.fn.executable(command) == 1 then
+      servers[server] = {}
+    end
+  end
 
   if vim.fn.executable("lua-language-server") == 1 then
     servers.lua_ls = {

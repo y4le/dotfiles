@@ -1,6 +1,6 @@
 function y() {
   if ! command -v yazi &> /dev/null; then
-    echo "yazi not found - run 'make mise-tools' from your dotfiles repo"
+    echo "yazi not found - run 'make WITH=yazi mise-tools' from your dotfiles repo"
     return 1
   fi
 

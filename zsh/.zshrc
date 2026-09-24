@@ -18,7 +18,7 @@ fi
 # mise shims are on PATH in .zshenv for all shell types.
 
 # fzf is loaded asynchronously; keep it from taking ctrl-R back from atuin
-if command -v atuin &>/dev/null; then
+if [[ -e $HOME/.config/atuin/config.toml ]] && command -v atuin &>/dev/null; then
   export FZF_CTRL_R_COMMAND=""
 fi
 
@@ -94,7 +94,7 @@ zle -N yazinav
 bindkey '^g' yazinav
 
 # ctrl-R history search
-if command -v atuin &>/dev/null; then
+if [[ -e $HOME/.config/atuin/config.toml ]] && command -v atuin &>/dev/null; then
   export ATUIN_NOBIND="true"
   eval "$(atuin init zsh --disable-up-arrow --disable-ai)"
 

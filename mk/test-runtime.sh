@@ -49,7 +49,7 @@ trap 'cleanup; exit 1' HUP INT TERM
 repo=$(pwd -P) || exit 1
 test_home=$test_root/home
 mkdir -p "$test_home"
-stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts tmux nvim >/dev/null 2>&1 || \
+stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts tmux nvim atuin >/dev/null 2>&1 || \
   fail "could not prepare the test HOME"
 
 runtime_log=$test_root/network.log
@@ -170,6 +170,15 @@ cat >/dev/null
 printf 'chosen command\n'
 EOF
 chmod +x "$test_home/bin/atuin" "$test_home/bin/fzf"
+stow -D --no-folding -d "$repo" -t "$test_home" atuin >/dev/null 2>&1 || \
+  fail "could not remove Atuin config for lite startup test"
+lite_atuin_state=$(run_zsh -i -c \
+  'print -r -- "${FZF_CTRL_R_COMMAND-unset}|$+functions[atuin-success-history]"' \
+  2> "$test_root/lite-atuin.err") || fail "lite zsh startup failed with Atuin binary present"
+[ "$lite_atuin_state" = 'unset|0' ] || \
+  fail "lite startup enabled Atuin without its selected config"
+stow -R --no-folding -d "$repo" -t "$test_home" atuin >/dev/null 2>&1 || \
+  fail "could not restore Atuin config"
 widget_state=$(run_zsh -i -c '
   function zle() { :; }
   BUFFER=before; CURSOR=6
