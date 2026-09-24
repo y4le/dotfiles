@@ -107,6 +107,7 @@ check-vim: ## [offline] validate portable Vim configuration behavior
 
 check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh
+	@sh mk/test-nav.sh
 
 check-stow: _require-stow ## [offline] dry-run stow package graphs in temp dirs
 	@fail=0; \

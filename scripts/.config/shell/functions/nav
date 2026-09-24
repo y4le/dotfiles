@@ -1,24 +1,25 @@
 function nav() {
+  local sel
   while true; do
-    local lsd=($(ls -ap))
-    local sel="$(printf '%s\n' ${lsd[@]} |
-      fzf --reverse --preview '
-        __nav_nxt="$(echo {})";
-        __nav_path="$(echo $(pwd)/${__nav_nxt} | sed "s;//;/;")";
-        if [ -d "$__nav_nxt" ]; then
-          echo $__nav_path;
-          echo;
-          ls -ap --color=always "${__nav_path}";
+    if ! IFS= read -r -d '' sel < <(
+      { printf '..\0'; find . ! -path . -prune -print0; } |
+        fzf --read0 --print0 --reverse --preview '
+        __nav_path={}
+        if [ -d "$__nav_path" ]; then
+          printf "%s\n\n" "$__nav_path"
+          ls -ap "$__nav_path"
         else
-          echo $__nav_path;
+          printf "%s\n" "$__nav_path"
           if command -v bat >/dev/null 2>&1; then
-            bat --color=always --line-range :200 "$__nav_nxt"
+            bat --color=always --line-range :200 "$__nav_path"
           else
-            head -200 "$__nav_nxt"
+            head -200 "$__nav_path"
           fi
         fi
-        ')"
-    [[ ${#sel} != 0 ]] || return 0
+        '
+    ); then
+      return 0
+    fi
     if [ -d "$sel" ]; then
       builtin cd "$sel" &> /dev/null
     else
