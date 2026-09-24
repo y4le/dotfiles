@@ -55,7 +55,7 @@ source_dirs=(
 for source_dir in $source_dirs; do
   if [[ -d "$source_dir" ]]; then
     for src in $source_dir/**/*(N); do
-      source $src
+      [[ $src == */fzf_sources ]] || source $src
     done
   fi
 done
@@ -138,10 +138,10 @@ if command -v atuin &>/dev/null; then
       ATUIN_LOG=error atuin search --exit 0 --cmd-only --print0 --limit 10000 |
         "${selector[@]}" --read0 --scheme=history --query "$BUFFER" --prompt='success> '
     )
-    local status=$?
+    local selection_rc=$?
     zle reset-prompt
 
-    if (( status == 0 )) && [[ -n "$selected" ]]; then
+    if (( selection_rc == 0 )) && [[ -n "$selected" ]]; then
       BUFFER="$selected"
       CURSOR=${#BUFFER}
     fi
@@ -163,24 +163,21 @@ zle -N edit-command-line
 bindkey "^X^E" edit-command-line
 
 # fzf: fuzzy finder
-fzf_action_list=()
-for k v (
-  "ctrl-l" "execute(bat --color=always {} | less -Rf || less -f {})" # quick preview file
-  "ctrl-f" "execute(bat --paging=always {} || less -f {})" # full pager file
-  "ctrl-y" "execute-silent(echo -n {} | cpy)" # copy selected line to clipboard
-); do
-  fzf_action_list+=("$k:$v")
-done
-export FZF_DEFAULT_OPTS="--bind '${(j.,.)fzf_action_list}'"
-export fzf_preview_opt="--preview-window down:50% --preview '(bat {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
-export FZF_CTRL_T_OPTS="$fzf_preview_opt"
+export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(printf %s {} | cpy)'"
+export fzf_preview_opt="--preview-window down:50% --preview '(bat --color=always --line-range :200 {} || cat {} || tree -C {}) 2>/dev/null'"
+export FZF_CTRL_T_OPTS="--bind 'ctrl-l:execute(bat --color=always {} | less -Rf || less -f {}),ctrl-f:execute(bat --paging=always {} || less -f {})' $fzf_preview_opt"
 
 export FZF_TMUX=1
-export FZF_TMUX_HEIGHT=80
+export FZF_TMUX_HEIGHT=80%
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules,.venv}/*"'
-type filez &>/dev/null && export FZF_DEFAULT_COMMAND='filez'
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+if type filez &>/dev/null; then
+  export FZF_DEFAULT_COMMAND='filez'
+  export FZF_CTRL_T_COMMAND='filez --print0'
+  export FZF_CTRL_T_OPTS="--read0 $FZF_CTRL_T_OPTS"
+else
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
 
 # source final machine-local overrides
 if [[ -f $HOME/.config/zsh/hooks/post.zsh ]]; then

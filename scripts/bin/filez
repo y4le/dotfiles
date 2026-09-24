@@ -6,19 +6,17 @@
 . "$HOME/.config/shell/functions/fzf_sources"
 
 
-# store the parameters in env vars to pass fzf_src
+# Set the parameters consumed by fzf_src.
 # fzf_sources reads this from the caller's shell after being sourced.
 # shellcheck disable=SC2034
-root_file=$(pwd)
-# fzf_sources reads this from the caller's shell after being sourced.
-# shellcheck disable=SC2034
-color=false
+root_file=.
 # fzf_sources reads this from the caller's shell after being sourced.
 # shellcheck disable=SC2034
 hidden=false
 # fzf_sources reads this from the caller's shell after being sourced.
 # shellcheck disable=SC2034
 debug=false
+print0=false
 
 while [ "$1" != "" ]; do
   case $1 in
@@ -27,11 +25,6 @@ while [ "$1" != "" ]; do
       # This reassignment is consumed by the sourced helper, not locally here.
       # shellcheck disable=SC2034
       root_file=$1
-      ;;
-    -c | --color )
-      # This reassignment is consumed by the sourced helper, not locally here.
-      # shellcheck disable=SC2034
-      color=true
       ;;
     -h | --hidden )
       # This reassignment is consumed by the sourced helper, not locally here.
@@ -43,8 +36,19 @@ while [ "$1" != "" ]; do
       # shellcheck disable=SC2034
       debug=true
       ;;
+    -0 | --print0 )
+      print0=true
+      ;;
   esac
   shift
 done
 
-fzf_src
+if [ "$root_file" != . ]; then
+  root_file=$(CDPATH='' cd -- "$root_file" && pwd -P) || exit 1
+fi
+
+if [ "$print0" = true ]; then
+  fzf_src
+else
+  fzf_src | tr '\000' '\n'
+fi

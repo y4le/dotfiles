@@ -152,8 +152,41 @@ rm -f "$test_home/.zshenv.local" "$test_home/.pre_profile" \
 helper_state=$(run_zsh -i -c \
   'print -r -- "$+functions[nav]|$+functions[y]|$+functions[cpy]|$+functions[fzf_src]"' \
   2> "$test_root/helpers.err") || fail "interactive zsh could not load shell helpers"
-[ "$helper_state" = '1|1|1|1' ] || \
+[ "$helper_state" = '1|1|1|0' ] || \
   fail "interactive zsh skipped shell helpers"
+echo 'check-runtime: successful-history widget'
+cat > "$test_home/bin/atuin" <<'EOF'
+#!/bin/sh
+case $1 in
+  init) exit 0 ;;
+  search) printf 'chosen command\000' ;;
+esac
+EOF
+cat > "$test_home/bin/fzf" <<'EOF'
+#!/bin/sh
+cat >/dev/null
+[ "${DOTFILES_TEST_CANCEL:-}" != 1 ] || exit 1
+printf 'chosen command\n'
+EOF
+chmod +x "$test_home/bin/atuin" "$test_home/bin/fzf"
+widget_state=$(run_zsh -i -c '
+  function zle() { :; }
+  BUFFER=before; CURSOR=6
+  atuin-success-history
+  print -r -- "$BUFFER|$CURSOR"
+  export DOTFILES_TEST_CANCEL=1
+  BUFFER=before; CURSOR=6
+  atuin-success-history
+  print -r -- "$BUFFER|$CURSOR"
+' 2> "$test_root/widget.err") || fail "successful-history widget errored"
+[ "$widget_state" = 'chosen command|14
+before|6' ] || fail "successful-history widget lost selection or changed a cancellation"
+fzf_opts=$(run_zsh -i -c 'print -r -- "$FZF_CTRL_T_OPTS"' 2> "$test_root/fzf-opts.err") || \
+  fail "could not read Ctrl-T options"
+case $fzf_opts in
+  *--read0*ctrl-l:*ctrl-f:*) : ;;
+  *) fail "Ctrl-T lost NUL mode or file preview bindings" ;;
+esac
 env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" TERM=xterm \
   bash -c '. "$HOME/.config/shell/functions/cpst"; declare -F cpy pst >/dev/null' || \
   fail "Bash could not load clipboard helpers"
