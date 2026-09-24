@@ -10,7 +10,7 @@ and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 | --- | --- |
 | Full (default) | `agents`, `atuin`, `bash`, `git`, `herdr`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
 | Lite | `agents`, `bash`, `git`, `mise`, `scripts`, `tmux`, `vim`, `zsh` |
-| Add-ons | `atuin`, `yazi`, `nvim`, `herdr`, `dev`, `rclone`; each adds its declared packages and/or mise tools |
+| Add-on components | `atuin`, `yazi`, `nvim`, `herdr`, `dev`, `rclone`; each adds its declared packages and/or mise tools |
 | Machine-local | `local`, included when present |
 | Linux core | Selected profile and machine-local packages |
 | macOS core | Selected profile and machine-local packages, plus `osx` |
@@ -32,7 +32,7 @@ these are the main entry points.
 
 | Target | Effect | Access |
 | --- | --- | --- |
-| `profile` | Show selected components, links, tools, and restore steps | Offline |
+| `profile` | Show selected components, Stow packages, tools, and restore steps | Offline |
 | `profile-set` | Save `PROFILE` and `WITH` to ignored `profile.mk` | Offline |
 | `plan` | Show profile and preview link changes | Offline |
 | `link-plan` | Preview selected links and detect conflicts | Offline |
@@ -52,21 +52,28 @@ these are the main entry points.
 | `agents-disable-private` | Unstow the private agent package | Offline |
 | `clean` | Unstow all known public, desktop, and local packages | Offline |
 | `check` | Run repository validation | Offline |
+| `check-profiles` | Validate profile syntax, package paths, and mise tool keys | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |
 
-`mise-tools` installs mise and only the selected tool names; `nvim-lazy` restores only lazy.nvim.
-`WITH` adds components to `PROFILE` for one invocation. `profile-set` saves the
-choice for this checkout; absent a saved choice, `PROFILE=full`. Existing tool
+`mise-tools` installs mise and only the selected tool names; `nvim-lazy`
+restores only lazy.nvim.
+`WITH` adds components to `PROFILE` for one invocation. Pass both as Make
+arguments (`make PROFILE=lite WITH=yazi plan`); environment variables with
+those names are ignored. `profile-set` saves the choice for this checkout;
+absent a saved choice, `PROFILE=full`. Existing tool
 binaries are not pruned when a profile shrinks. Because the tracked mise config
 still lists all pinned tools, running bare `mise install` directly can install
-the full set; use Make for profile-aware installs.
+the full set; use Make for profile-aware installs. A one-command `PROFILE` or
+`WITH` override does not persist; repeat it for each command or use
+`profile-set` before running `plan` and `setup-user`.
 `HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
 overridden when invoking `herdr-integrations`.
 
-`DESKTOP` accepts `0` (default) or `1`. It affects package selection for linking,
-not the native package lists. `DESKTOP=0` leaves previously linked
-desktop files in place; `clean` removes them regardless of its value. `link-linux` and `link-macos` force only the Stow package
-set, not the host's package manager.
+`DESKTOP` accepts `0` (default) or `1`. It affects package selection for
+linking, not the native package lists. Neither `PROFILE` nor `WITH` changes
+the native package lists. `DESKTOP=0` leaves previously linked desktop files
+in place; `clean` removes them regardless of its value. `link-linux` and
+`link-macos` force only the Stow package set, not the host's package manager.
 
 ## Zsh startup
 

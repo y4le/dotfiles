@@ -8,7 +8,7 @@ Debian/Ubuntu (`apt-get`), Arch (`pacman`), and macOS (Homebrew).
 Linking requires Git, Make, and GNU Stow 2.3 or newer. `make setup-user` also
 assumes curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or
 `openssl`), Vim, and tmux 3.1 or newer are available. Native packages supply
-Zsh and tmux; user-space tools include Neovim.
+Zsh and tmux; the `nvim` component installs Neovim in user space.
 
 If native prerequisites are missing, run `make system-packages` first; it uses
 sudo on Linux. On macOS it needs Homebrew (see the next section). On a managed
@@ -64,14 +64,15 @@ its current platform requirements.
 
 For an Intel Mac, the checked-in Sheldon pins have no matching binary. Run
 `make system-packages` first if the native prerequisites are missing. Install a
-trusted Sheldon at `~/.local/bin/sheldon`, then preview the links with
+trusted Sheldon at `~/.local/bin/sheldon`, [choose a profile](#choose-a-profile)
+if needed, then preview the links with
 `make link-plan` and run `make mise-tools link plugins`. Do not use `make setup`
 or `make setup-user` on this path because both try to install the checked-in
 Sheldon binary. The
 [pin documentation](../setup/pins/README.md#updating-sheldon) covers that path
 and corporate network constraints.
 
-## Link the configuration
+## Choose a profile
 
 The default `full` profile preserves the original package and tool set. For a
 smaller setup, save `lite` (core shell, Git, Vim, tmux, scripts, agents, mise,
@@ -80,30 +81,40 @@ and six everyday CLI tools), optionally adding components:
 ```sh
 make profile-set PROFILE=lite WITH="yazi nvim"
 make profile
-make plan
 ```
 
 `make profile-set` writes an ignored `profile.mk` in this checkout. `WITH` can
 contain `atuin`, `yazi`, `nvim`, `herdr`, `dev`, and `rclone`; see
 [`setup/profiles.yaml`](../setup/profiles.yaml) for their exact packages and
-tools. Passing `PROFILE=... WITH="..."` to an individual Make command overrides
-the saved choice for that command. Saving a profile without `WITH` clears saved
-add-ons; use `WITH=` when overriding them for one command. The `dev` add-on
-provides the language servers used by Neovim. No saved choice means `full`. `DESKTOP=1`
-independently selects the platform's desktop links. `local/` and private agent
-links remain separate.
+tools. Pass `PROFILE` and `WITH` as Make arguments, such as
+`make PROFILE=lite WITH=yazi plan`; setting them in the shell environment is
+ignored. A command-line choice applies only to that command. Repeat it for
+each command if you do not save a choice: a plain `make setup-user` after that
+preview would use the saved or default profile instead. Saving a profile
+without `WITH` clears saved add-ons; pass `WITH=` to drop saved add-ons for
+one command. To return to the original setup, run
+`make profile-set PROFILE=full`, then `make plan` and `make setup-user`.
+
+The `dev` add-on provides the language servers used by Neovim. Profiles select
+Stow links, mise tools, and plugin steps; `make setup` still installs the same
+native package list for the platform. Use `make setup-user` when native
+prerequisites are already available. `DESKTOP=1` independently selects the
+platform's desktop links; it is not saved by `profile-set`, so pass it each
+time you link desktop files. `local/` and private agent links remain separate.
+
+## Link the configuration
 
 ```sh
-make link-plan
+make plan
 make link
 ```
 
-The plan changes nothing. It prints the selected packages, links, and conflicts;
-[resolve conflicts](maintenance.md#resolve-link-conflicts) before linking.
-When changing from full to lite, it also previews removal of managed add-on
-links. `make link` removes those links, but leaves installed tools, plugins,
-runtime data, and user-owned files alone. Run `make plan` to include the tool
-and plugin selection in the preview.
+The plan changes nothing. It prints the selected tools, plugin steps, packages,
+links, and conflicts; [resolve conflicts](maintenance.md#resolve-link-conflicts)
+before linking. When changing from full to lite, it also previews removal of
+managed add-on links. `make link` removes those links, but leaves installed
+tools, plugins, runtime data, and user-owned files alone. Use `make link-plan`
+for a link-only preview.
 After linking, `~/.zshrc` and `~/.vimrc` point into the checkout, and directories
 such as `~/.config/zsh/` remain real directories.
 
@@ -118,11 +129,11 @@ them yourself before linking.
 make setup-user
 ```
 
-This installs user-space tools, links configuration, and restores shell, Vim,
-and Neovim plugins selected by the profile. It uses the network but not sudo. Start a new Zsh shell
-after it finishes. Herdr is installed from its checksum-pinned release binary.
-Use `make herdr` when you only need to install or repair Herdr; the targeted
-command also validates the tracked Herdr config.
+This installs selected user-space tools, links configuration, and restores the
+selected shell and editor plugins. It uses the network but not sudo. Start a
+new Zsh shell after it finishes. When selected, Herdr is installed from its
+checksum-pinned release binary. Use `make herdr` when you only need to install
+or repair Herdr; the targeted command also validates the tracked Herdr config.
 
 Herdr's agent integrations write hook files and settings into each agent's own
 configuration directory, so they remain an explicit follow-up step. On a host
@@ -182,6 +193,7 @@ make clean
 ```
 
 This unstows links from all known public, desktop, and local packages even if
-the current profile differs from the one used to link them. Their source files, installed tools,
-downloaded plugins, and runtime data remain. Remove private agent links separately with
-`make agents-disable-private` while the private checkout is still available.
+the current profile differs from the one used to link them. Their source
+files, installed tools, downloaded plugins, and runtime data remain. Remove
+private agent links separately with `make agents-disable-private` while the
+private checkout is still available.

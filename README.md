@@ -17,6 +17,20 @@ With Git, Make, and GNU Stow 2.3 or newer installed:
 ```sh
 git clone https://github.com/y4le/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
+```
+
+The default `full` profile keeps the existing setup. `lite` links the core
+shell, Git, Vim, tmux, scripts, and agent configuration, and selects fzf,
+ripgrep, fd, bat, delta, and zoxide for installation. To choose a smaller
+setup, optionally save `lite` with any add-ons before linking:
+
+```sh
+make profile-set PROFILE=lite WITH=yazi
+```
+
+Then preview and link the selected configuration:
+
+```sh
 make plan
 make link
 ```
@@ -25,18 +39,13 @@ Review the plan before linking. This step is offline; shell and editor config
 remain usable before optional plugins are restored. Keep the checkout in place;
 the links point into it.
 
-The default `full` profile keeps the existing setup. For a smaller install,
-save `lite` and add only the components you want:
-
-```sh
-make profile-set PROFILE=lite WITH="yazi nvim"
-make plan
-make setup-user
-```
-
 [`setup/profiles.yaml`](setup/profiles.yaml) lists each component's Stow
 packages and mise tools. `make profile` shows the resolved selection; a saved
 choice applies to later Make commands in this checkout.
+
+Profiles select links, tool installs, and plugin steps; they do not change the
+native package lists. See the [setup guide](docs/setup.md#choose-a-profile)
+for one-command overrides and switching back to `full`.
 
 Run `make setup-user` to install tools and plugins without sudo, or `make setup`
 to install native packages too. Bootstrap downloads (Herdr, mise, Sheldon, vim-plug)
@@ -47,14 +56,14 @@ Intel Mac workaround.
 
 ## Documentation
 
-- [Set up a machine](docs/setup.md): install, choose desktop configuration,
-  configure Git identity, or remove links.
+- [Set up a machine](docs/setup.md): choose a profile, install, configure a
+  desktop or Git identity, and remove links.
 - [Keep local and private configuration](docs/local-config.md): add machine
   overrides and enable the private agent package.
-- [Configuration reference](docs/reference.md): packages, Make targets, startup
-  order, local hooks, and file locations.
-- [Maintain the dotfiles](docs/maintenance.md): restore plugins, update
-  Neovim pins, resolve link conflicts, and migrate older installs.
+- [Configuration reference](docs/reference.md): profile packages and targets,
+  startup order, local hooks, and file locations.
+- [Maintain the dotfiles](docs/maintenance.md): switch profiles, restore
+  plugins, update pins, resolve link conflicts, and migrate older installs.
 - [Design notes](docs/design.md): why setup is explicit, how local files stay
   local, and where the XDG boundary sits.
 - [Update download pins](setup/pins/README.md): review and verify bootstrap

@@ -7,9 +7,14 @@ Run these commands from the checkout.
 After updating the checkout, run `make plan` and `make link` to include new
 files. Use `DESKTOP=1` for a desktop installation. Restart the shell or editor;
 tmux reloads with prefix `R`.
+
 When switching profiles, `make plan` shows which managed add-on links will be
 removed. `make profile` shows the current selection. Saved selections live in
 the ignored `profile.mk`; installed tools and plugins remain after a switch.
+Run `make link` when only links need changing. Run `make setup-user` after
+adding components that need tools or plugins; it installs those selected parts
+and reconciles links. On Intel Macs, follow the
+[Sheldon workaround](setup.md#intel-macs) instead of `setup-user`.
 
 Herdr reads its tracked configuration through
 `~/.config/herdr/config.toml`. Reload it with `herdr server reload-config` after
@@ -31,9 +36,10 @@ make setup-user
 ```
 
 This reruns `tools`, `link`, and `plugins` for the selected profile. `make tools`
-restores the selected Herdr, mise, and Sheldon binaries to their pins, replacing drifted binaries, and
-installs the selected mise tool versions. `make plugins` needs tools and links in place;
-it never installs a missing tool binary. To restore one subsystem, run
+restores the selected Herdr, mise, and Sheldon binaries to their pins, replacing
+drifted binaries, and installs the selected mise tool versions. `make plugins`
+needs tools and links in place; it never installs a missing tool binary. To
+restore one subsystem, run
 `make sheldon-plugins`, `make vim-plugins`, or `make nvim-plugins`.
 
 Vim's fzf integration uses the binary installed by mise. If Vim offers to
@@ -52,6 +58,21 @@ each agent's own settings and hook files. Run `make herdr-integrations` after a
 Herdr update on hosts where those integrations are wanted. Pass
 `HERDR_INTEGRATIONS="..."` on the Make command line to select a different set,
 and use `herdr integration status` to inspect the installed hook versions.
+
+## Add a package, tool, or component
+
+Assign every new profile-controlled Stow package or mise tool key to a
+component in [`setup/profiles.yaml`](../setup/profiles.yaml); new top-level
+Stow directories are not discovered automatically. The file uses a limited
+YAML shape: component properties and profiles are inline lists separated by
+comma-space, with no nested components. Each package or tool key belongs to
+one component, and `full` includes every component. Put tool versions in
+[`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml), not the
+profile file. Update the expected full or lite sets in `mk/test-profiles.sh`
+when membership changes. Run `make check-profiles` to check package paths and
+the exact mise key set, then `make check` to exercise linking and profile
+switches. Native package lists, desktop links, and the private agent overlay
+are managed separately.
 
 ## Update pins
 
@@ -103,6 +124,21 @@ before linking it. Do not bypass the guard by adding files to `.gitignore`;
 ignored package files are rejected too.
 
 ## Migrate older installs
+
+### Setup profiles
+
+Existing checkouts without `profile.mk` continue using `full`, so no profile
+migration is needed. To switch, follow [Choose a profile](setup.md#choose-a-profile)
+and run `make plan` before linking. Moving to lite unlinks managed Atuin,
+Neovim, and Herdr configuration unless you select those add-ons; their
+binaries, plugins, and user data remain. Atuin's Zsh bindings turn off when
+its config file is absent. Review and commit any Herdr settings written through
+its tracked config link (`git diff -- herdr/`) before removing that link.
+
+To return to full, run `make profile-set PROFILE=full`, `make plan`, and
+`make setup-user`. Deleting the ignored `profile.mk` also restores the default
+full selection. `DESKTOP=1` is independent and must be passed again when
+relinking desktop files.
 
 ### Shell helpers
 

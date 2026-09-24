@@ -12,7 +12,9 @@ The [local/private configuration guide](../local-config.md) and
 - keep `stow`
 - keep `make` as the command surface
 - keep `mise` for pinned runtimes and tools
-- keep optional features out of default bootstrap unless explicitly enabled
+- keep new optional features out of default bootstrap unless explicitly
+  enabled; `full` includes every profile component, so use explicit targets or
+  flags (such as `herdr-integrations` or `DESKTOP`) for new opt-in features
 - prefer small, reviewable changes
 - smoke-test bootstrap-affecting changes on a clean machine, container, or VM
 
