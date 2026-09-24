@@ -1,26 +1,31 @@
-#!/bin/bash
-# open vimdiffs comparing pairs of files
-# input is list of files, first compared to second, third to fourth...
-# `vim_compair a b c d` opens vimdiff tabs for a/b and c/d
-function vim_compair {
-	local last=""
-	local -a args=()
-	local first_pair=true
-	for file in "$@"; do
-		if [[ -z "$last" ]]; then
-			last="$file"
-		else
-			if $first_pair; then
-				args=(-c 'set diffopt=filler,vertical' -c "edit $last" -c "diffsplit $file")
-				first_pair=false
-			else
-				args+=(-c "tabe $last" -c "diffsplit $file")
-			fi
-			last=""
-		fi
-	done
+#!/usr/bin/env bash
+# Open each pair of files in a vertical Vim diff tab.
+set -u
 
-	vim "${args[@]}"
-}
+if (($# == 0 || $# % 2 != 0)); then
+  echo 'usage: compair.sh first second [third fourth ...]' >&2
+  exit 2
+fi
 
-vim_compair "$@"
+for file in "$@"; do
+  if [[ ! -f $file ]]; then
+    printf 'compair: file not found: %s\n' "$file" >&2
+    exit 1
+  fi
+done
+
+script=$(mktemp) || exit 1
+trap 'rm "$script"' EXIT
+cat > "$script" <<'VIM'
+set diffopt=filler,vertical
+let s:files = argv()
+for s:i in range(0, len(s:files) - 1, 2)
+  if s:i > 0
+    tabnew
+  endif
+  execute 'edit' fnameescape(s:files[s:i])
+  execute 'diffsplit' fnameescape(s:files[s:i + 1])
+endfor
+VIM
+
+vim -S "$script" -- "$@"

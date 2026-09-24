@@ -1,43 +1,61 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# use like `benchmark.sh -n 50 ./testscript.sh`
+# Usage: benchmark.sh [-n runs] -- command [args...]
+set -u
 
-# parse arguments
-cmd=
-N=10
-
-while [ "$1" != "" ]; do
+runs=10
+while (($#)); do
   case $1 in
     -n)
-      shift
-      N=$1
+      (($# >= 2)) || { echo 'benchmark: -n needs a value' >&2; exit 2; }
+      runs=$2
+      shift 2
       ;;
-    *)
-      cmd=$1
+    --)
+      shift
+      break
+      ;;
+    *) break ;;
   esac
-  shift
 done
 
-# validate params
-if [ -z "$cmd" ]; then
-  echo "Must provide command to benchmark"
-  exit 1
-fi
+[[ $runs =~ ^[1-9][0-9]*$ ]] || {
+  echo 'benchmark: runs must be a positive integer' >&2
+  exit 2
+}
+(($#)) || { echo 'benchmark: command required' >&2; exit 2; }
 
-echo "N: $N  cmd: $cmd"
+tmpdir=$(mktemp -d) || exit 1
+trap 'rm -r "$tmpdir"' EXIT
+times=$tmpdir/times
+: > "$times"
+TIMEFORMAT='%R'
 
-# run benchmark
-tmpfile=`mktemp`
-pstr="[==================================================]"
-for i in `seq 1 $N`; do
-  command time -ao $tmpfile -f "%e" $cmd 1>/dev/null
-  pd=$(( $i * 50 / $N ))
-  printf "\r%3d.%1d%% %.${pd}s" $(( $i * 100 / $N )) $(( ($i * 1000 / $N) % 10 )) $pstr
+printf 'N: %d  cmd:' "$runs"
+printf ' %q' "$@"
+printf '\n'
+
+for ((i = 1; i <= runs; i++)); do
+  { time "$@" > /dev/null 2> "$tmpdir/command.err"; } 2> "$tmpdir/time"
+  rc=$?
+  cat "$tmpdir/command.err" >&2
+  if ((rc != 0)); then
+    printf 'benchmark: run %d failed (exit %d)\n' "$i" "$rc" >&2
+    exit "$rc"
+  fi
+  cat "$tmpdir/time" >> "$times"
+  printf '\r%d/%d' "$i" "$runs" >&2
 done
-printf "]\n"
+printf '\n' >&2
 
-# parse result
-awk 'NR == 1 {min = $0} $0 > max {max = $0} {total += $0} END {print "total:", total, "avg:", total/NR, "min:", min, "max:", max}' $tmpfile
-
-# clean up
-rm $tmpfile
+LC_ALL=C awk '
+  { elapsed = $1; sub(/,/, ".", elapsed); elapsed += 0 }
+  NR == 1 { min = max = elapsed }
+  elapsed < min { min = elapsed }
+  elapsed > max { max = elapsed }
+  { total += elapsed }
+  END {
+    printf "total: %.3f  avg: %.3f  min: %.3f  max: %.3f\n",
+      total, total / NR, min, max
+  }
+' "$times"

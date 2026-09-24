@@ -118,6 +118,7 @@ check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh
 	@sh mk/test-nav.sh
 	@bash mk/test-filez.sh
+	@sh mk/test-utilities.sh
 
 check-stow: _require-stow ## [offline] dry-run stow package graphs in temp dirs
 	@fail=0; \
