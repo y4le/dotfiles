@@ -17,13 +17,26 @@ With Git, Make, and GNU Stow 2.3 or newer installed:
 ```sh
 git clone https://github.com/y4le/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
-make link-plan
+make plan
 make link
 ```
 
 Review the plan before linking. This step is offline; shell and editor config
 remain usable before optional plugins are restored. Keep the checkout in place;
 the links point into it.
+
+The default `full` profile keeps the existing setup. For a smaller install,
+save `lite` and add only the components you want:
+
+```sh
+make profile-set PROFILE=lite WITH="yazi nvim"
+make plan
+make setup-user
+```
+
+[`setup/profiles.yaml`](setup/profiles.yaml) lists each component's Stow
+packages and mise tools. `make profile` shows the resolved selection; a saved
+choice applies to later Make commands in this checkout.
 
 Run `make setup-user` to install tools and plugins without sudo, or `make setup`
 to install native packages too. Bootstrap downloads (Herdr, mise, Sheldon, vim-plug)

@@ -4,9 +4,12 @@ Run these commands from the checkout.
 
 ## Apply configuration changes
 
-After updating the checkout, run `make link-plan` and `make link` to include new
+After updating the checkout, run `make plan` and `make link` to include new
 files. Use `DESKTOP=1` for a desktop installation. Restart the shell or editor;
 tmux reloads with prefix `R`.
+When switching profiles, `make plan` shows which managed add-on links will be
+removed. `make profile` shows the current selection. Saved selections live in
+the ignored `profile.mk`; installed tools and plugins remain after a switch.
 
 Herdr reads its tracked configuration through
 `~/.config/herdr/config.toml`. Reload it with `herdr server reload-config` after
@@ -27,9 +30,9 @@ running `make setup-user`.
 make setup-user
 ```
 
-This reruns `tools`, `link`, and `plugins`. `make tools` restores the Herdr,
-mise, and Sheldon binaries to their pins, replacing drifted binaries, and
-installs the mise tool versions. `make plugins` needs tools and links in place;
+This reruns `tools`, `link`, and `plugins` for the selected profile. `make tools`
+restores the selected Herdr, mise, and Sheldon binaries to their pins, replacing drifted binaries, and
+installs the selected mise tool versions. `make plugins` needs tools and links in place;
 it never installs a missing tool binary. To restore one subsystem, run
 `make sheldon-plugins`, `make vim-plugins`, or `make nvim-plugins`.
 

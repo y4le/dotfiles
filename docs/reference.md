@@ -2,15 +2,18 @@
 
 ## Packages
 
-Each Stow package mirrors paths under `HOME`. Package selection lives in
-[`mk/config.mk`](../mk/config.mk).
+Each Stow package mirrors paths under `HOME`. Component membership and mise
+tool selection live in [`setup/profiles.yaml`](../setup/profiles.yaml); platform
+and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 
 | Package set | Contents |
 | --- | --- |
-| Common | `agents`, `atuin`, `bash`, `git`, `herdr`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
+| Full (default) | `agents`, `atuin`, `bash`, `git`, `herdr`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
+| Lite | `agents`, `bash`, `git`, `mise`, `scripts`, `tmux`, `vim`, `zsh` |
+| Add-ons | `atuin`, `yazi`, `nvim`, `herdr`, `dev`, `rclone`; each adds its declared packages and/or mise tools |
 | Machine-local | `local`, included when present |
-| Linux core | Common and machine-local packages |
-| macOS core | Common and machine-local packages, plus `osx` |
+| Linux core | Selected profile and machine-local packages |
+| macOS core | Selected profile and machine-local packages, plus `osx` |
 | Linux desktop (`DESKTOP=1`) | Linux core plus `linux-desktop` (X11/i3) |
 | macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner) |
 
@@ -29,32 +32,40 @@ these are the main entry points.
 
 | Target | Effect | Access |
 | --- | --- | --- |
+| `profile` | Show selected components, links, tools, and restore steps | Offline |
+| `profile-set` | Save `PROFILE` and `WITH` to ignored `profile.mk` | Offline |
+| `plan` | Show profile and preview link changes | Offline |
 | `link-plan` | Preview selected links and detect conflicts | Offline |
-| `link` | Restow selected packages; ensure a local Git config | Offline |
+| `link` | Restow selected packages, remove unselected add-on links, ensure a local Git config | Offline |
 | `link-linux`, `link-macos` | Link an explicit platform's package set | Offline |
 | `setup-user` | Run `tools`, `link`, then `plugins` | Network; no sudo |
 | `setup` | Run `system-packages`, then `setup-user` | Network; sudo on Linux |
 | `system-packages` | Install the native package list | Network; sudo on Linux |
-| `tools` | Install Herdr, mise and its tools, and Sheldon | Network |
+| `tools` | Install selected user-space tools | Network |
 | `herdr` | Install the checksum-pinned Herdr binary and validate its config | Network |
 | `herdr-integrations` | Install the selected agent hooks; opt-in | Network; writes agent config |
-| `plugins` | Restore Zsh, Vim, and Neovim plugins | Network |
+| `plugins` | Restore selected Zsh, Vim, and Neovim plugins | Network |
 | `sheldon-plugins`, `vim-plugins`, `nvim-plugins` | Restore one subsystem's plugins | Network |
 | `nvim-update` | Update Neovim plugins and the tracked lock | Network |
 | `agents-plan-private` | Preview private agent links | Offline |
 | `agents-enable-private` | Link the private agent package | Offline |
 | `agents-disable-private` | Unstow the private agent package | Offline |
-| `clean` | Unstow selected public and local packages | Offline |
+| `clean` | Unstow all known public, desktop, and local packages | Offline |
 | `check` | Run repository validation | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |
 
-`mise-tools` installs mise and its configured tools; `nvim-lazy` restores only lazy.nvim.
+`mise-tools` installs mise and only the selected tool names; `nvim-lazy` restores only lazy.nvim.
+`WITH` adds components to `PROFILE` for one invocation. `profile-set` saves the
+choice for this checkout; absent a saved choice, `PROFILE=full`. Existing tool
+binaries are not pruned when a profile shrinks. Because the tracked mise config
+still lists all pinned tools, running bare `mise install` directly can install
+the full set; use Make for profile-aware installs.
 `HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
 overridden when invoking `herdr-integrations`.
 
-`DESKTOP` accepts `0` (default) or `1`. It affects package selection for linking
-and cleanup, not the native package lists. `DESKTOP=0` leaves previously linked
-desktop files in place. `link-linux` and `link-macos` force only the Stow package
+`DESKTOP` accepts `0` (default) or `1`. It affects package selection for linking,
+not the native package lists. `DESKTOP=0` leaves previously linked
+desktop files in place; `clean` removes them regardless of its value. `link-linux` and `link-macos` force only the Stow package
 set, not the host's package manager.
 
 ## Zsh startup

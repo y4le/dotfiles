@@ -11,6 +11,14 @@ plugins, `setup` for native packages, `DESKTOP=1` for desktop files, and
 `agents-enable-private` for private skills. The command decides what a machine
 gets.
 
+`setup/profiles.yaml` keeps component selection shallow: `full` includes every
+component, `lite` includes core, and `WITH` adds named components. Each
+component lists its Stow packages and mise tool keys directly. This avoids a
+second dependency graph for configs that already work independently. A saved
+`profile.mk` selects a checkout default, and explicit Make arguments can
+override it. Switching profiles reconciles managed links; installed binaries
+and user data remain, so profile selection is reversible without deleting state.
+
 Startup uses installed plugins. Zsh sources a prebuilt cache and Neovim leaves
 missing plugins alone. Tmux uses only built-in functionality. Opening a terminal
 should not become a package installation.

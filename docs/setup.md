@@ -73,6 +73,26 @@ and corporate network constraints.
 
 ## Link the configuration
 
+The default `full` profile preserves the original package and tool set. For a
+smaller setup, save `lite` (core shell, Git, Vim, tmux, scripts, agents, mise,
+and six everyday CLI tools), optionally adding components:
+
+```sh
+make profile-set PROFILE=lite WITH="yazi nvim"
+make profile
+make plan
+```
+
+`make profile-set` writes an ignored `profile.mk` in this checkout. `WITH` can
+contain `atuin`, `yazi`, `nvim`, `herdr`, `dev`, and `rclone`; see
+[`setup/profiles.yaml`](../setup/profiles.yaml) for their exact packages and
+tools. Passing `PROFILE=... WITH="..."` to an individual Make command overrides
+the saved choice for that command. Saving a profile without `WITH` clears saved
+add-ons; use `WITH=` when overriding them for one command. The `dev` add-on
+provides the language servers used by Neovim. No saved choice means `full`. `DESKTOP=1`
+independently selects the platform's desktop links. `local/` and private agent
+links remain separate.
+
 ```sh
 make link-plan
 make link
@@ -80,6 +100,10 @@ make link
 
 The plan changes nothing. It prints the selected packages, links, and conflicts;
 [resolve conflicts](maintenance.md#resolve-link-conflicts) before linking.
+When changing from full to lite, it also previews removal of managed add-on
+links. `make link` removes those links, but leaves installed tools, plugins,
+runtime data, and user-owned files alone. Run `make plan` to include the tool
+and plugin selection in the preview.
 After linking, `~/.zshrc` and `~/.vimrc` point into the checkout, and directories
 such as `~/.config/zsh/` remain real directories.
 
@@ -95,7 +119,7 @@ make setup-user
 ```
 
 This installs user-space tools, links configuration, and restores shell, Vim,
-and Neovim plugins. It uses the network but not sudo. Start a new Zsh shell
+and Neovim plugins selected by the profile. It uses the network but not sudo. Start a new Zsh shell
 after it finishes. Herdr is installed from its checksum-pinned release binary.
 Use `make herdr` when you only need to install or repair Herdr; the targeted
 command also validates the tracked Herdr config.
@@ -131,7 +155,7 @@ For an existing installation, preview and link with `make DESKTOP=1 link-plan`
 and `make DESKTOP=1 link`. This adds Linux X11/i3 files or macOS Karabiner
 configuration; it does not install i3 or Karabiner itself.
 
-Pass `DESKTOP=1` when relinking or removing a desktop installation.
+Pass `DESKTOP=1` when relinking a desktop installation.
 
 ## Configure Git identity
 
@@ -157,7 +181,7 @@ identity; commits fail until an applicable config supplies one.
 make clean
 ```
 
-Use `make DESKTOP=1 clean` for a desktop installation. This unstows links from
-the selected public and local packages; their source files, installed tools,
+This unstows links from all known public, desktop, and local packages even if
+the current profile differs from the one used to link them. Their source files, installed tools,
 downloaded plugins, and runtime data remain. Remove private agent links separately with
 `make agents-disable-private` while the private checkout is still available.
