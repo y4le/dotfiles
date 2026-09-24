@@ -60,12 +60,15 @@ restores only lazy.nvim.
 `WITH` adds components to `PROFILE` for one invocation. Pass both as Make
 arguments (`make PROFILE=lite WITH=yazi plan`); environment variables with
 those names are ignored. `profile-set` saves the choice for this checkout;
-absent a saved choice, `PROFILE=full`. Existing tool
-binaries are not pruned when a profile shrinks. Because the tracked mise config
-still lists all pinned tools, running bare `mise install` directly can install
-the full set; use Make for profile-aware installs. A one-command `PROFILE` or
-`WITH` override does not persist; repeat it for each command or use
-`profile-set` before running `plan` and `setup-user`.
+absent a saved choice, `PROFILE=full`. Shrinking a profile does not prune
+installed binaries. An old installation cannot satisfy a newer pin. If an
+unselected tool's pin changes, its leftover shim uses a same-named system
+executable under mise's default system fallback, or reports the missing pin.
+Select the component and run `make tools` to install the new version.
+The tracked mise config still lists all pins, so running bare `mise install`
+can install the full set; use Make for profile-aware installs. A one-command
+`PROFILE` or `WITH` override does not persist; repeat it for each command or
+use `profile-set` before running `plan` and `setup-user`.
 `HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
 overridden when invoking `herdr-integrations`.
 

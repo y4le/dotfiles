@@ -11,6 +11,8 @@ tmux reloads with prefix `R`.
 When switching profiles, `make plan` shows which managed add-on links will be
 removed. `make profile` shows the current selection. Saved selections live in
 the ignored `profile.mk`; installed tools and plugins remain after a switch.
+A leftover tool stops matching its pin when that pin changes; see the
+[mise behavior](reference.md#make-targets).
 Run `make link` when only links need changing. Run `make setup-user` after
 adding components that need tools or plugins; it installs those selected parts
 and reconciles links. On Intel Macs, follow the
