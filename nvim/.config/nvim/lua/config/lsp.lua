@@ -1,9 +1,5 @@
 local M = {}
 
-local function has_server_config(name)
-  return #vim.api.nvim_get_runtime_file(("lsp/%s.lua"):format(name), false) > 0
-end
-
 function M.capabilities()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   local ok, blink = pcall(require, "blink.cmp")
@@ -50,13 +46,8 @@ function M.setup_servers()
   local servers = {
     basedpyright = {},
     rust_analyzer = {},
+    ts_ls = {},
   }
-
-  if has_server_config("ts_ls") then
-    servers.ts_ls = {}
-  elseif has_server_config("tsserver") then
-    servers.tsserver = {}
-  end
 
   if vim.fn.executable("lua-language-server") == 1 then
     servers.lua_ls = {

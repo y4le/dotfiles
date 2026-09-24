@@ -1,28 +1,7 @@
 return {
   {
-    "stevearc/oil.nvim",
-    lazy = false,
-    opts = {
-      default_file_explorer = false,
-      view_options = {
-        show_hidden = true,
-      },
-      keymaps = {
-        ["q"] = { "actions.close", mode = "n" },
-      },
-    },
-  },
-  {
     "preservim/nerdtree",
     lazy = false,
-    cmd = {
-      "NERDTree",
-      "NERDTreeClose",
-      "NERDTreeFind",
-      "NERDTreeFocus",
-      "NERDTreeRefreshRoot",
-      "NERDTreeToggle",
-    },
     keys = {
       { "<leader>sn", "<Cmd>NERDTreeToggle<CR>", desc = "Toggle file sidebar" },
       { "<leader>sN", "<Cmd>NERDTreeFind<CR>", desc = "Reveal current file in sidebar" },
@@ -36,7 +15,6 @@ return {
   {
     "mikavilpas/yazi.nvim",
     cmd = { "Yazi" },
-    event = "VeryLazy",
     keys = {
       { "<C-g>", "<Cmd>Yazi<CR>", mode = "n", desc = "Open Yazi" },
     },
@@ -59,7 +37,6 @@ return {
     },
     version = false,
     config = function()
-      require("mini.comment").setup()
       require("mini.misc").setup()
     end,
   },

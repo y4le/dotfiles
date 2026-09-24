@@ -1,4 +1,4 @@
-local uv = vim.uv or vim.loop
+local uv = vim.uv
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 local lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json"
 

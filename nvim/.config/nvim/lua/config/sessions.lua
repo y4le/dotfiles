@@ -2,7 +2,7 @@ local M = {}
 
 M.dir = vim.fn.stdpath("state") .. "/sessions"
 
-vim.fn.mkdir(M.dir, "p")
+vim.fn.mkdir(M.dir, "p", 448)
 
 local function with_extension(name)
   if name:sub(-4) == ".vim" then
