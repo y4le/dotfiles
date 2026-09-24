@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-pins check-brew check-vim check-runtime check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-vim check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-pins check-brew check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+check: check-git check-shell check-pins check-brew check-system-packages check-vim check-runtime check-stow check-link check-make ## [offline] run repo validation checks
 
 check-actions: ## [offline] lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -98,6 +98,9 @@ check-pins: ## [offline] validate download pins and the verified installer
 
 check-brew: ## [offline] verify Homebrew remains an explicit prerequisite
 	@sh mk/test-brew.sh
+
+check-system-packages: ## [offline] verify native package command failure handling
+	@sh mk/test-system-packages.sh
 
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh

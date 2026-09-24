@@ -36,7 +36,7 @@ else ifeq ($(PACKAGE_MANAGER),apt)
 		echo "no apt packages configured"; \
 		exit 0; \
 	fi; \
-	sudo apt-get update; \
+	sudo apt-get update && \
 	sudo apt-get install -y $$packages
 else ifeq ($(PACKAGE_MANAGER),pacman)
 	@packages="$$(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$$/d' $(PACMAN_PACKAGES_FILE))"; \
