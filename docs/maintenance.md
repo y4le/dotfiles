@@ -144,6 +144,9 @@ To return to full, run `make profile-set PROFILE=full`, `make plan`, and
 `make setup-user`. Deleting the ignored `profile.mk` also restores the default
 full selection. `DESKTOP=1` is independent and must be passed again when
 relinking desktop files.
+If a saved add-on was removed from `setup/profiles.yaml`,
+`make profile-set PROFILE=full` clears the stale choice so Make commands work
+again. Pass a valid `WITH=` value when saving a different selection.
 
 ### Shell helpers
 

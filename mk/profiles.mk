@@ -12,19 +12,23 @@ endif
 PROFILE ?= full
 WITH ?=
 
-profile_shell_quote = '$(subst ','\'',$(1))'
-PROFILE_COMPONENTS := $(shell sh mk/profile.sh components $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(WITH)) || printf '__invalid_profile__')
-ifneq ($(filter __invalid_profile__,$(PROFILE_COMPONENTS)),)
-  $(error invalid PROFILE or WITH selection)
+# Saving a new profile clears old add-ons unless WITH was supplied explicitly.
+PROFILE_SET_WITH = $(if $(filter command line,$(origin WITH)),$(WITH),)
+PROFILE_SELECTION_WITH := $(WITH)
+ifeq ($(strip $(MAKECMDGOALS)),profile-set)
+  PROFILE_SELECTION_WITH := $(PROFILE_SET_WITH)
 endif
-PROFILE_PACKAGES := $(shell sh mk/profile.sh packages $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(WITH)))
-PROFILE_TOOLS := $(shell sh mk/profile.sh tools $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(WITH)))
+
+profile_shell_quote = '$(subst ','\'',$(1))'
+PROFILE_COMPONENTS := $(shell sh mk/profile.sh components $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(PROFILE_SELECTION_WITH)) || printf '__invalid_profile__')
+ifneq ($(filter __invalid_profile__,$(PROFILE_COMPONENTS)),)
+  $(error invalid PROFILE or WITH selection; if profile.mk is stale, run 'make profile-set PROFILE=full' or remove profile.mk)
+endif
+PROFILE_PACKAGES := $(shell sh mk/profile.sh packages $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(PROFILE_SELECTION_WITH)))
+PROFILE_TOOLS := $(shell sh mk/profile.sh tools $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(PROFILE_SELECTION_WITH)))
 KNOWN_PROFILE_PACKAGES := $(shell sh mk/profile.sh all-packages)
 
 .PHONY: profile profile-set
-
-# Saving a new profile clears old add-ons unless WITH was supplied explicitly.
-PROFILE_SET_WITH = $(if $(filter command line,$(origin WITH)),$(WITH),)
 
 profile: ## [offline] show the selected setup components and tools
 	@echo "profile: $(PROFILE)"

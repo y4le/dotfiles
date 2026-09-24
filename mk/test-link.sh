@@ -630,6 +630,32 @@ run_make "$profile_home" check-make > "$test_root/saved-lite-make.log" 2>&1 || \
 run_make "$profile_home" check-stow > "$test_root/saved-lite-stow.log" 2>&1 || \
   { cat "$test_root/saved-lite-stow.log" >&2; fail "check-stow failed with saved lite"; }
 
+echo "check-link: recover a stale saved add-on"
+printf 'PROFILE := lite\nWITH := retired-component\n' > "$repo/profile.mk"
+if run_make "$profile_home" plan > "$test_root/stale-profile.log" 2>&1; then
+  fail "plan accepted a stale saved add-on"
+fi
+grep -Fq 'profile.mk is stale' "$test_root/stale-profile.log" || \
+  fail "stale profile error omitted recovery guidance"
+if run_make "$profile_home" PROFILE=full profile-set plan \
+  > /dev/null 2>&1; then
+  fail "mixed goals bypassed stale profile validation"
+fi
+if run_make "$profile_home" PROFILE=full WITH=retired-component profile-set \
+  > /dev/null 2>&1; then
+  fail "profile-set accepted an invalid command-line add-on"
+fi
+grep -Fqx 'WITH := retired-component' "$repo/profile.mk" || \
+  fail "invalid profile-set changed the stale choice"
+run_make "$profile_home" PROFILE=full profile-set >/dev/null 2>&1 || \
+  fail "profile-set could not recover from a stale saved add-on"
+grep -Fqx 'PROFILE := full' "$repo/profile.mk" || \
+  fail "profile-set did not replace the stale profile"
+grep -Fqx 'WITH := ' "$repo/profile.mk" || \
+  fail "profile-set retained the stale add-on"
+run_make "$profile_home" plan >/dev/null 2>&1 || \
+  fail "plan still failed after saved profile recovery"
+
 echo "check-link: clean removes desktop links without DESKTOP=1"
 run_make "$linux_desktop_home" PROFILE=lite clean >/dev/null 2>&1 || \
   fail "clean after desktop link failed"
