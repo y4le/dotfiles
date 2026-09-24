@@ -26,17 +26,17 @@ Personal dotfiles repo managed with symlinks.
 
 ## Agent collaboration
 
-For substantial or consequential work, consult another model family. Codex
-uses Claude Opus for routine consultation and diff review, and Claude Fable
-for the hardest questions. Claude uses Codex Sol and Astra respectively. Have
-the opposite-family reviewer inspect the actual nontrivial diff and validation
-before committing; a Fable or Astra review counts. One review can cover a
-coherent series. Treat reviewer claims as hypotheses and verify consequential
-ones. If a model is unavailable, report that limit rather than silently
-substituting or calling self-review independent. Record substantive
-disagreements in the commit message. The
-[collaboration reference](../ref/agents_collaboration.md) has more detail when
-that separate checkout is present.
+For substantial or consequential work, consult another model family: Codex
+consults Claude; Claude consults Codex. The current model choices and
+escalation tiers live in the
+[collaboration reference](../ref/agents_collaboration.md). If that separate
+checkout is absent, use an available model from the other family and disclose
+that the preferred pairing could not be checked. Have the other family review
+the actual nontrivial diff and validation before committing; one review can
+cover a coherent series. Treat reviewer claims as hypotheses and verify
+consequential ones. If the preferred reviewer is unavailable, report that
+limit rather than silently substituting or calling self-review independent.
+Record substantive disagreements in the commit message.
 
 ## Commit messages
 
