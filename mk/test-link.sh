@@ -553,4 +553,66 @@ rm -f "$repo/local/.config/zsh/hooks/env.zsh" \
 rmdir "$repo/local/.config/zsh/hooks" "$repo/local/.config/zsh" \
   "$repo/local/.config" "$repo/local" 2>/dev/null || :
 
+echo "check-link: profile transitions and saved selection"
+profile_home=$test_root/profile-home
+mkdir -p "$profile_home/.config/atuin"
+printf 'owned\n' > "$profile_home/.config/atuin/notes.txt"
+run_make "$profile_home" link >/dev/null 2>&1 || fail "full profile link failed"
+[ -L "$profile_home/.config/atuin/config.toml" ] || fail "full omitted Atuin"
+[ -L "$profile_home/.config/nvim/init.lua" ] || fail "full omitted Neovim"
+[ -L "$profile_home/.config/herdr/config.toml" ] || fail "full omitted Herdr"
+snapshot_home "$profile_home" > "$test_root/profile-before-plan"
+run_make "$profile_home" PROFILE=lite WITH=yazi link-plan \
+  > "$test_root/profile-plan.log" 2>&1 || fail "lite link plan failed"
+grep -Fq 'planning removal of unselected add-on links: atuin nvim herdr' \
+  "$test_root/profile-plan.log" || fail "lite plan omitted add-on removals"
+snapshot_home "$profile_home" > "$test_root/profile-after-plan"
+cmp -s "$test_root/profile-before-plan" "$test_root/profile-after-plan" || \
+  fail "lite plan modified HOME"
+run_make "$profile_home" PROFILE=lite WITH=yazi link >/dev/null 2>&1 || \
+  fail "full to lite transition failed"
+[ ! -e "$profile_home/.config/atuin/config.toml" ] || fail "lite left Atuin config"
+[ ! -e "$profile_home/.config/nvim/init.lua" ] || fail "lite left Neovim config"
+[ ! -e "$profile_home/.config/herdr/config.toml" ] || fail "lite left Herdr config"
+[ -L "$profile_home/.zshrc" ] || fail "lite removed core config"
+[ -f "$profile_home/.config/atuin/notes.txt" ] || \
+  fail "lite removed user-owned Atuin data"
+run_make "$profile_home" PROFILE=full link >/dev/null 2>&1 || \
+  fail "lite to full transition failed"
+[ -L "$profile_home/.config/atuin/config.toml" ] || fail "full did not restore Atuin"
+[ -L "$profile_home/.config/nvim/init.lua" ] || fail "full did not restore Neovim"
+[ -L "$profile_home/.config/herdr/config.toml" ] || fail "full did not restore Herdr"
+
+run_make "$profile_home" PROFILE=lite WITH='yazi herdr' profile-set \
+  >/dev/null 2>&1 || fail "saving profile failed"
+saved_profile=$(run_make "$profile_home" profile) || fail "reading saved profile failed"
+printf '%s\n' "$saved_profile" | grep -Fqx 'components: core yazi herdr' || \
+  fail "saved profile did not select its add-ons"
+overridden_profile=$(run_make "$profile_home" PROFILE=full WITH= profile) || \
+  fail "command-line profile override failed"
+printf '%s\n' "$overridden_profile" | grep -Fqx 'profile: full' || \
+  fail "command-line override did not replace saved profile"
+if run_make "$profile_home" PROFILE=lite WITH=unknown profile-set \
+  >/dev/null 2>&1; then
+  fail "invalid saved profile was accepted"
+fi
+grep -Fqx 'WITH := yazi herdr' "$repo/profile.mk" || \
+  fail "invalid profile changed the saved choice"
+run_make "$profile_home" PROFILE=lite profile-set >/dev/null 2>&1 || \
+  fail "saving lite without add-ons failed"
+grep -Fqx 'WITH := ' "$repo/profile.mk" || \
+  fail "saving lite kept old add-ons"
+run_make "$profile_home" check-make > "$test_root/saved-lite-make.log" 2>&1 || \
+  { cat "$test_root/saved-lite-make.log" >&2; fail "check-make failed with saved lite"; }
+run_make "$profile_home" check-stow > "$test_root/saved-lite-stow.log" 2>&1 || \
+  { cat "$test_root/saved-lite-stow.log" >&2; fail "check-stow failed with saved lite"; }
+
+echo "check-link: clean removes desktop links without DESKTOP=1"
+run_make "$linux_desktop_home" PROFILE=lite clean >/dev/null 2>&1 || \
+  fail "clean after desktop link failed"
+[ ! -e "$linux_desktop_home/.xsessionrc" ] || \
+  fail "clean left Linux desktop link"
+[ ! -e "$linux_desktop_home/.config/i3/config" ] || \
+  fail "clean left i3 link"
+
 echo "check-link: ok"

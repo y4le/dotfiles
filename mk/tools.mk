@@ -4,7 +4,11 @@ mise: ## [network] install the pinned, verified mise binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install mise "$(MISE_BIN)" 0755
 
 mise-tools: mise ## [network] install tools from mise config
-	MISE_GLOBAL_CONFIG_FILE=$(MISE_CONFIG_FILE) $(MISE_BIN) install
+	@if [ -z "$(strip $(PROFILE_TOOLS))" ]; then \
+		echo "no mise tools selected"; \
+	else \
+		MISE_GLOBAL_CONFIG_FILE="$(MISE_CONFIG_FILE)" "$(MISE_BIN)" install $(PROFILE_TOOLS); \
+	fi
 
 herdr: ## [network] install the pinned Herdr binary and validate its config
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install herdr "$(HERDR_BIN)" 0755

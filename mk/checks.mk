@@ -1,6 +1,9 @@
-.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-vim check-nvim-bin check-runtime check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-make
 
-check: check-git check-shell check-pins check-brew check-system-packages check-vim check-nvim-bin check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+check: check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+
+check-profiles: ## [offline] validate setup profile selections and mise tool claims
+	@sh mk/test-profiles.sh
 
 check-actions: ## [offline] lint GitHub Actions workflows
 	@if ! command -v actionlint >/dev/null 2>&1; then \
@@ -134,84 +137,110 @@ check-stow: _require-stow ## [offline] dry-run stow package graphs in temp dirs
 		fi; \
 		rm -rf "$$tmpdir"; \
 	}; \
-	check_pkg_set "linux core package set" $(LINUX_BASE_PACKAGES); \
-	check_pkg_set "linux desktop package set" $(LINUX_DESKTOP_PACKAGES); \
-	check_pkg_set "macos core package set" $(MACOS_BASE_PACKAGES); \
-	check_pkg_set "macos desktop package set" $(MACOS_DESKTOP_PACKAGES); \
+	check_pkg_set "linux core package set" $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES); \
+	check_pkg_set "linux desktop package set" $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES) $(LINUX_DESKTOP); \
+	check_pkg_set "macos core package set" $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES) $(MACOS_CORE); \
+	check_pkg_set "macos desktop package set" $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES) $(MACOS_CORE) $(MACOS_DESKTOP); \
 	exit $$fail
 
 check-link: ## [offline] test safe linking in isolated temporary homes
 	@sh mk/test-link.sh
 
+CHECK_MAKE = $(MAKE) PROFILE=full WITH=
+
 check-make: ## [offline] dry-run make target graph and help output
 	@echo "check-make: make -n setup"
-	@$(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=apt setup >/dev/null
-	@$(MAKE) -n PLATFORM=macos PACKAGE_MANAGER=brew setup >/dev/null
-	@$(MAKE) -n PLATFORM=linux PACKAGE_MANAGER=pacman setup >/dev/null
-	@setup_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo setup )" || exit $$?; \
+	@$(CHECK_MAKE) -n PLATFORM=linux PACKAGE_MANAGER=apt setup >/dev/null
+	@$(CHECK_MAKE) -n PLATFORM=macos PACKAGE_MANAGER=brew setup >/dev/null
+	@$(CHECK_MAKE) -n PLATFORM=linux PACKAGE_MANAGER=pacman setup >/dev/null
+	@setup_plan="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo setup )" || exit $$?; \
 	expected="$$(printf '/bin/echo system-packages\nsystem-packages\n/bin/echo setup-user\nsetup-user')"; \
 	if [ "$$setup_plan" != "$$expected" ]; then \
 		echo "check-make: setup phase order changed"; exit 1; \
 	fi
 	@echo "check-make: make -n setup-user"
-	@setup_user="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo setup-user )" || exit $$?; \
+	@setup_user="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo setup-user )" || exit $$?; \
 	expected="$$(printf '/bin/echo tools\ntools\n/bin/echo link\nlink\n/bin/echo plugins\nplugins')"; \
 	if [ "$$setup_user" != "$$expected" ]; then \
 		echo "check-make: setup-user phase order changed"; exit 1; \
 	fi
-	@setup_user_plan="$$( $(MAKE) -n -s --no-print-directory setup-user )" || exit $$?; \
+	@setup_user_plan="$$( $(CHECK_MAKE) -n -s --no-print-directory setup-user )" || exit $$?; \
 	if printf '%s\n' "$$setup_user_plan" | grep -Eq '^[[:space:]]*(sudo|doas)[[:space:]]|integration install'; then \
 		echo "check-make: setup-user contains a privileged or opt-in integration command"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n tools"
-	@$(MAKE) -n tools >/dev/null
+	@$(CHECK_MAKE) -n tools >/dev/null
 	@echo "check-make: make -n herdr"
-	@$(MAKE) -n herdr >/dev/null
+	@$(CHECK_MAKE) -n herdr >/dev/null
 	@echo "check-make: make -n herdr-integrations"
-	@$(MAKE) -n herdr-integrations >/dev/null
+	@$(CHECK_MAKE) -n herdr-integrations >/dev/null
 	@echo "check-make: make -n plugins"
-	@$(MAKE) -n plugins >/dev/null
+	@$(CHECK_MAKE) -n plugins >/dev/null
 	@echo "check-make: tool and plugin phase order"
-	@tools_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo tools )" || exit $$?; \
+	@tools_plan="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo tools )" || exit $$?; \
 	expected="$$(printf '/bin/echo mise-tools\nmise-tools\n/bin/echo sheldon\nsheldon\n/bin/echo herdr\nherdr')"; \
 	if [ "$$tools_plan" != "$$expected" ]; then \
 		echo "check-make: tools did not call mise-tools, sheldon, herdr in order"; \
 		exit 1; \
 	fi
-	@plugin_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo plugins )" || exit $$?; \
+	@plugin_plan="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo plugins )" || exit $$?; \
 	expected="$$(printf '/bin/echo sheldon-plugins\nsheldon-plugins\n/bin/echo vim-plugins\nvim-plugins\n/bin/echo nvim-plugins\nnvim-plugins')"; \
 	if [ "$$plugin_plan" != "$$expected" ]; then \
 		echo "check-make: plugins did not restore shell, Vim, Neovim in order"; \
 		exit 1; \
 	fi
+	@echo "check-make: lite skips optional restore steps"
+	@lite_tools="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo PROFILE=lite WITH= tools )" || exit $$?; \
+	expected="$$(printf '/bin/echo mise-tools\nmise-tools\n/bin/echo sheldon\nsheldon')"; \
+	if [ "$$lite_tools" != "$$expected" ]; then \
+		echo "check-make: lite tool phases changed"; exit 1; \
+	fi
+	@lite_plugins="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo PROFILE=lite WITH= plugins )" || exit $$?; \
+	expected="$$(printf '/bin/echo sheldon-plugins\nsheldon-plugins\n/bin/echo vim-plugins\nvim-plugins')"; \
+	if [ "$$lite_plugins" != "$$expected" ]; then \
+		echo "check-make: lite plugin phases changed"; exit 1; \
+	fi
+	@herdr_tools="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo PROFILE=lite WITH=herdr tools )" || exit $$?; \
+	printf '%s\n' "$$herdr_tools" | grep -Fxq 'herdr' || { \
+		echo "check-make: herdr add-on did not enable its tool phase"; exit 1; \
+	}
+	@with_plugins="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo PROFILE=lite WITH='nvim herdr' plugins )" || exit $$?; \
+	printf '%s\n' "$$with_plugins" | grep -Fxq 'nvim-plugins' || { \
+		echo "check-make: nvim add-on did not enable plugins"; exit 1; \
+	}
+	@echo "check-make: lite mise install selects only core pins"
+	@mise_plan="$$( $(MAKE) -n -s --no-print-directory PROFILE=lite WITH= mise-tools )" || exit $$?; \
+	printf '%s\n' "$$mise_plan" | grep -Fq ' install aqua:junegunn/fzf aqua:BurntSushi/ripgrep aqua:sharkdp/fd aqua:sharkdp/bat aqua:dandavison/delta aqua:ajeetdsouza/zoxide;' || { \
+		echo "check-make: lite mise install did not name the six core tools"; exit 1; \
+	}
 	@echo "check-make: make -n link-linux"
-	@$(MAKE) -n link-linux >/dev/null
+	@$(CHECK_MAKE) -n link-linux >/dev/null
 	@echo "check-make: make -n link-macos"
-	@$(MAKE) -n link-macos >/dev/null
+	@$(CHECK_MAKE) -n link-macos >/dev/null
 	@echo "check-make: make -n DESKTOP=1 link"
-	@$(MAKE) -n DESKTOP=1 link >/dev/null
+	@$(CHECK_MAKE) -n DESKTOP=1 link >/dev/null
 	@echo "check-make: reject invalid DESKTOP values"
-	@if $(MAKE) -n DESKTOP=yes link >/dev/null 2>&1; then \
+	@if $(CHECK_MAKE) -n DESKTOP=yes link >/dev/null 2>&1; then \
 		echo "check-make: DESKTOP=yes was accepted"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n link-plan"
-	@$(MAKE) -n link-plan >/dev/null
+	@$(CHECK_MAKE) -n link-plan >/dev/null
 	@echo "check-make: make -n clean"
-	@$(MAKE) -n clean >/dev/null
+	@$(CHECK_MAKE) -n clean >/dev/null
 	@echo "check-make: make -n nvim-plugins"
-	@$(MAKE) -n nvim-plugins >/dev/null
+	@$(CHECK_MAKE) -n nvim-plugins >/dev/null
 	@echo "check-make: make -n nvim-update"
-	@$(MAKE) -n nvim-update >/dev/null
+	@$(CHECK_MAKE) -n nvim-update >/dev/null
 	@echo "check-make: make -n nvim-lazy"
-	@$(MAKE) -n nvim-lazy >/dev/null
+	@$(CHECK_MAKE) -n nvim-lazy >/dev/null
 	@echo "check-make: make -n vim-plugins"
-	@$(MAKE) -n vim-plugins >/dev/null
+	@$(CHECK_MAKE) -n vim-plugins >/dev/null
 	@echo "check-make: make -n sheldon-plugins"
-	@$(MAKE) -n sheldon-plugins >/dev/null
+	@$(CHECK_MAKE) -n sheldon-plugins >/dev/null
 	@echo "check-make: make help"
-	@help_output="$$( $(MAKE) --no-print-directory help )" || exit $$?; \
+	@help_output="$$( $(CHECK_MAKE) --no-print-directory help )" || exit $$?; \
 	duplicates="$$(printf '%s\n' "$$help_output" | awk '{ if (seen[$$1]++) print $$1 }')"; \
 	if [ -n "$$duplicates" ]; then \
 		echo "check-make: duplicate help targets: $$duplicates"; \

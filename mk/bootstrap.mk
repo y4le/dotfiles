@@ -1,4 +1,4 @@
-.PHONY: setup setup-user tools plugins system-packages link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
+.PHONY: setup setup-user tools plugins system-packages plan link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -10,14 +10,26 @@ setup-user: ## [network] user-space tools, links, and plugins; no sudo
 	@$(MAKE) plugins
 
 tools: ## [network] install user-space tools
+ifneq ($(filter mise,$(PROFILE_PACKAGES)),)
 	@$(MAKE) mise-tools
+endif
+ifneq ($(filter zsh,$(PROFILE_PACKAGES)),)
 	@$(MAKE) sheldon
+endif
+ifneq ($(filter herdr,$(PROFILE_PACKAGES)),)
 	@$(MAKE) herdr
+endif
 
 plugins: ## [network] restore shell, Vim, and Neovim plugins
+ifneq ($(filter zsh,$(PROFILE_PACKAGES)),)
 	@$(MAKE) sheldon-plugins
+endif
+ifneq ($(filter vim,$(PROFILE_PACKAGES)),)
 	@$(MAKE) vim-plugins
+endif
+ifneq ($(filter nvim,$(PROFILE_PACKAGES)),)
 	@$(MAKE) nvim-plugins
+endif
 
 system-packages: ## [sudo, network] install native packages
 ifeq ($(PACKAGE_MANAGER),brew)
@@ -47,17 +59,21 @@ else
 	exit 1
 endif
 
-link: ## [offline] link dotfiles (auto-detect platform)
-	@$(MAKE) _link LINK_PACKAGES="$(PACKAGES)"
+plan: ## [offline] preview selected tools, plugins, and link changes
+	@$(MAKE) profile
+	@$(MAKE) link-plan
+
+link: ## [offline] link selected dotfiles and remove unselected add-on links
+	@$(MAKE) _link LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
 
 link-plan: ## [offline] show link actions without changing anything
-	@$(MAKE) _link-plan LINK_PACKAGES="$(PACKAGES)"
+	@$(MAKE) _link-plan LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
 
 link-linux: ## [offline] force linux package set
-	@$(MAKE) _link LINK_PACKAGES="$(LINUX_PACKAGES)"
+	@$(MAKE) _link LINK_PACKAGES="$(LINUX_PACKAGES)" REMOVE_PACKAGES="$(filter-out $(LINUX_PACKAGES),$(KNOWN_PROFILE_PACKAGES))"
 
 link-macos: ## [offline] force macos package set
-	@$(MAKE) _link LINK_PACKAGES="$(MACOS_PACKAGES)"
+	@$(MAKE) _link LINK_PACKAGES="$(MACOS_PACKAGES)" REMOVE_PACKAGES="$(filter-out $(MACOS_PACKAGES),$(KNOWN_PROFILE_PACKAGES))"
 
 _link-plan: _require-stow
 	@if git -C "$(CURDIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
@@ -74,6 +90,10 @@ _link-plan: _require-stow
 	@if [ -n "$${XDG_CONFIG_HOME:-}" ] && [ "$$XDG_CONFIG_HOME" != "$(HOME)/.config" ]; then \
 		echo "warning: XDG_CONFIG_HOME=$$XDG_CONFIG_HOME differs from $(HOME)/.config"; \
 	fi
+	@if [ -n "$(REMOVE_PACKAGES)" ]; then \
+		echo "planning removal of unselected add-on links: $(REMOVE_PACKAGES)"; \
+		$(STOW) -n -v -D $(STOW_FLAGS) $(REMOVE_PACKAGES) || exit $$?; \
+	fi
 	@echo "planning $(PLATFORM) packages: $(LINK_PACKAGES)"
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
 		sh mk/prepare-zprofile.sh --plan "$(HOME)" "$(CURDIR)" || exit $$?; \
@@ -83,6 +103,10 @@ _link-plan: _require-stow
 	fi
 
 _link: _link-plan
+	@if [ -n "$(REMOVE_PACKAGES)" ]; then \
+		echo "removing unselected add-on links: $(REMOVE_PACKAGES)"; \
+		$(STOW) -D $(STOW_FLAGS) $(REMOVE_PACKAGES) || exit $$?; \
+	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' osx '; then \
 		sh mk/prepare-zprofile.sh --apply "$(HOME)" "$(CURDIR)" || exit $$?; \
 	fi
