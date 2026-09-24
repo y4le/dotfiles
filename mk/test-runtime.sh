@@ -529,8 +529,7 @@ if [ -n "$tmux_bin" ]; then
   assert_tmux_value allow-passthrough on show-option -gv allow-passthrough
   assert_tmux_value set-clipboard on show-option -gv set-clipboard
   assert_tmux_value prefix C-b show-option -gv prefix
-  assert_tmux_value PREFIX PREFIX=C-b show-environment -g PREFIX
-  assert_tmux_value MODE MODE=normal show-environment -g MODE
+  assert_tmux_value prefix-format C-b display-message -p '#{prefix}'
 
   run_tmux list-keys -T copy-mode-vi y | grep -q 'copy-pipe-and-cancel cpy' || \
     fail "tmux copy-mode y does not copy through cpy"
@@ -552,7 +551,7 @@ if [ -n "$tmux_bin" ]; then
     *'#('* ) fail "tmux status bar still runs a plugin command" ;;
   esac
   case $(run_tmux show-option -gv status-left) in
-    *'#{PREFIX}'*'#{MODE}'*) ;;
+    *'#{prefix}'*'#{client_key_table}'*) ;;
     *) fail "tmux status bar does not show prefix and resize state" ;;
   esac
   case $(run_tmux show-option -gv status-right) in
@@ -562,28 +561,43 @@ if [ -n "$tmux_bin" ]; then
 
   run_tmux source-file "$test_home/.config/tmux/prefix_a.tmux.conf"
   assert_tmux_value prefix C-a show-option -gv prefix
-  assert_tmux_value PREFIX PREFIX=C-a show-environment -g PREFIX
+  assert_tmux_value prefix-format C-a display-message -p '#{prefix}'
   run_tmux list-keys -T prefix a | grep -q 'send-prefix' || \
     fail "tmux Ctrl-A prefix cannot be sent to an inner multiplexer"
   run_tmux source-file "$test_home/.config/tmux/prefix_space.tmux.conf"
   assert_tmux_value prefix C-Space show-option -gv prefix
-  assert_tmux_value PREFIX PREFIX=C-Space show-environment -g PREFIX
+  assert_tmux_value prefix-format C-Space display-message -p '#{prefix}'
   run_tmux list-keys -T prefix Space | grep -q 'send-prefix' || \
     fail "tmux Ctrl-Space prefix cannot be sent to an inner multiplexer"
   run_tmux source-file "$test_home/.config/tmux/prefix_b.tmux.conf"
   assert_tmux_value prefix C-b show-option -gv prefix
-  assert_tmux_value PREFIX PREFIX=C-b show-environment -g PREFIX
+  assert_tmux_value prefix-format C-b display-message -p '#{prefix}'
   run_tmux list-keys -T prefix b | grep -q 'send-prefix' || \
     fail "tmux Ctrl-B prefix cannot be sent to an inner multiplexer"
 
-  run_tmux source-file "$test_home/.config/tmux/resize_mode_on.tmux.conf"
-  assert_tmux_value MODE MODE=resize show-environment -g MODE
-  run_tmux list-keys -T root h | grep -q 'resize-pane -L 5' || \
-    fail "tmux resize mode did not bind h"
-  run_tmux source-file "$test_home/.config/tmux/resize_mode_off.tmux.conf"
-  assert_tmux_value MODE MODE=normal show-environment -g MODE
+  run_tmux list-keys -T prefix r | grep -q 'switch-client -T resize' || \
+    fail "tmux prefix-r did not enter resize mode"
+  for binding in 'h resize-pane -L 5' 'H resize-pane -L 25' \
+    'j resize-pane -D 5' 'J resize-pane -D 25' \
+    'k resize-pane -U 5' 'K resize-pane -U 25' \
+    'l resize-pane -R 5' 'L resize-pane -R 25' \
+    '= select-layout tiled' '% select-layout even-horizontal' \
+    '" select-layout even-vertical' 'f select-layout main-vertical'; do
+    key=${binding%% *}
+    action=${binding#* }
+    run_tmux list-keys -T resize "$key" | grep -Fq "$action" || \
+      fail "tmux resize mode lost $key action"
+    run_tmux list-keys -T resize "$key" | grep -Fq 'switch-client -T resize' || \
+      fail "tmux resize mode exits after $key"
+  done
+  for key in Escape q; do
+    run_tmux list-keys -T resize "$key" | grep -Fq 'switch-client -T root' || \
+      fail "tmux resize mode cannot exit with $key"
+  done
+  run_tmux bind-key -n h resize-pane -L 5
+  run_tmux source-file "$test_home/.config/tmux/tmux.conf"
   if run_tmux list-keys -T root h >/dev/null 2>&1; then
-    fail "tmux resize mode left root h bound after exit"
+    fail "tmux reload left the old root h binding active"
   fi
 
   [ ! -s "$runtime_log" ] || fail "tmux startup invoked git"
