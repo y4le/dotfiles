@@ -551,10 +551,12 @@ if env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
   DOTFILES_TEST_FIXTURES="$fixtures" \
   DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" \
   make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
-    HERDR_BIN="$herdr_destination" HERDR_INTEGRATIONS= \
+    HERDR_BIN="$test_root/missing-herdr" HERDR_INTEGRATIONS= \
     herdr-integrations >/dev/null 2>&1; then
   fail "Herdr integrations accepted an empty target list"
 fi
+[ ! -e "$test_root/missing-herdr" ] && [ ! -s "$curl_log" ] || \
+  fail "empty Herdr integration list installed Herdr before failing"
 
 sheldon_destination=$test_root/make-bin/sheldon
 : > "$curl_log"

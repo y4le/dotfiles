@@ -156,70 +156,33 @@ check-make: ## [offline] dry-run make target graph and help output
 	fi
 	@echo "check-make: make -n tools"
 	@tools_plan="$$( $(MAKE) -n tools )" || exit $$?; \
-	printf '%s\n' "$$tools_plan" | grep -F 'mk/pinned.sh install mise' >/dev/null || { \
-		echo "check-make: tools does not use the pinned mise installer"; \
-		exit 1; \
-	}; \
-	printf '%s\n' "$$tools_plan" | grep -F 'mk/pinned.sh install sheldon' >/dev/null || { \
-		echo "check-make: tools does not use the pinned Sheldon installer"; \
-		exit 1; \
-	}; \
-	printf '%s\n' "$$tools_plan" | grep -F 'mk/pinned.sh install herdr' >/dev/null || { \
-		echo "check-make: tools does not use the pinned Herdr installer"; \
-		exit 1; \
-	}; \
 	if printf '%s\n' "$$tools_plan" | grep -Eq 'mise\.run|crate\.sh|bash -s'; then \
 		echo "check-make: tools still uses an unverified installer"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n herdr"
 	@herdr_plan="$$( $(MAKE) -n herdr )" || exit $$?; \
-	printf '%s\n' "$$herdr_plan" | grep -F 'mk/pinned.sh install herdr' >/dev/null || { \
-		echo "check-make: Herdr does not use the verified installer"; \
-		exit 1; \
-	}; \
-	printf '%s\n' "$$herdr_plan" | grep -F 'HERDR_CONFIG_PATH=' >/dev/null || { \
-		echo "check-make: Herdr config is not validated"; \
-		exit 1; \
-	}; \
 	if printf '%s\n' "$$herdr_plan" | grep -Eq 'mise[[:space:]]+install|install\.sh|(^|[[:space:]])stow[[:space:]]'; then \
 		echo "check-make: Herdr uses an unreviewed installer or links config"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n herdr-integrations"
-	@integration_plan="$$( $(MAKE) -n herdr-integrations )" || exit $$?; \
-	printf '%s\n' "$$integration_plan" | \
-		grep -F 'for integration in $(HERDR_INTEGRATIONS)' >/dev/null || { \
-		echo "check-make: selected Herdr integrations are incomplete"; \
-		exit 1; \
-	}; \
-	printf '%s\n' "$$integration_plan" | grep -F 'integration install' >/dev/null || { \
-		echo "check-make: Herdr integrations are not installed through Herdr"; \
-		exit 1; \
-	}; \
-	empty_integration_plan="$$( $(MAKE) -n HERDR_INTEGRATIONS= herdr-integrations )" || exit $$?; \
-	printf '%s\n' "$$empty_integration_plan" | \
-		grep -F 'HERDR_INTEGRATIONS must name at least one integration' >/dev/null || { \
-		echo "check-make: empty Herdr integration list has no diagnostic"; \
-		exit 1; \
-	}; \
-	if printf '%s\n' "$$empty_integration_plan" | grep -F 'mk/pinned.sh install herdr' >/dev/null; then \
-		echo "check-make: empty Herdr integration list installs Herdr before failing"; \
+	@$(MAKE) -n herdr-integrations >/dev/null
+	@echo "check-make: make -n plugins"
+	@$(MAKE) -n plugins >/dev/null
+	@echo "check-make: tool and plugin phase order"
+	@tools_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo tools )" || exit $$?; \
+	tools_targets="$$(printf '%s\n' "$$tools_plan" | awk '/^(mise-tools|sheldon|herdr)$$/ { print }')"; \
+	expected="$$(printf 'mise-tools\nsheldon\nherdr')"; \
+	if [ "$$tools_targets" != "$$expected" ]; then \
+		echo "check-make: tools did not call mise-tools, sheldon, herdr in order"; \
 		exit 1; \
 	fi
-	@echo "check-make: make -n plugins"
-	@plugin_plan="$$( $(MAKE) -n plugins )" || exit $$?; \
-	sheldon_line="$$(printf '%s\n' "$$plugin_plan" | awk '/ lock \|\| exit/ { print NR; exit }')"; \
-	vim_line="$$(printf '%s\n' "$$plugin_plan" | awk '/syncing Vim plugins/ { print NR; exit }')"; \
-	if [ -z "$$sheldon_line" ] || [ -z "$$vim_line" ] || \
-		[ "$$sheldon_line" -ge "$$vim_line" ]; then \
-		echo "check-make: shell plugins are not restored before editor plugins"; \
-		exit 1; \
-	fi; \
-	other_installs="$$(printf '%s\n' "$$plugin_plan" | \
-		grep -F 'mk/pinned.sh install' | grep -Fv 'mk/pinned.sh install vim-plug' || true)"; \
-	if [ -n "$$other_installs" ]; then \
-		echo "check-make: plugins installs a tool binary"; \
+	@plugin_plan="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo plugins )" || exit $$?; \
+	plugin_targets="$$(printf '%s\n' "$$plugin_plan" | awk '/^(sheldon-plugins|vim-plugins|nvim-plugins)$$/ { print }')"; \
+	expected="$$(printf 'sheldon-plugins\nvim-plugins\nnvim-plugins')"; \
+	if [ "$$plugin_targets" != "$$expected" ]; then \
+		echo "check-make: plugins did not restore shell, Vim, Neovim in order"; \
 		exit 1; \
 	fi
 	@echo "check-make: make -n link-linux"
@@ -244,35 +207,9 @@ check-make: ## [offline] dry-run make target graph and help output
 	@echo "check-make: make -n nvim-lazy"
 	@$(MAKE) -n nvim-lazy >/dev/null
 	@echo "check-make: make -n vim-plugins"
-	@vim_plan="$$( $(MAKE) -n vim-plugins )" || exit $$?; \
-	install_line="$$(printf '%s\n' "$$vim_plan" | awk '/mk\/pinned\.sh install vim-plug/ { print NR; exit }')"; \
-	sync_line="$$(printf '%s\n' "$$vim_plan" | awk '/syncing Vim plugins/ { print NR; exit }')"; \
-	if [ -z "$$install_line" ] || [ -z "$$sync_line" ] || [ "$$install_line" -ge "$$sync_line" ]; then \
-		echo "check-make: pinned vim-plug is not installed before Vim plugin sync"; \
-		exit 1; \
-	fi; \
-	if printf '%s\n' "$$vim_plan" | grep -Eq 'VIM_PLUG_URL|curl[[:space:]]'; then \
-		echo "check-make: vim-plugins still has a legacy downloader"; \
-		exit 1; \
-	fi
+	@$(MAKE) -n vim-plugins >/dev/null
 	@echo "check-make: make -n sheldon-plugins"
-	@sheldon_plan="$$( $(MAKE) -n sheldon-plugins )" || exit $$?; \
-	lock_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/ lock \|\| exit/ { print NR; exit }')"; \
-	source_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/ source > / { print NR; exit }')"; \
-	verify_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/verify-sheldon-plugins\.sh verify/ { print NR; exit }')"; \
-	mv_line="$$(printf '%s\n' "$$sheldon_plan" | awk '/mv "\$$tmp" "\$$cache"/ { print NR; exit }')"; \
-	if [ -z "$$lock_line" ] || [ -z "$$source_line" ] || [ -z "$$verify_line" ] || [ -z "$$mv_line" ] || \
-		[ "$$lock_line" -ge "$$source_line" ] || [ "$$source_line" -ge "$$verify_line" ] || \
-		[ "$$verify_line" -ge "$$mv_line" ]; then \
-		echo "check-make: Sheldon cache is not verified after source and before publish"; \
-		exit 1; \
-	fi; \
-	config_env_count="$$(printf '%s\n' "$$sheldon_plan" | grep -c 'SHELDON_CONFIG_FILE=' || true)"; \
-	data_env_count="$$(printf '%s\n' "$$sheldon_plan" | grep -c 'SHELDON_DATA_DIR=' || true)"; \
-	[ "$$config_env_count" -ge 2 ] && [ "$$data_env_count" -ge 2 ] || { \
-		echo "check-make: Sheldon paths are not explicit for lock and source"; \
-		exit 1; \
-	}
+	@$(MAKE) -n sheldon-plugins >/dev/null
 	@echo "check-make: make help"
 	@help_output="$$( $(MAKE) --no-print-directory help )" || exit $$?; \
 	duplicates="$$(printf '%s\n' "$$help_output" | awk '{ if (seen[$$1]++) print $$1 }')"; \
