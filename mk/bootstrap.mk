@@ -123,38 +123,11 @@ _remove-legacy-zsh-hooks:
 	done
 
 _remove-legacy-tmux-config:
-	@target="$(HOME)/.tmux.conf"; \
-	legacy_parent="$$(cd "$(CURDIR)/tmux" && pwd -P)" || exit 1; \
-	legacy="$$legacy_parent/.tmux.conf"; \
-	if [ -L "$$target" ]; then \
-		link="$$(readlink "$$target")" || exit 1; \
-		case "$$link" in \
-			/*) linked_path="$$link" ;; \
-			*) linked_path="$(HOME)/$$link" ;; \
-		esac; \
-		linked_parent="$$(cd "$$(dirname "$$linked_path")" 2>/dev/null && pwd -P)" || true; \
-		if [ "$$linked_parent/$$(basename "$$linked_path")" = "$$legacy" ]; then \
-			echo "removing legacy managed ~/.tmux.conf link"; \
-			rm "$$target" || exit 1; \
-		fi; \
-	fi
+	@sh mk/remove-legacy-link.sh "$(HOME)/.tmux.conf" "$(CURDIR)" "tmux/.tmux.conf"
 
 _ensure-git-local-config:
-	@target="$(HOME)/.gitconfig"; \
-	legacy_parent="$$(cd "$(CURDIR)/git" && pwd -P)" || exit 1; \
-	legacy="$$legacy_parent/.gitconfig"; \
-	if [ -L "$$target" ]; then \
-		link="$$(readlink "$$target")" || exit 1; \
-		case "$$link" in \
-			/*) linked_path="$$link" ;; \
-			*) linked_path="$(HOME)/$$link" ;; \
-		esac; \
-		linked_parent="$$(cd "$$(dirname "$$linked_path")" 2>/dev/null && pwd -P)" || true; \
-		if [ "$$linked_parent/$$(basename "$$linked_path")" = "$$legacy" ]; then \
-			echo "replacing legacy managed ~/.gitconfig link with a local file"; \
-			rm "$$target" || exit 1; \
-		fi; \
-	fi; \
+	@sh mk/remove-legacy-link.sh "$(HOME)/.gitconfig" "$(CURDIR)" "git/.gitconfig" || exit $$?; \
+	target="$(HOME)/.gitconfig"; \
 	if [ ! -e "$$target" ] && [ ! -L "$$target" ]; then \
 		echo "creating local ~/.gitconfig for machine-specific identity"; \
 		(umask 077; set -C; : > "$$target") || exit 1; \
