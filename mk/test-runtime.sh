@@ -330,8 +330,8 @@ startup_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
   DOTFILES_TEST_TMUX=stub-session run_zsh -i -c \
   'print -r -- "$MANPAGER|$GIT_PAGER|$MANROFFOPT|$ATUIN_TMUX_POPUP"' \
   2> "$test_root/startup-probes.err") || fail "interactive zsh failed with available tools"
-[ "$startup_state" = 'bat -plman|delta|-c|true' ] || \
-  fail "interactive zsh ignored available bat, delta or tmux"
+[ "$startup_state" = 'bat -plman||-c|true' ] || \
+  fail "interactive zsh ignored available bat or tmux, or overrode Git's pager"
 if grep -Eq '/(bat|delta|mise|tmux) ' "$runtime_log"; then
   fail "interactive startup ran a version, mise or tmux capability probe"
 fi

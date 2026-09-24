@@ -15,12 +15,6 @@ if (( $+commands[bat] )); then
 else
   export MANPAGER=$PAGER
 fi
-if (( $+commands[delta] )); then
-  export GIT_PAGER='delta'
-else
-  export GIT_PAGER=$PAGER
-fi
-
 # mise shims are on PATH in .zshenv for all shell types.
 
 # fzf is loaded asynchronously; keep it from taking ctrl-R back from atuin

@@ -2,13 +2,12 @@
 	useConfigOnly = true
 [pull]
 	rebase = true
+[core]
+	pager = command -v delta >/dev/null 2>&1 && exec delta || exec less -FRX
+[interactive]
+	diffFilter = command -v delta >/dev/null 2>&1 && exec delta --color-only || exec cat
 [color]
 	ui = true
-[color "diff-highlight"]
-	oldNormal = red bold
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
 [color "diff"]
 	meta = yellow
 	frag = magenta bold

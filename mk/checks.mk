@@ -12,6 +12,7 @@ check-actions: ## [offline] lint GitHub Actions workflows
 check-git: ## [offline] check the tracked tree for whitespace errors
 	@empty_tree="$$(git hash-object -t tree /dev/null)" || exit 1; \
 	git diff --check "$$empty_tree"
+	@sh mk/test-git-pager.sh
 
 check-shell: ## [offline] syntax-check and lint tracked shell files
 	@fail=0; \
