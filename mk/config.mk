@@ -21,7 +21,8 @@ STOW_FLAGS := --no-folding -d "$(CURDIR)" -t "$(HOME)"
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
 PRIVATE_AGENTS_PACKAGE := agents
 
-COMMON := agents atuin bash git herdr mise nvim scripts tmux vim zsh
+COMMON := $(PROFILE_PACKAGES)
+UNSELECTED_PROFILE_PACKAGES = $(filter-out $(PACKAGES),$(KNOWN_PROFILE_PACKAGES))
 LOCAL_PACKAGES := $(if $(wildcard local/.),local,)
 MACOS_CORE := osx
 LINUX_DESKTOP := linux-desktop

@@ -11,3 +11,4 @@
 nvim/.config/nvim/lua/local/
 
 /vimwiki
+/profile.mk

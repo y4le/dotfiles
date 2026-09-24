@@ -1,6 +1,7 @@
 SHELL = /bin/sh
 .DEFAULT_GOAL := help
 
+include mk/profiles.mk
 include mk/config.mk
 include mk/guards.mk
 include mk/bootstrap.mk

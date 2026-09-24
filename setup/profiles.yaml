@@ -1,0 +1,23 @@
+# Profiles select shallow components. Tool versions stay in mise/config.toml.
+# Native packages, the machine-local package, and DESKTOP remain separate.
+components:
+  core:
+    packages: [agents, bash, git, mise, scripts, tmux, vim, zsh]
+    tools: [aqua:junegunn/fzf, aqua:BurntSushi/ripgrep, aqua:sharkdp/fd, aqua:sharkdp/bat, aqua:dandavison/delta, aqua:ajeetdsouza/zoxide]
+  atuin:
+    packages: [atuin]
+    tools: [aqua:atuinsh/atuin]
+  yazi:
+    tools: [aqua:sxyazi/yazi]
+  nvim:
+    packages: [nvim]
+    tools: [aqua:neovim/neovim]
+  herdr:
+    packages: [herdr]
+  dev:
+    tools: [go, node, python, rust, npm:prettier, npm:typescript-language-server, pipx:basedpyright, pipx:ruff, aqua:LuaLS/lua-language-server]
+  rclone:
+    tools: [aqua:rclone/rclone]
+profiles:
+  lite: [core]
+  full: [core, atuin, yazi, nvim, herdr, dev, rclone]
