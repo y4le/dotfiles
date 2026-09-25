@@ -63,7 +63,7 @@ fails (see `herdr plugin log list --plugin vim-herdr-navigation`).
 
 herdr-mark (`y4le/herdr-mark`, developed in `~/dev/herdr-mark`) provides the
 `prefix+m` marked-pane actions bound in the same config (`prefix+ctrl+h/j/k/l`
-join, `prefix+shift+s` swap). A user binding silently replaces a built-in one on
+join, `prefix+ctrl+s` swap). A user binding silently replaces a built-in one on
 the same key, and `herdr config check` doesn't report it, so check herdr's
 defaults (`src/config/model.rs`) before rebinding. To try unpushed
 changes, run `herdr plugin link ~/dev/herdr-mark`; that replaces the installed

@@ -59,7 +59,7 @@ HERDR_CONFIG_FILE   := $(CURDIR)/herdr/.config/herdr/config.toml
 HERDR_INTEGRATIONS  := claude codex antigravity-cli
 # owner/repo@commit; keep vim-herdr-navigation in sync with the Vim and Neovim pins
 HERDR_PLUGINS       := paulbkim-dev/vim-herdr-navigation@79679dacc791f70fc34de8b29a3cf9706c0f5b2f \
-                       y4le/herdr-mark@a99a87ed0cc79260279234a0ff51d81fbd0fb846
+                       y4le/herdr-mark@bcd6458895f00b275a3429dd3b57a4e8124bdfac
 
 VIM_PLUG_FILE       := $(HOME)/.vim/autoload/plug.vim
 VIM_PLUGGED_DIR     := $(HOME)/.local/share/vim/plugged

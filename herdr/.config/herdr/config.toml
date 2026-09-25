@@ -37,7 +37,7 @@ name = "catppuccin"
 auto_switch = false
 
 # herdr-mark (make herdr-plugins): prefix+m marks a pane; from another pane,
-# prefix+ctrl+h/j/k/l joins the marked pane beside it and prefix+shift+s swaps.
+# prefix+ctrl+h/j/k/l joins the marked pane beside it and prefix+ctrl+s swaps.
 # (Not prefix+shift+h/j/k/l: herdr's built-in neighbour swaps use those.)
 [[keys.command]]
 key = "prefix+m"
@@ -70,7 +70,7 @@ command = "herdr-mark.join-up"
 description = "join marked pane above this one"
 
 [[keys.command]]
-key = "prefix+shift+s"
+key = "prefix+ctrl+s"
 type = "plugin_action"
 command = "herdr-mark.swap"
 description = "swap marked pane with this one"
