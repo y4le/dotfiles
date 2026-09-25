@@ -61,6 +61,15 @@ vim-tmux-navigator. After replacing the Herdr binary, restart the Herdr server;
 until then `HERDR_BIN_PATH` names the deleted binary and navigation silently
 fails (see `herdr plugin log list --plugin vim-herdr-navigation`).
 
+herdr-mark (`y4le/herdr-mark`, developed in `~/dev/herdr-mark`) provides the
+`prefix+m` marked-pane actions bound in the same config (`prefix+ctrl+h/j/k/l`
+join, `prefix+shift+s` swap). A user binding silently replaces a built-in one on
+the same key, and `herdr config check` doesn't report it, so check herdr's
+defaults (`src/config/model.rs`) before rebinding. To try unpushed
+changes, run `herdr plugin link ~/dev/herdr-mark`; that replaces the installed
+copy until `make herdr-plugins` reinstalls the pin. Push the plugin commit before
+bumping its pin.
+
 Vim's fzf integration uses the binary installed by mise. If Vim offers to
 download fzf because it is not on `PATH`, answer no, run `make tools`, and start
 a new shell. `make vim-plugins` also restores the pinned vim-plug file;

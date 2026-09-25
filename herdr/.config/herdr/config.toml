@@ -36,6 +36,45 @@ description = "navigate right (vim/herdr)"
 name = "catppuccin"
 auto_switch = false
 
+# herdr-mark (make herdr-plugins): prefix+m marks a pane; from another pane,
+# prefix+ctrl+h/j/k/l joins the marked pane beside it and prefix+shift+s swaps.
+# (Not prefix+shift+h/j/k/l: herdr's built-in neighbour swaps use those.)
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "herdr-mark.toggle"
+description = "mark/unmark pane"
+
+[[keys.command]]
+key = "prefix+ctrl+l"
+type = "plugin_action"
+command = "herdr-mark.join-right"
+description = "join marked pane right of this one"
+
+[[keys.command]]
+key = "prefix+ctrl+j"
+type = "plugin_action"
+command = "herdr-mark.join-down"
+description = "join marked pane below this one"
+
+[[keys.command]]
+key = "prefix+ctrl+h"
+type = "plugin_action"
+command = "herdr-mark.join-left"
+description = "join marked pane left of this one"
+
+[[keys.command]]
+key = "prefix+ctrl+k"
+type = "plugin_action"
+command = "herdr-mark.join-up"
+description = "join marked pane above this one"
+
+[[keys.command]]
+key = "prefix+shift+s"
+type = "plugin_action"
+command = "herdr-mark.swap"
+description = "swap marked pane with this one"
+
 # BEGIN herdr-prefix (managed; edits here are overwritten)
 [[keys.command]]
 key = "prefix+ctrl+a"
