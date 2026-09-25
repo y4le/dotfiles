@@ -13,6 +13,8 @@ Plug 'vim-airline/vim-airline' " status line replacement
 
 " ui navigation plugins
 Plug 'christoomey/vim-tmux-navigator' " C-h/j/k/l moves vim/tmux panes
+" C-h/j/k/l moves vim/herdr panes; see after/plugin/herdr_nav.vim
+Plug 'paulbkim-dev/vim-herdr-navigation', {'commit': '79679dacc791f70fc34de8b29a3cf9706c0f5b2f'}
 Plug 'dhruvasagar/vim-zoom' " <leader>z zooms pane like tmux
 Plug 'gcmt/taboo.vim' " better tabline / rename tabs
 Plug 'chrisbra/unicode.vim' " unicode search / completion

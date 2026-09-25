@@ -20,7 +20,7 @@ ifneq ($(filter herdr,$(PROFILE_PACKAGES)),)
 	@$(MAKE) herdr
 endif
 
-plugins: ## [network] restore shell, Vim, and Neovim plugins
+plugins: ## [network] restore shell, Vim, Neovim, and Herdr plugins
 ifneq ($(filter zsh,$(PROFILE_PACKAGES)),)
 	@$(MAKE) sheldon-plugins
 endif
@@ -29,6 +29,9 @@ ifneq ($(filter vim,$(PROFILE_PACKAGES)),)
 endif
 ifneq ($(filter nvim,$(PROFILE_PACKAGES)),)
 	@$(MAKE) nvim-plugins
+endif
+ifneq ($(filter herdr,$(PROFILE_PACKAGES)),)
+	@$(MAKE) herdr-plugins
 endif
 
 system-packages: ## [sudo, network] install native packages

@@ -44,8 +44,8 @@ these are the main entry points.
 | `tools` | Install selected user-space tools | Network |
 | `herdr` | Install the checksum-pinned Herdr binary and validate its config | Network |
 | `herdr-integrations` | Install the selected agent hooks; opt-in | Network; writes agent config |
-| `plugins` | Restore selected Zsh, Vim, and Neovim plugins | Network |
-| `sheldon-plugins`, `vim-plugins`, `nvim-plugins` | Restore one subsystem's plugins | Network |
+| `plugins` | Restore selected Zsh, Vim, Neovim, and Herdr plugins | Network |
+| `sheldon-plugins`, `vim-plugins`, `nvim-plugins`, `herdr-plugins` | Restore one subsystem's plugins | Network |
 | `nvim-update` | Update Neovim plugins and the tracked lock | Network |
 | `agents-plan-private` | Preview private agent links | Offline |
 | `agents-enable-private` | Link the private agent package | Offline |

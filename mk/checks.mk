@@ -185,9 +185,9 @@ check-make: ## [offline] dry-run make target graph and help output
 		exit 1; \
 	fi
 	@plugin_plan="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo plugins )" || exit $$?; \
-	expected="$$(printf '/bin/echo sheldon-plugins\nsheldon-plugins\n/bin/echo vim-plugins\nvim-plugins\n/bin/echo nvim-plugins\nnvim-plugins')"; \
+	expected="$$(printf '/bin/echo sheldon-plugins\nsheldon-plugins\n/bin/echo vim-plugins\nvim-plugins\n/bin/echo nvim-plugins\nnvim-plugins\n/bin/echo herdr-plugins\nherdr-plugins')"; \
 	if [ "$$plugin_plan" != "$$expected" ]; then \
-		echo "check-make: plugins did not restore shell, Vim, Neovim in order"; \
+		echo "check-make: plugins did not restore shell, Vim, Neovim, Herdr in order"; \
 		exit 1; \
 	fi
 	@echo "check-make: lite skips optional restore steps"
@@ -208,6 +208,10 @@ check-make: ## [offline] dry-run make target graph and help output
 	@with_plugins="$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo PROFILE=lite WITH='nvim herdr' plugins )" || exit $$?; \
 	printf '%s\n' "$$with_plugins" | grep -Fxq 'nvim-plugins' || { \
 		echo "check-make: nvim add-on did not enable plugins"; exit 1; \
+	}
+	@printf '%s\n' "$$( $(MAKE) -n -s --no-print-directory MAKE=/bin/echo PROFILE=lite WITH=herdr plugins )" | \
+		grep -Fxq 'herdr-plugins' || { \
+		echo "check-make: herdr add-on did not enable plugins"; exit 1; \
 	}
 	@echo "check-make: lite mise install selects only core pins"
 	@mise_plan="$$( $(MAKE) -n -s --no-print-directory PROFILE=lite WITH= mise-tools )" || exit $$?; \

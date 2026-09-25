@@ -1,4 +1,4 @@
-.PHONY: mise mise-tools herdr herdr-integrations sheldon sheldon-plugins brew
+.PHONY: mise mise-tools herdr herdr-integrations herdr-plugins sheldon sheldon-plugins brew
 
 mise: ## [network] install the pinned, verified mise binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install mise "$(MISE_BIN)" 0755
@@ -27,6 +27,24 @@ herdr-integrations: herdr
 		"$(HERDR_BIN)" integration install "$$integration"; \
 	done
 endif
+
+herdr-plugins: ## [network] install pinned Herdr plugins
+	@if [ ! -x "$(HERDR_BIN)" ]; then \
+		echo "herdr not found at $(HERDR_BIN); run 'make tools' first"; \
+		exit 1; \
+	fi
+	@set -eu; \
+	installed="$$("$(HERDR_BIN)" plugin list)"; \
+	for pin in $(HERDR_PLUGINS); do \
+		source="$${pin%@*}"; \
+		ref="$${pin#*@}"; \
+		if printf '%s\n' "$$installed" | grep -Fq "[github:$$source@$$ref]"; then \
+			echo "Herdr plugin current: $$source@$$ref"; \
+			continue; \
+		fi; \
+		echo "installing Herdr plugin: $$source@$$ref"; \
+		"$(HERDR_BIN)" plugin install "$$source" --ref "$$ref" --yes; \
+	done
 
 sheldon: ## [network] install the pinned, verified sheldon binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install sheldon "$(SHELDON_BIN)" 0755

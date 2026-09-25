@@ -42,13 +42,24 @@ restores the selected Herdr, mise, and Sheldon binaries to their pins, replacing
 drifted binaries, and installs the selected mise tool versions. `make plugins`
 needs tools and links in place; it never installs a missing tool binary. To
 restore one subsystem, run
-`make sheldon-plugins`, `make vim-plugins`, or `make nvim-plugins`.
+`make sheldon-plugins`, `make vim-plugins`, `make nvim-plugins`, or
+`make herdr-plugins`.
+
+`make herdr-plugins` installs each `owner/repo@commit` in `HERDR_PLUGINS`
+(`mk/config.mk`) and skips plugins already installed at that commit.
+vim-herdr-navigation has two halves: the herdr action behind `ctrl+h/j/k/l` in
+`herdr/.config/herdr/config.toml`, and editor maps loaded from the same repo by
+`nvim/.config/nvim/lua/plugins/core.lua` and `vim/.vim/config/plugins.vim`.
+Bump all three pins together. Outside herdr, the editor maps fall back to
+vim-tmux-navigator. After replacing the Herdr binary, restart the Herdr server;
+until then `HERDR_BIN_PATH` names the deleted binary and navigation silently
+fails (see `herdr plugin log list --plugin vim-herdr-navigation`).
 
 Vim's fzf integration uses the binary installed by mise. If Vim offers to
 download fzf because it is not on `PATH`, answer no, run `make tools`, and start
 a new shell. `make vim-plugins` also restores the pinned vim-plug file;
 `:PlugUpgrade` drift is replaced on the next run. Vim plugins themselves remain
-upstream branch checkouts.
+upstream branch checkouts, except vim-herdr-navigation, which is pinned to a commit.
 
 `make herdr` installs the reviewed release bytes at `~/.local/bin/herdr` and
 validates `herdr/.config/herdr/config.toml`. Rerunning it verifies the installed

@@ -135,12 +135,25 @@ return {
     },
   },
   {
+    -- tmux fallback for vim-herdr-navigation outside herdr
     "christoomey/vim-tmux-navigator",
+    cmd = { "TmuxNavigateLeft", "TmuxNavigateDown", "TmuxNavigateUp", "TmuxNavigateRight" },
+    init = function()
+      vim.g.tmux_navigator_no_mappings = 1
+    end,
+  },
+  {
+    -- <C-h/j/k/l> moves between splits, then herdr (or tmux) panes at an edge
+    "paulbkim-dev/vim-herdr-navigation",
+    commit = "79679dacc791f70fc34de8b29a3cf9706c0f5b2f", -- HERDR_PLUGINS in mk/config.mk
     keys = {
       { "<C-h>" },
       { "<C-j>" },
       { "<C-k>" },
       { "<C-l>" },
     },
+    config = function(plugin)
+      dofile(plugin.dir .. "/editor/nvim.lua")
+    end,
   },
 }

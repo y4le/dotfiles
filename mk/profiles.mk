@@ -37,7 +37,7 @@ profile: ## [offline] show the selected setup components and tools
 	@echo "Stow packages: $(PROFILE_PACKAGES)"
 	@echo "mise tools: $(PROFILE_TOOLS)"
 	@echo "tool steps: $(if $(filter mise,$(PROFILE_PACKAGES)),mise-tools) $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon) $(if $(filter herdr,$(PROFILE_PACKAGES)),herdr)"
-	@echo "plugin steps: $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon-plugins) $(if $(filter vim,$(PROFILE_PACKAGES)),vim-plugins) $(if $(filter nvim,$(PROFILE_PACKAGES)),nvim-plugins)"
+	@echo "plugin steps: $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon-plugins) $(if $(filter vim,$(PROFILE_PACKAGES)),vim-plugins) $(if $(filter nvim,$(PROFILE_PACKAGES)),nvim-plugins) $(if $(filter herdr,$(PROFILE_PACKAGES)),herdr-plugins)"
 
 profile-set: ## [offline] save PROFILE and WITH as this checkout's default
 	@set -eu; \
