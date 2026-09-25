@@ -28,6 +28,12 @@ On a host where Herdr already created a regular config file, compare it with
 Herdr directory, then rerun `make link`. The link step refuses to overwrite an
 existing file.
 
+Switching the Herdr prefix edits the tracked config through that link. Run
+`~/.config/herdr/herdr-prefix reset` before committing so the checkout keeps
+`ctrl+b` and its generated switch bindings. The prefix list lives at the top of
+`herdr/.config/herdr/herdr-prefix`; change it there and rerun `reset` to
+regenerate the block between the `herdr-prefix` markers.
+
 ## Restore tools and plugins
 
 On Intel Macs, follow the [Sheldon workaround](setup.md#intel-macs) instead of

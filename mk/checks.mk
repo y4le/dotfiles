@@ -1,6 +1,6 @@
-.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-make
+.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-herdr check-make
 
-check: check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-make ## [offline] run repo validation checks
+check: check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-herdr check-make ## [offline] run repo validation checks
 
 check-profiles: ## [offline] validate setup profile selections and mise tool claims
 	@sh mk/test-profiles.sh
@@ -145,6 +145,9 @@ check-stow: _require-stow ## [offline] dry-run stow package graphs in temp dirs
 
 check-link: ## [offline] test safe linking in isolated temporary homes
 	@sh mk/test-link.sh
+
+check-herdr: ## [offline] test herdr-prefix switching against a stand-in Herdr
+	@sh mk/test-herdr-prefix.sh
 
 CHECK_MAKE = $(MAKE) PROFILE=full WITH=
 

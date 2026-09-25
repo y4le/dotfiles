@@ -1,6 +1,7 @@
 onboarding = false
 
 [keys]
+prefix = "ctrl+b"  # herdr-prefix
 navigate_workspace_up = ["up", "k"]
 navigate_workspace_down = ["down", "j"]
 
@@ -34,3 +35,18 @@ description = "navigate right (vim/herdr)"
 [theme]
 name = "catppuccin"
 auto_switch = false
+
+# BEGIN herdr-prefix (managed; edits here are overwritten)
+[[keys.command]]
+key = "prefix+ctrl+a"
+type = "shell"
+command = "$HOME/.config/herdr/herdr-prefix set ctrl+a"
+description = "switch prefix to ctrl+a"
+
+[[keys.command]]
+key = "prefix+ctrl+space"
+type = "shell"
+command = "$HOME/.config/herdr/herdr-prefix set ctrl+space"
+description = "switch prefix to ctrl+space"
+
+# END herdr-prefix

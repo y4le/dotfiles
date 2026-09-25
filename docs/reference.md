@@ -134,6 +134,12 @@ to `Ctrl-A`, `Ctrl-B`, or `Ctrl-Space`. Prefix `R` reloads the config and prefix
 `r` enters resize mode. The configuration uses built-in tmux functionality and
 has no plugin restore step.
 
+Herdr also starts with `Ctrl-B`. Prefix `Ctrl-A` or `Ctrl-Space` switches to
+that prefix, and pressing the active prefix twice sends it to the pane.
+`~/.config/herdr/herdr-prefix` makes each switch by rewriting `keys.prefix` and
+a managed block of switch bindings in `config.toml`, then reloading the server.
+The switch persists across Herdr restarts until `herdr-prefix reset`.
+
 ## Configuration and state paths
 
 These are default locations. The link targets always place configuration under

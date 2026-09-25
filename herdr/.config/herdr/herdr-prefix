@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# herdr-prefix — tmux-style switchable prefix for herdr.
+#
+#   herdr-prefix set <key>   switch the live prefix (e.g. ctrl+a)
+#   herdr-prefix reset       switch back to the default (first entry of PREFIXES)
+#   herdr-prefix get         print the configured prefix
+#
+# It rewrites `prefix = ...` under [keys] in config.toml, regenerates a managed
+# block of `prefix+<alternate>` bindings (one per prefix that is not current),
+# validates the result with `herdr config check`, then runs
+# `herdr server reload-config`. Pressing the current prefix twice is herdr's
+# built-in "send literal prefix", so no binding is generated for it; a
+# prefix+<current prefix> binding would be reserved and reported as a
+# diagnostic on every reload.
+
+set -euo pipefail
+
+# First entry is the mandatory default; the rest are alternates.
+read -r -a PREFIXES <<< "${HERDR_PREFIXES:-ctrl+b ctrl+a ctrl+space}"
+
+BEGIN_MARK="# BEGIN herdr-prefix (managed; edits here are overwritten)"
+END_MARK="# END herdr-prefix"
+LINE_TAG="# herdr-prefix"
+
+HERDR="${HERDR_BIN_PATH:-herdr}"
+CONFIG="${HERDR_CONFIG_PATH:-${XDG_CONFIG_HOME:-$HOME/.config}/herdr/config.toml}"
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+# Bindings run through the user's shell, so a $HOME-relative path keeps the
+# generated config portable between hosts.
+case $SELF in
+  "$HOME"/*) SELF_CMD="\$HOME/${SELF#"$HOME"/}" ;;
+  *)         SELF_CMD="'$SELF'" ;;
+esac
+
+# awk prelude shared by the readers below. `code` is false for lines inside or
+# closing a TOML multiline string, so their contents are never mistaken for
+# tables, keys, or markers; `in_keys` tracks whether we are in [keys]. `L` is
+# the line without a CRLF carriage return, used for every match; `$0` is what
+# gets printed. The [keys] table and prefix key are recognized bare or quoted;
+# dotted (`keys.prefix = ...`) and inline-table forms are not supported.
+AWK_TOML='
+  BEGIN {
+    keys_re = "^[[:space:]]*\\[[[:space:]]*(keys|\"keys\"|" sq "keys" sq ")[[:space:]]*\\][[:space:]]*(#.*)?$"
+    prefix_re = "^[[:space:]]*(prefix|\"prefix\"|" sq "prefix" sq ")[[:space:]]*="
+  }
+  # Scan one line and leave `ml` set to the multiline delimiter still open at
+  # its end. Comments and single-line strings end with the line, so only
+  # triple-quoted strings carry state between lines.
+  function scan(line,   i, n, c, s) {
+    n = length(line); s = ml
+    for (i = 1; i <= n; i++) {
+      c = substr(line, i, 1)
+      if (s == "") {
+        if (c == "#") break
+        if (substr(line, i, 3) == dq3 || substr(line, i, 3) == sq3) { s = substr(line, i, 3); i += 2 }
+        else if (c == "\"" || c == sq) s = c
+      } else if (s == dq3 || s == "\"") {
+        if (c == "\\") i++
+        else if (s == "\"" && c == "\"") s = ""
+        else if (s == dq3 && substr(line, i, 3) == dq3) { s = ""; i += 2 }
+      } else if (s == sq3) {
+        if (substr(line, i, 3) == sq3) { s = ""; i += 2 }
+      } else if (c == sq) {
+        s = ""
+      }
+    }
+    ml = (s == dq3 || s == sq3) ? s : ""
+  }
+  {
+    L = $0; sub(/\r$/, "", L)
+    if (NR == 1) eol = ($0 ~ /\r$/) ? "\r\n" : "\n"
+    code = (ml == "")
+    scan(L)
+  }
+  code && L ~ /^[[:space:]]*\[/ { in_keys = (L ~ keys_re) }
+'
+
+# toml_awk <program> <file> [-v name=value ...]
+toml_awk() {
+  local program=$1 file=$2; shift 2
+  awk -v dq3='"""' -v sq3="'''" -v sq="'" "$@" "$AWK_TOML$program" "$file"
+}
+
+die() { echo "herdr-prefix: $*" >&2; exit 1; }
+
+is_known() {
+  local p
+  for p in "${PREFIXES[@]}"; do [[ $p == "$1" ]] && return 0; done
+  return 1
+}
+
+current_prefix() {
+  toml_awk '
+    code && in_keys && L ~ prefix_re {
+      sub(/^[^=]*=[[:space:]]*/, "", L); q = substr(L, 1, 1)
+      L = substr(L, 2); sub(q ".*", "", L); print L; exit
+    }
+  ' "$CONFIG" 2>/dev/null
+}
+
+render() {
+  local new=$1 out=$2
+  {
+    # Drop the old managed block and any prefix line under [keys]; insert the
+    # new prefix right after the [keys] header. Blank lines are held until the
+    # next printed line, so trailing ones before the block never accumulate.
+    toml_awk '
+      function emit(line) { printf "%s", held; held = ""; print line }
+      code && L == begin { skip = 1; next }
+      skip { if (code && L == end) skip = 0; next }
+      code && in_keys && L ~ prefix_re { next }
+      code && L ~ /^[[:space:]]*$/ { held = held $0 "\n"; next }
+      { emit($0) }
+      code && in_keys && L ~ keys_re && !done {
+        printf "prefix = \"%s\"  %s%s", new, tag, eol; done = 1
+      }
+      END {
+        if (eol == "") eol = "\n"
+        if (!done) { if (NR) printf "%s", eol; printf "[keys]%sprefix = \"%s\"  %s%s", eol, new, tag, eol }
+      }
+    ' "$CONFIG" -v begin="$BEGIN_MARK" -v end="$END_MARK" -v tag="$LINE_TAG" -v new="$new"
+
+    # [[keys.command]] tables must come last: any bare key after them would be
+    # parsed as part of the final command table. Match a CRLF file's endings.
+    if [[ $(head -n 1 "$CONFIG") == *$'\r' ]]; then
+      managed_block "$new" | sed $'s/$/\r/'
+    else
+      managed_block "$new"
+    fi
+  } > "$out"
+}
+
+managed_block() {
+  local new=$1 p
+  echo
+  echo "$BEGIN_MARK"
+  for p in "${PREFIXES[@]}"; do
+    [[ $p == "$new" ]] && continue
+    cat <<EOF
+[[keys.command]]
+key = "prefix+$p"
+type = "shell"
+command = "$SELF_CMD set $p"
+description = "switch prefix to $p"
+
+EOF
+  done
+  echo "$END_MARK"
+}
+
+# Resolve a Stow link chain to the file it names, so the rename below replaces
+# the tracked file and leaves the link itself in place.
+resolve() {
+  local path=$1 link
+  while [[ -L $path ]]; do
+    link="$(readlink "$path")"
+    case $link in
+      /*) path=$link ;;
+      *)  path="$(dirname "$path")/$link" ;;
+    esac
+  done
+  printf '%s\n' "$path"
+}
+
+set_prefix() {
+  local new=$1 target out
+  is_known "$new" || die "unknown prefix '$new' (known: ${PREFIXES[*]})"
+  [[ -f $CONFIG ]] || { mkdir -p "$(dirname "$CONFIG")"; : > "$CONFIG"; }
+  target="$(resolve "$CONFIG")"
+
+  # mkdir is atomic everywhere (flock is missing on macOS): one switch at a time.
+  lock="${CONFIG}.herdr-prefix.lock"
+  mkdir "$lock" 2>/dev/null || die "another switch is running (remove $lock if stale)"
+  # Same directory as the target so the final mv is an atomic rename; cp -p
+  # gives the temp file the target's mode before its contents are replaced.
+  tmp="$(mktemp "$(dirname "$target")/.herdr-prefix.XXXXXX")" || { rmdir "$lock"; exit 1; }
+  trap 'rm -f "$tmp"; rmdir "$lock"' EXIT
+  cp -p "$target" "$tmp"
+  render "$new" "$tmp"
+
+  if ! out="$(HERDR_CONFIG_PATH="$tmp" "$HERDR" config check 2>&1)"; then
+    die "generated config failed validation, config.toml left unchanged:
+$out"
+  fi
+
+  cp -p "$target" "${CONFIG}.bak"
+  mv -f "$tmp" "$target"
+
+  # No server running (e.g. first setup) is fine: the next start reads the file.
+  [[ ${HERDR_PREFIX_NO_RELOAD:-} ]] || "$HERDR" server reload-config >/dev/null || true
+}
+
+case "${1:-}" in
+  set)   [[ $# -eq 2 ]] || die "usage: herdr-prefix set <key>"; set_prefix "$2" ;;
+  reset) set_prefix "${PREFIXES[0]}" ;;
+  get)   p="$(current_prefix)"; echo "${p:-ctrl+b (not set; herdr built-in default)}" ;;
+  *)     die "usage: herdr-prefix {set <key>|reset|get}" ;;
+esac
