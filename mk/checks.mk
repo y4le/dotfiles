@@ -109,9 +109,11 @@ check-system-packages: ## [offline] verify native package command failure handli
 
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
-	@sh mk/test-clipboard.sh
-	@if command -v nvim >/dev/null 2>&1; then \
-		DOTFILES_REPO="$(CURDIR)" nvim --headless -u NONE -i NONE -n -l mk/test-nvim-config.lua; \
+	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" 2>/dev/null || true)"; \
+		DOTFILES_TEST_NVIM="$$nvim_bin" sh mk/test-clipboard.sh || exit $$?; \
+		if [ -n "$$nvim_bin" ]; then \
+		DOTFILES_REPO="$(CURDIR)" "$$nvim_bin" --headless -u NONE -i NONE -n -l mk/test-nvim-config.lua || exit $$?; \
+		sh mk/test-nvim-setup.sh "$$nvim_bin"; \
 	elif [ -n "$${CI:-}" ]; then \
 		echo "check-vim: Neovim required in CI" >&2; exit 1; \
 	fi

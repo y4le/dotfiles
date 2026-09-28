@@ -31,7 +31,6 @@ vim.opt.directory = swap_dir .. "//"
 vim.opt.backupdir = backup_dir .. "//"
 vim.opt.backup = true
 
-vim.cmd.syntax("enable")
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.colorcolumn = "80"

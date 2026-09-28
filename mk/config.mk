@@ -15,7 +15,8 @@ else
   PACKAGE_MANAGER := unknown
 endif
 
-STOW := $(shell command -v stow 2>/dev/null)
+BREW_SEARCH_PATHS ?= /opt/homebrew/bin/brew /usr/local/bin/brew
+STOW := $(shell BREW_SEARCH_PATHS='$(BREW_SEARCH_PATHS)' sh mk/find-stow.sh '$(PLATFORM)')
 STOW_FLAGS := --no-folding -d "$(CURDIR)" -t "$(HOME)"
 
 PRIVATE_AGENTS_DIR := $(HOME)/dev/agents
@@ -70,8 +71,6 @@ LAZY_NVIM_DIR       := $(NVIM_DATA_HOME)/lazy/lazy.nvim
 LAZY_NVIM_LOCK_FILE := nvim/.config/nvim/lazy-lock.json
 LAZY_NVIM_COMMIT    := $(shell awk -F '"' '/^  "lazy.nvim":/ { print $$10 }' $(LAZY_NVIM_LOCK_FILE))
 NVIM_TREESITTER_PARSERS := bash json lua markdown markdown_inline python query rust toml tsx typescript vim vimdoc yaml
-
-BREW_SEARCH_PATHS ?= /opt/homebrew/bin/brew /usr/local/bin/brew
 
 PACKAGES_DIR         := setup/packages
 BREW_PACKAGES_FILE   := $(PACKAGES_DIR)/brew.txt

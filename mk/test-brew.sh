@@ -72,6 +72,18 @@ actual=$(env -i PATH="$dead_bin:$base_path" BREW_SEARCH_PATHS="$candidate_bin/br
   sh "$repo/mk/find-brew.sh")
 [ "$actual" = "$candidate_bin/brew" ] || fail "did not skip a dead PATH brew"
 
+echo "check-brew: Stow next to Homebrew when PATH is not initialized"
+mkdir -p "$test_root/only-sh"
+ln -s /bin/sh "$test_root/only-sh/sh"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$candidate_bin/stow"
+chmod +x "$candidate_bin/stow"
+actual=$(env -i PATH="$test_root/only-sh" BREW_SEARCH_PATHS="$candidate_bin/brew" \
+  sh "$repo/mk/find-stow.sh" macos)
+[ "$actual" = "$candidate_bin/stow" ] || fail "did not find Homebrew Stow"
+actual=$(env -i PATH="$test_root/only-sh" BREW_SEARCH_PATHS="$candidate_bin/brew" \
+  sh "$repo/mk/find-stow.sh" linux)
+[ -z "$actual" ] || fail "Linux used the Homebrew Stow fallback"
+
 assert_missing() {
   label=$1
   path=$2

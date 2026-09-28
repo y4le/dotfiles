@@ -7,12 +7,18 @@ Debian/Ubuntu (`apt-get`), Arch (`pacman`), and macOS (Homebrew).
 
 Linking requires Git, Make, and GNU Stow 2.3 or newer. `make setup-user` also
 assumes curl, tar with gzip support, a SHA-256 tool (`sha256sum`, `shasum`, or
-`openssl`), Vim, and tmux 3.1 or newer are available. Native packages supply
-Zsh and tmux; the `nvim` component installs Neovim in user space.
+`openssl`), Vim, and tmux 3.3 or newer are available; tmux 3.4 enables every
+configured feature. Neovim parser builds also need a C compiler. The Debian
+native packages include one; on macOS, install Apple's Command Line Tools.
+Native packages supply Zsh, tmux, `jq` for Herdr, and `shellcheck` for Neovim
+shell linting. The `nvim` component installs Neovim in user space.
 
 If native prerequisites are missing, run `make system-packages` first; it uses
 sudo on Linux. On macOS it needs Homebrew (see the next section). On a managed
 machine, use the prerequisites supplied by IT.
+On Debian, install Git, Make, and sudo with administrator access before running
+these Make targets; a minimal server install may not include them. After setup,
+run `chsh -s /usr/bin/zsh` if SSH logins should use the managed Zsh config.
 
 Keep `XDG_CONFIG_HOME` unset or set to `~/.config`; linking always uses that
 directory. See the [path reference](reference.md#configuration-and-state-paths)
@@ -29,8 +35,10 @@ On a clean Apple Silicon Mac:
    `xcode-select -p` succeeds.
 2. Review a [Homebrew release](https://github.com/Homebrew/brew/releases) and
    install its signed `Homebrew.pkg` as below.
-3. Run `make system-packages` to install Stow and the other native prerequisites.
-4. Run `make setup-user` (`make setup` runs steps 3 and 4 together).
+3. Add Homebrew to your shell's `PATH` with
+   `eval "$(/opt/homebrew/bin/brew shellenv)"`.
+4. Run `make system-packages` to install Stow and the other native prerequisites.
+5. Run `make setup-user` (`make setup` runs steps 4 and 5 together after step 3).
 
 Replace the example version with the release you reviewed. Download the package
 and compare the computed SHA-256 with GitHub's asset digest. The digest lookup
@@ -66,9 +74,10 @@ For an Intel Mac, the checked-in Sheldon pins have no matching binary. Run
 `make system-packages` first if the native prerequisites are missing. Install a
 trusted Sheldon at `~/.local/bin/sheldon`, [choose a profile](#choose-a-profile)
 if needed, then preview the links with
-`make link-plan` and run `make mise-tools link plugins`. Do not use `make setup`
-or `make setup-user` on this path because both try to install the checked-in
-Sheldon binary. The
+`make link-plan`. For `full` or lite with Herdr, run
+`make mise-tools herdr link plugins`; for lite without Herdr, run
+`make mise-tools link plugins`. Do not use `make setup` or `make setup-user`
+on this path because both try to install the checked-in Sheldon binary. The
 [pin documentation](../setup/pins/README.md#updating-sheldon) covers that path
 and corporate network constraints.
 

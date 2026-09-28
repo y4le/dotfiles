@@ -1,7 +1,10 @@
 # Native packages for macOS bootstrap.
-# Keep this list small: cross-platform CLI tools and runtimes belong in mise.
+# Keep this list small: runtimes belong in mise; native plugin dependencies
+# must also work before mise shims are on PATH.
 
 git
+jq
+shellcheck
 stow
 tmux
 tree

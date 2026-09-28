@@ -43,6 +43,16 @@ else
     print -u2 "dotfiles: zsh plugins not restored; run 'make plugins'"
 fi
 
+# Initialize completion before interactive tools and local sources use compdef.
+zsh_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+if [[ -d "$zsh_cache_dir" ]] || command mkdir -p -m 700 "$zsh_cache_dir"; then
+  autoload -Uz compinit
+  compinit -i -d "$zsh_cache_dir/zcompdump-$ZSH_VERSION"
+else
+  print -u2 "dotfiles: could not create $zsh_cache_dir; completion disabled"
+fi
+unset zsh_cache_dir
+
 # zoxide — frecency-based directory navigation
 if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh)"
@@ -66,19 +76,20 @@ done
 # TERMINAL OPTIONS
 
 bindkey -v # vim mode
-export KEYTIMEOUT=1 # vim mode timeout 1ms instead of .4s
+KEYTIMEOUT=1 # vim mode timeout 1ms instead of .4s
 
 export CLICOLOR=1 # ANSI colors in iterm2
 
-export SAVEHIST=100000        # keep history longer
-export HISTSIZE=100000        # ditto
+SAVEHIST=100000        # keep history longer
+HISTSIZE=100000        # ditto
 zsh_state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
 if [[ ! -d "$zsh_state_dir" ]] && ! command mkdir -p -m 700 "$zsh_state_dir"; then
   print -u2 "dotfiles: could not create $zsh_state_dir; using ~/.history"
-  export HISTFILE="$HOME/.history"
+  HISTFILE="$HOME/.history"
 else
-  export HISTFILE="$zsh_state_dir/history"
+  HISTFILE="$zsh_state_dir/history"
 fi
+typeset +x HISTFILE HISTSIZE SAVEHIST KEYTIMEOUT
 unset zsh_state_dir
 setopt extended_history       # record timestamp of command in HISTFILE
 setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE

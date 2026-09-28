@@ -4,6 +4,7 @@ set -eu
 
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P)
 test_root=$(mktemp -d)
+test_root=$(CDPATH='' cd -P "$test_root" && pwd -P)
 trap 'rm -rf "$test_root"' EXIT
 trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
 mkdir -p "$test_root/home/.config/shell/functions" "$test_root/project" "$test_root/empty"

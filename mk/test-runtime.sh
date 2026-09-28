@@ -122,6 +122,20 @@ fi
 [ "$(cat "$test_root/no-cache.out")" = \
   "$test_home/.local/state/zsh/history|$test_home/.local/share/npm|loaded|new|new|new|new|new|post" ] || \
   fail "interactive zsh skipped normal configuration"
+echo "check-runtime: completion and history stay local to Zsh"
+completion_state=$(run_zsh -i -c 'print -r -- "$+functions[compdef]"' \
+  2> "$test_root/completion.err") || fail "Zsh completion did not initialize"
+[ "$completion_state" = 1 ] || fail "interactive Zsh has no completion functions"
+zsh_version=$(run_zsh -c 'print -r -- $ZSH_VERSION') || fail "could not read Zsh version"
+[ -f "$test_home/.cache/zsh/zcompdump-$zsh_version" ] || \
+  fail "Zsh did not use its versioned XDG completion cache"
+[ ! -e "$test_home/.zcompdump" ] || fail "global compinit wrote a dump in HOME"
+history_exports=$(env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" \
+  TERM=dumb LC_ALL=C HISTFILE="$test_root/inherited-history" HISTSIZE=10 \
+  SAVEHIST=10 KEYTIMEOUT=5 zsh -i -c \
+    'env | grep -E "^(HISTFILE|HISTSIZE|SAVEHIST|KEYTIMEOUT)=" || true' \
+  2> "$test_root/history-env.err") || fail "Zsh failed with inherited history settings"
+[ -z "$history_exports" ] || fail "Zsh passed history settings into child processes"
 noninteractive_hook_state=$(run_zsh -c \
   'print -r -- "$DOTFILES_ENV_MARKER|${DOTFILES_PRE_MARKER-unset}|${DOTFILES_POST_MARKER-unset}"' \
   2> "$test_root/noninteractive-hooks.err") || \
@@ -550,6 +564,21 @@ if [ -n "$tmux_bin" ]; then
       SHELL=/bin/sh TERM=xterm LC_ALL=C \
       "$tmux_bin" -S "$tmux_test_socket" "$@"
   }
+  tmux_key() {
+    table=$1
+    key=$2
+    run_tmux list-keys -T "$table" | awk -v table="$table" -v key="$key" '
+      $1 == "bind-key" && $2 == "-T" && $3 == table {
+        actual = $4
+        gsub(/\\/, "", actual)
+        if (actual == key) print
+      }
+    '
+  }
+  source_tmux_file() {
+    output=$(run_tmux source-file "$1" 2>&1) || fail "tmux could not source $1: $output"
+    [ -z "$output" ] || fail "tmux reported an error in $1: $output"
+  }
   assert_tmux_value() {
     description=$1
     expected=$2
@@ -558,6 +587,8 @@ if [ -n "$tmux_bin" ]; then
     [ "$actual" = "$expected" ] || \
       fail "tmux $description: expected $expected, got $actual"
   }
+
+  source_tmux_file "$test_home/.config/tmux/tmux.conf"
 
   assert_tmux_value history-limit 50000 show-option -gv history-limit
   assert_tmux_value focus-events on show-option -sv focus-events
@@ -574,15 +605,15 @@ if [ -n "$tmux_bin" ]; then
   assert_tmux_value prefix C-b show-option -gv prefix
   assert_tmux_value prefix-format C-b display-message -p '#{prefix}'
 
-  run_tmux list-keys -T copy-mode-vi y | grep -q 'copy-pipe-and-cancel cpy' || \
+  tmux_key copy-mode-vi y | grep -q 'copy-pipe-and-cancel cpy' || \
     fail "tmux copy-mode y does not copy through cpy"
-  run_tmux list-keys -T copy-mode-vi v | grep -q 'begin-selection' || \
+  tmux_key copy-mode-vi v | grep -q 'begin-selection' || \
     fail "tmux copy-mode v does not begin selection"
-  run_tmux list-keys -T copy-mode-vi V | grep -q 'rectangle-toggle' || \
+  tmux_key copy-mode-vi V | grep -q 'rectangle-toggle' || \
     fail "tmux copy-mode V does not toggle rectangular selection"
-  run_tmux list-keys -T root C-h | grep -q 'select-pane -L' || \
+  tmux_key root C-h | grep -q 'select-pane -L' || \
     fail "tmux navigation does not move left across panes"
-  run_tmux list-keys -T root C-l | grep -q 'select-pane -R' || \
+  tmux_key root C-l | grep -q 'select-pane -R' || \
     fail "tmux navigation does not move right across panes"
   if run_tmux list-keys | grep -q 'plugins/'; then
     fail "tmux still has plugin-backed key bindings"
@@ -602,23 +633,23 @@ if [ -n "$tmux_bin" ]; then
     *) fail "tmux status bar does not show its clock" ;;
   esac
 
-  run_tmux source-file "$test_home/.config/tmux/prefix_a.tmux.conf"
+  source_tmux_file "$test_home/.config/tmux/prefix_a.tmux.conf"
   assert_tmux_value prefix C-a show-option -gv prefix
   assert_tmux_value prefix-format C-a display-message -p '#{prefix}'
-  run_tmux list-keys -T prefix a | grep -q 'send-prefix' || \
+  tmux_key prefix a | grep -q 'send-prefix' || \
     fail "tmux Ctrl-A prefix cannot be sent to an inner multiplexer"
-  run_tmux source-file "$test_home/.config/tmux/prefix_space.tmux.conf"
+  source_tmux_file "$test_home/.config/tmux/prefix_space.tmux.conf"
   assert_tmux_value prefix C-Space show-option -gv prefix
   assert_tmux_value prefix-format C-Space display-message -p '#{prefix}'
-  run_tmux list-keys -T prefix Space | grep -q 'send-prefix' || \
+  tmux_key prefix Space | grep -q 'send-prefix' || \
     fail "tmux Ctrl-Space prefix cannot be sent to an inner multiplexer"
-  run_tmux source-file "$test_home/.config/tmux/prefix_b.tmux.conf"
+  source_tmux_file "$test_home/.config/tmux/prefix_b.tmux.conf"
   assert_tmux_value prefix C-b show-option -gv prefix
   assert_tmux_value prefix-format C-b display-message -p '#{prefix}'
-  run_tmux list-keys -T prefix b | grep -q 'send-prefix' || \
+  tmux_key prefix b | grep -q 'send-prefix' || \
     fail "tmux Ctrl-B prefix cannot be sent to an inner multiplexer"
 
-  run_tmux list-keys -T prefix r | grep -q 'switch-client -T resize' || \
+  tmux_key prefix r | grep -q 'switch-client -T resize' || \
     fail "tmux prefix-r did not enter resize mode"
   for binding in 'h resize-pane -L 5' 'H resize-pane -L 25' \
     'j resize-pane -D 5' 'J resize-pane -D 25' \
@@ -628,18 +659,18 @@ if [ -n "$tmux_bin" ]; then
     '" select-layout even-vertical' 'f select-layout main-vertical'; do
     key=${binding%% *}
     action=${binding#* }
-    run_tmux list-keys -T resize "$key" | grep -Fq "$action" || \
+    tmux_key resize "$key" | grep -Fq "$action" || \
       fail "tmux resize mode lost $key action"
-    run_tmux list-keys -T resize "$key" | grep -Fq 'switch-client -T resize' || \
+    tmux_key resize "$key" | grep -Fq 'switch-client -T resize' || \
       fail "tmux resize mode exits after $key"
   done
   for key in Escape q; do
-    run_tmux list-keys -T resize "$key" | grep -Fq 'switch-client -T root' || \
+    tmux_key resize "$key" | grep -Fq 'switch-client -T root' || \
       fail "tmux resize mode cannot exit with $key"
   done
   run_tmux bind-key -n h resize-pane -L 5
-  run_tmux source-file "$test_home/.config/tmux/tmux.conf"
-  if run_tmux list-keys -T root h >/dev/null 2>&1; then
+  source_tmux_file "$test_home/.config/tmux/tmux.conf"
+  if [ -n "$(tmux_key root h)" ]; then
     fail "tmux reload left the old root h binding active"
   fi
 

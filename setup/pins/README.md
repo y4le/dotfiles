@@ -67,9 +67,10 @@ Before changing the pins:
 
 Sheldon 0.8 and newer currently publish no Intel macOS binary; the previous
 `crate.sh` installer fails on that platform too. Install a trusted Sheldon binary
-at `~/.local/bin/sheldon` through your organization or package manager, then run
-`make mise-tools link plugins` instead of `make setup-user`. On corporate
-networks, add an intercepting CA to the system trust bundle or set
+at `~/.local/bin/sheldon` through your organization or package manager. Run
+`make mise-tools herdr link plugins` when the selected profile includes Herdr,
+or `make mise-tools link plugins` otherwise, instead of `make setup-user`. On
+corporate networks, add an intercepting CA to the system trust bundle or set
 `SSL_CERT_FILE`; the static Linux binary does not read Git's `http.sslCAInfo`.
 Its musl resolver uses `/etc/resolv.conf`, so hostnames available only through
 NSS modules may not resolve.

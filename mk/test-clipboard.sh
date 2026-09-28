@@ -22,11 +22,12 @@ cat "$DOTFILES_TEST_CLIPBOARD"
 EOF
 chmod +x "$test_root/bin/cpy" "$test_root/bin/pst"
 
-if command -v nvim >/dev/null 2>&1; then
+nvim_bin=${DOTFILES_TEST_NVIM:-$(command -v nvim 2>/dev/null || true)}
+if [ -n "$nvim_bin" ] && [ -x "$nvim_bin" ]; then
   echo 'check-clipboard: Neovim mappings'
   env DOTFILES_REPO="$repo" DOTFILES_TEST_CLIPBOARD="$test_root/clipboard" \
     PATH="$test_root/bin:$PATH" \
-    nvim --headless -u NONE -i NONE -n -l "$repo/mk/test-clipboard.lua"
+    "$nvim_bin" --headless -u NONE -i NONE -n -l "$repo/mk/test-clipboard.lua"
 elif [ -n "${CI:-}" ]; then
   echo 'check-clipboard: Neovim required in CI' >&2
   exit 1

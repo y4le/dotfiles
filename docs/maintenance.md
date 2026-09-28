@@ -53,6 +53,8 @@ restore one subsystem, run
 
 `make herdr-plugins` installs each `owner/repo@commit` in `HERDR_PLUGINS`
 (`mk/config.mk`) and skips plugins already installed at that commit.
+Herdr's navigation action and herdr-mark require `jq`; `make system-packages`
+installs it with the native prerequisites.
 vim-herdr-navigation has two halves: the herdr action behind `ctrl+h/j/k/l` in
 `herdr/.config/herdr/config.toml`, and editor maps loaded from the same repo by
 `nvim/.config/nvim/lua/plugins/core.lua` and `vim/.vim/config/plugins.vim`.
@@ -125,8 +127,8 @@ git diff -- nvim/.config/nvim/lazy-lock.json
 ```
 
 Review the lock diff before committing it. Use `make nvim-plugins` to restore
-the checked-in lock; it verifies restored commits and preserves the lock file.
-Treesitter parsers are also installed by these targets.
+the checked-in lock; it verifies restored commits and parser files, and
+preserves the lock file. Treesitter parsers are installed by these targets.
 
 ## Recover a rejected Zsh plugin restore
 

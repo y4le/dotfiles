@@ -63,7 +63,9 @@ vim-plugins: ## [network] install pinned vim-plug and sync Vim plugins
 			'execute "set runtimepath^=" . fnameescape($$VIMHOME)' \
 			'execute "source " . fnameescape($$VIMHOME . "/config/plugins.vim")' > "$$bootstrap"; \
 		echo "syncing Vim plugins"; \
-		vim -Nu NONE -n -S "$$bootstrap" '+PlugInstall --sync' +qa
+		DOTFILES_VERIFY_VIM_PLUGINS="$(CURDIR)/mk/verify-vim-plugins.vim" \
+			vim -Nu NONE -n -S "$$bootstrap" '+PlugInstall --sync' \
+			'+execute "source " . fnameescape($$DOTFILES_VERIFY_VIM_PLUGINS)' +qa
 
 nvim-plugins: ## [network] restore Neovim plugins from the lock
 	@if [ ! -f "$(NVIM_CONFIG_HOME)/init.lua" ]; then \
@@ -100,10 +102,13 @@ nvim-plugins: ## [network] restore Neovim plugins from the lock
 		+qa || exit $$?; \
 	cp "$$snapshot" "$(LAZY_NVIM_LOCK_FILE)" || exit $$?; \
 	DOTFILES_NVIM_BOOTSTRAP=1 DOTFILES_NVIM_LOCK_SNAPSHOT="$$snapshot" \
+		DOTFILES_NVIM_PARSERS="$(NVIM_TREESITTER_PARSERS)" \
+		DOTFILES_NVIM_PARSER_VERIFY_SCRIPT="$(CURDIR)/mk/verify-nvim-parsers.lua" \
 		DOTFILES_NVIM_VERIFY_SCRIPT="$(CURDIR)/mk/verify-nvim-plugins.lua" \
 		"$$nvim_bin" --headless \
 		"+lua require('lazy').restore({ wait = true, show = false })" \
 		"+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" \
+		"+lua dofile(vim.env.DOTFILES_NVIM_PARSER_VERIFY_SCRIPT)" \
 		"+lua dofile(vim.env.DOTFILES_NVIM_VERIFY_SCRIPT)" +qa || exit $$?; \
 	cmp -s "$$snapshot" "$(LAZY_NVIM_LOCK_FILE)" || { \
 		diff -u "$$snapshot" "$(LAZY_NVIM_LOCK_FILE)" || true; \
@@ -119,8 +124,11 @@ nvim-update: ## [network] update Neovim pins and show the lock diff
 	@sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" >/dev/null
 	@$(MAKE) _restore-lazy-nvim
 	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
-	DOTFILES_NVIM_BOOTSTRAP=1 "$$nvim_bin" --headless "+Lazy! sync" \
-		"+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" +qa || exit $$?; \
+	DOTFILES_NVIM_BOOTSTRAP=1 DOTFILES_NVIM_PARSERS="$(NVIM_TREESITTER_PARSERS)" \
+		DOTFILES_NVIM_PARSER_VERIFY_SCRIPT="$(CURDIR)/mk/verify-nvim-parsers.lua" \
+		"$$nvim_bin" --headless "+Lazy! sync" \
+		"+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" \
+		"+lua dofile(vim.env.DOTFILES_NVIM_PARSER_VERIFY_SCRIPT)" +qa || exit $$?; \
 	git diff --stat -- "$(LAZY_NVIM_LOCK_FILE)"
 
 _restore-lazy-nvim:

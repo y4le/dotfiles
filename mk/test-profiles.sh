@@ -29,6 +29,11 @@ with_packages=$(sh mk/profile.sh packages lite 'nvim herdr') || fail "add-on pac
 with_tools=$(sh mk/profile.sh tools lite 'yazi yazi') || fail "add-on tools did not resolve"
 [ "$with_tools" = "$lite_tools aqua:sxyazi/yazi" ] || \
   fail "repeated add-on changed tool selection: $with_tools"
+dev_tools=$(sh mk/profile.sh tools lite dev) || fail "dev tools did not resolve"
+case " $dev_tools " in
+  *' aqua:astral-sh/uv '*' pipx:basedpyright pipx:ruff '*) ;;
+  *) fail "dev tools do not install uv before pipx tools: $dev_tools" ;;
+esac
 
 echo "check-profiles: reject unknown selections and malformed YAML"
 if sh mk/profile.sh components unknown > /dev/null 2>&1; then

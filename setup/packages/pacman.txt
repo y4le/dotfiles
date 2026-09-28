@@ -1,8 +1,12 @@
 # Native packages for Arch bootstrap.
-# Keep this list small: cross-platform CLI tools and runtimes belong in mise.
+# Keep this list small: runtimes belong in mise; native build and plugin
+# dependencies must also work before mise shims are on PATH.
 
 curl
+base-devel
 git
+jq
+shellcheck
 stow
 tmux
 tree

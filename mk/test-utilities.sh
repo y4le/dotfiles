@@ -8,6 +8,7 @@ fail() {
 
 repo=$(pwd -P)
 test_root=$(mktemp -d) || exit 1
+test_root=$(CDPATH='' cd -P "$test_root" && pwd -P) || exit 1
 trap 'rm -r "$test_root"' EXIT HUP INT TERM
 
 echo 'check-utilities: benchmark command arguments, timing and failure'

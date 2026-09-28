@@ -2,6 +2,9 @@
 # ~/.zshenv is always sourced
 # use ~/.zshrc for interactive-only
 
+# Keep the host's global zshrc from initializing completion before our config.
+skip_global_compinit=1
+
 # source machine-local environment before setting portable defaults
 if [[ -f $HOME/.config/zsh/hooks/env.zsh ]]; then
   source $HOME/.config/zsh/hooks/env.zsh

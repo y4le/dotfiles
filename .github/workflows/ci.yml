@@ -64,6 +64,7 @@ jobs:
           make --version | head -1
           stow --version
           shellcheck --version
+          tmux -V
           zsh --version
           command -v bash
           bash --version | head -1
@@ -90,6 +91,7 @@ jobs:
         run: make -k check
 
       - name: Ensure checks leave the repo clean
+        if: always()
         run: |
           status="$(git status --porcelain --ignored --untracked-files=all)"
           if [ -n "$status" ]; then

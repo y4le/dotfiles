@@ -64,6 +64,21 @@ echo "check-vim: command-line abbreviations"
 env DOTFILES_REPO="$repo" vim -Nu NONE -i NONE -n -es \
   -S "$repo/mk/test-vim-abbrev.vim" || fail "Vim abbreviations changed commands or word motions"
 
+echo "check-vim: plugin restore verification"
+mkdir -p "$test_root/installed-plugin"
+mkdir -p "$test_root/installed-plugin/.git"
+DOTFILES_TEST_PLUGIN_DIR="$test_root/installed-plugin" \
+  vim -Nu NONE -i NONE -n -es \
+    -c 'let g:plugs = {"fixture": {"dir": $DOTFILES_TEST_PLUGIN_DIR, "uri": "https://example.invalid/fixture.git"}}' \
+    -S "$repo/mk/verify-vim-plugins.vim" -c 'qa!' || \
+  fail "installed Vim plugin was rejected"
+DOTFILES_TEST_PLUGIN_DIR="$test_root/missing-plugin" \
+  vim -Nu NONE -i NONE -n -es \
+    -c 'let g:plugs = {"fixture": {"dir": $DOTFILES_TEST_PLUGIN_DIR, "uri": "https://example.invalid/fixture.git"}}' \
+    -S "$repo/mk/verify-vim-plugins.vim" -c 'qa!' \
+    > "$test_root/missing-plugin.out" 2>&1 && \
+  fail "missing Vim plugin was accepted"
+
 if ! command -v stow >/dev/null 2>&1; then
   echo "check-vim: stow not found"
   if [ -n "${CI:-}" ]; then

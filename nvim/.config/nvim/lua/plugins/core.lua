@@ -117,7 +117,12 @@ return {
       vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
         group = group,
         callback = function()
-          lint.try_lint()
+          local available = vim.tbl_filter(function(name)
+            return vim.fn.executable(name) == 1
+          end, lint.linters_by_ft[vim.bo.filetype] or {})
+          if #available > 0 then
+            lint.try_lint(available)
+          end
         end,
       })
     end,

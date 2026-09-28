@@ -608,6 +608,8 @@ run_vim_plugins >/dev/null
 [ "$(wc -l < "$curl_log" | tr -d ' ')" -eq 1 ] || \
   fail "fresh vim-plug install did not download once"
 grep -F 'PlugInstall --sync' "$vim_log" >/dev/null || fail "Vim plugins were not synced"
+grep -F 'fnameescape($DOTFILES_VERIFY_VIM_PLUGINS)' "$vim_log" >/dev/null || \
+  fail "Vim plugin restore did not run the directory verifier"
 
 : > "$curl_log"
 : > "$vim_log"
@@ -707,13 +709,17 @@ done
 printf 'fixture plug.vim\n' > "$vim_home/.vim/autoload/plug.vim"
 fzf_dir=$vim_home/.local/share/vim/plugged/fzf
 mkdir -p "$fzf_dir/bin"
-git -C "$fzf_dir" init -q
-git -C "$fzf_dir" config user.name Fixture
-git -C "$fzf_dir" config user.email fixture@example.invalid
+fixture_git() {
+  GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+    "$real_git" -c commit.gpgsign=false -C "$fzf_dir" "$@"
+}
+fixture_git init -q
+fixture_git config user.name Fixture
+fixture_git config user.email fixture@example.invalid
 printf 'bin/fzf\n' > "$fzf_dir/.gitignore"
 printf tracked > "$fzf_dir/bin/fzf-tmux"
-git -C "$fzf_dir" add .gitignore bin/fzf-tmux
-git -C "$fzf_dir" commit -qm fixture
+fixture_git add .gitignore bin/fzf-tmux
+fixture_git commit -qm fixture
 printf unverified > "$fzf_dir/bin/fzf"
 : > "$vim_log"
 if env -i HOME="$vim_home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
@@ -737,8 +743,8 @@ grep -F 'removing plugin-local fzf override' "$test_root/vim-fzf-cleanup.out" >/
   fail "fzf binary cleanup was not reported"
 
 printf tracked > "$fzf_dir/bin/fzf"
-git -C "$fzf_dir" add -f bin/fzf
-git -C "$fzf_dir" commit -qm 'track fzf fixture'
+fixture_git add -f bin/fzf
+fixture_git commit -qm 'track fzf fixture'
 run_vim_plugins >/dev/null
 [ -f "$fzf_dir/bin/fzf" ] || fail "tracked fzf binary was removed"
 
@@ -796,5 +802,21 @@ fi
 grep -F 'make tools' "$test_root/missing-sheldon.out" >/dev/null || \
   fail "missing Sheldon binary did not name the tools phase"
 [ ! -s "$curl_log" ] || fail "missing Sheldon plugin phase accessed the network"
+
+echo "check-pins: Herdr plugin restore requires jq"
+herdr_test_bin=$test_root/herdr-test-bin
+mkdir -p "$herdr_test_bin"
+for command_name in sh awk dirname uname; do
+  ln -s "$(command -v "$command_name")" "$herdr_test_bin/$command_name"
+done
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$herdr_test_bin/herdr"
+chmod +x "$herdr_test_bin/herdr"
+if env -i HOME="$test_root/home" PATH="$herdr_test_bin" \
+  "$(command -v make)" -s -C "$repo" HERDR_BIN="$herdr_test_bin/herdr" herdr-plugins \
+    > "$test_root/missing-jq.out" 2>&1; then
+  fail "Herdr plugins succeeded without jq"
+fi
+grep -F "jq is required by Herdr plugins" "$test_root/missing-jq.out" >/dev/null || \
+  fail "missing jq did not report its prerequisite"
 
 echo "check-pins: ok"

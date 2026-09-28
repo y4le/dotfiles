@@ -33,6 +33,10 @@ herdr-plugins: ## [network] install pinned Herdr plugins
 		echo "herdr not found at $(HERDR_BIN); run 'make tools' first"; \
 		exit 1; \
 	fi
+	@if ! command -v jq >/dev/null 2>&1; then \
+		echo "jq is required by Herdr plugins; run 'make system-packages' first"; \
+		exit 1; \
+	fi
 	@set -eu; \
 	installed="$$("$(HERDR_BIN)" plugin list)"; \
 	for pin in $(HERDR_PLUGINS); do \
