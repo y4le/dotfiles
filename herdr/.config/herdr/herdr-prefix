@@ -101,6 +101,12 @@ current_prefix() {
 
 render() {
   local new=$1 out=$2
+  toml_awk '
+    code && L == begin { if (open || seen) invalid = 1; open = 1; seen = 1 }
+    code && L == end { if (!open) invalid = 1; open = 0 }
+    END { exit (open || invalid) }
+  ' "$CONFIG" -v begin="$BEGIN_MARK" -v end="$END_MARK" || \
+    die "malformed managed prefix block; repair its BEGIN/END markers before switching"
   {
     # Drop the old managed block and any prefix line under [keys]; insert the
     # new prefix right after the [keys] header. Blank lines are held until the

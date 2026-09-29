@@ -630,6 +630,16 @@ if [ -n "$tmux_bin" ]; then
 
   source_tmux_file "$test_home/.config/tmux/tmux.conf"
 
+  for variable in HERDR_ENV HERDR_PANE_ID HERDR_TAB_ID HERDR_WORKSPACE_ID HERDR_SESSION HERDR_SOCKET_PATH; do
+    run_tmux set-environment -g "$variable" inherited
+  done
+  source_tmux_file "$test_home/.config/tmux/tmux.conf"
+  for variable in HERDR_ENV HERDR_PANE_ID HERDR_TAB_ID HERDR_WORKSPACE_ID HERDR_SESSION HERDR_SOCKET_PATH; do
+    if run_tmux show-environment -g "$variable" > /dev/null 2>&1; then
+      fail "tmux retained Herdr caller context: $variable"
+    fi
+  done
+
   assert_tmux_value history-limit 50000 show-option -gv history-limit
   assert_tmux_value focus-events on show-option -sv focus-events
   assert_tmux_value escape-time 0 show-option -sv escape-time

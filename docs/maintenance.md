@@ -118,9 +118,8 @@ To update Herdr, change all four platform rows in
 `setup/pins/downloads.txt`, run `make herdr`, and review both the release notes
 and `git diff -- setup/pins/downloads.txt`. Do not use `herdr update`; the
 download pins own the executable. Keep Herdr's background version check enabled
-as notification that the pin may need review. A compatible old server can keep
-its panes running after the client update. Restart that server separately only
-when you need server-side changes from the new release.
+as notification that the pin may need review. Restart the Herdr server after
+replacing the binary so plugin actions receive a valid `HERDR_BIN_PATH`.
 
 For Neovim:
 

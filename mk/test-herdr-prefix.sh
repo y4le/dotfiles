@@ -129,6 +129,7 @@ run set ctrl+space
 echo "check-herdr: failures leave the config unchanged"
 before=$(cat "$config")
 if run set ctrl+x 2>/dev/null; then fail "accepted an unknown prefix"; fi
+[ "$(cat "$config")" = "$before" ] || fail "unknown prefix modified the config"
 printf '# FAILCHECK\n' >> "$config"
 before=$(cat "$config")
 if run set ctrl+a 2>/dev/null; then fail "ignored a failed config check"; fi
@@ -139,5 +140,28 @@ before=$(cat "$config")
 if run set ctrl+a 2>/dev/null; then fail "ignored a held lock"; fi
 [ "$(cat "$config")" = "$before" ] || fail "locked switch modified the config"
 rmdir "$home/.config/herdr/config.toml.herdr-prefix.lock"
+
+echo "check-herdr: malformed managed blocks preserve config and backup"
+cp "$config" "$test_root/valid-config"
+cp "$home/.config/herdr/config.toml.bak" "$test_root/backup-before"
+for malformed in missing-end orphan-end nested-begin duplicate-block; do
+  cp "$test_root/valid-config" "$config"
+  case $malformed in
+    missing-end) sed '/^# END herdr-prefix/d' "$config" > "$test_root/bad-config" ;;
+    orphan-end) sed '/^# BEGIN herdr-prefix/d' "$config" > "$test_root/bad-config" ;;
+    nested-begin)
+      awk '/^# BEGIN herdr-prefix/ { print } { print }' "$config" > "$test_root/bad-config"
+      ;;
+    duplicate-block)
+      cat "$config" > "$test_root/bad-config"
+      printf '\n# BEGIN herdr-prefix (managed; edits here are overwritten)\n# END herdr-prefix\n' >> "$test_root/bad-config"
+      ;;
+  esac
+  cp "$test_root/bad-config" "$config"
+  if run set ctrl+a > "$test_root/malformed.out" 2>&1; then fail "accepted $malformed"; fi
+  grep -q 'malformed managed prefix block' "$test_root/malformed.out" || fail "wrong error for $malformed"
+  cmp -s "$config" "$test_root/bad-config" || fail "$malformed changed the config"
+  cmp -s "$home/.config/herdr/config.toml.bak" "$test_root/backup-before" || fail "$malformed changed the backup"
+done
 leftovers=$(find "$checkout" "$home/.config/herdr" -name '.herdr-prefix.*' -o -name '*.lock')
 [ -z "$leftovers" ] || fail "left temporary files: $leftovers"
