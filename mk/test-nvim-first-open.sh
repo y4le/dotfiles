@@ -16,15 +16,27 @@ fi
 
 export XDG_CONFIG_HOME="$HOME/.config"
 
-for filetype in lua sh org; do
-  file=$test_root/first-open.$filetype
-  case $filetype in
+mkdir -p "$test_root/bin"
+cat > "$test_root/bin/prettier" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$@" > "$DOTFILES_TEST_FORMATTER_LOG"
+cat
+EOF
+chmod +x "$test_root/bin/prettier"
+
+for extension in lua sh org md wiki book; do
+  file=$test_root/first-open.$extension
+  filetype=$extension
+  case $extension in
     lua) printf 'print("first open")\n' > "$file" ;;
     sh) printf '#!/bin/sh\necho first-open\n' > "$file" ;;
     org) printf '* TODO first open\n' > "$file" ;;
+    md|wiki|book) filetype=markdown; printf '# First open\n' > "$file" ;;
   esac
-  echo "check-nvim-first-open: named .$filetype file"
+  echo "check-nvim-first-open: named .$extension file"
+  : > "$test_root/formatter.log"
   if ! DOTFILES_TEST_FILE="$file" DOTFILES_TEST_FILETYPE="$filetype" \
+    DOTFILES_TEST_FORMATTER_LOG="$test_root/formatter.log" PATH="$test_root/bin:$PATH" \
     DOTFILES_TEST_VERIFY_SCRIPT="$repo/mk/verify-nvim-first-open.lua" \
     HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
     ALL_PROXY=http://127.0.0.1:9 GIT_TERMINAL_PROMPT=0 \

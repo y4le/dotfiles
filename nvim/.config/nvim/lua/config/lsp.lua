@@ -33,10 +33,6 @@ function M.setup()
       map("n", "gd", vim.lsp.buf.definition, "LSP definition")
       map("n", "gD", vim.lsp.buf.declaration, "LSP declaration")
       map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-      map("n", "<leader>lf", function()
-        vim.lsp.buf.format({ async = true })
-      end, "Format buffer")
-      map("n", "<leader>e", vim.diagnostic.open_float, "Show diagnostics")
     end,
   })
 end

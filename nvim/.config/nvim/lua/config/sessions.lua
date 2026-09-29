@@ -22,11 +22,24 @@ function M.default_name()
 end
 
 function M.path(name)
+  local stem = name:gsub("%.vim$", "")
+  assert(stem ~= "" and stem ~= "." and stem ~= ".."
+    and not name:find("/", 1, true) and not name:find("\\", 1, true),
+    "session name must be a filename without directory separators")
   return M.dir .. "/" .. with_extension(name)
 end
 
-function M.save(name)
-  vim.cmd(("mksession! %s"):format(vim.fn.fnameescape(M.path(name))))
+function M.save(name, options)
+  local path = M.path(name)
+  local previous = vim.o.sessionoptions
+  if options then
+    vim.opt.sessionoptions = options
+  end
+  local ok, err = pcall(vim.cmd, ("mksession! %s"):format(vim.fn.fnameescape(path)))
+  vim.o.sessionoptions = previous
+  if not ok then
+    error(err)
+  end
 end
 
 function M.load(name)
@@ -69,6 +82,12 @@ function M.list()
 
   table.sort(sessions)
   return sessions
+end
+
+function M.complete(lead)
+  return vim.tbl_filter(function(name)
+    return name:sub(1, #lead) == lead
+  end, M.list())
 end
 
 return M

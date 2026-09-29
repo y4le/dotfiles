@@ -47,7 +47,7 @@ api.nvim_create_autocmd("BufWritePre", {
     end
 
     local view = vim.fn.winsaveview()
-    vim.cmd([[%s/\s\+$//e]])
+    vim.cmd([[keeppatterns %s/\s\+$//e]])
     vim.fn.winrestview(view)
   end,
 })

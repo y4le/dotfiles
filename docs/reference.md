@@ -130,6 +130,15 @@ Neovim loads `lua/config/`, the local hook, then lazy.nvim with specs from
 `lua/plugins/`. `lazy-lock.json` pins plugin commits; startup does not install
 missing plugins or check for updates.
 
+In Neovim, plain `j`/`k` follow wrapped display lines; counted jumps use buffer
+lines. `<leader>lf` formats with conform and falls back to LSP formatting, and
+`<leader>e` shows diagnostics. `.wiki` and `.book` use Markdown formatting.
+`SessionSave`, `SessionLoad`, and `SessionDelete` complete saved session names.
+`SessionSaveMin` and `SessionSaveMax` accept an optional name and save with
+temporary session settings; they preserve the settings used by ordinary saves.
+Without a name they overwrite the current directory's default session, as
+`SessionSave` does. Vim's Min/Max commands still select persistent session settings.
+
 In a direct SSH session, Neovim sends clipboard copies to the local terminal
 with OSC 52. Pastes use text copied in that Neovim session, so they do not query
 the terminal clipboard. Tmux and sessions with a graphical clipboard retain

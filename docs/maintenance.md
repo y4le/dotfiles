@@ -133,7 +133,8 @@ are installed by these targets.
 The orgmode grammar tag and commit are pinned in `mk/restore-nvim-org.lua`;
 review and update both when changing the orgmode lock revision or grammar version.
 After restoring plugins, run `make check-nvim-first-open` to check named-file
-startup and confirm that Lua, shell, and Org files open without another download.
+startup and confirm that Lua, shell, Org, and Markdown files open without another
+download. The check also exercises `.wiki`/`.book` Markdown formatter arguments.
 
 ## Recover a rejected Zsh plugin restore
 

@@ -81,7 +81,7 @@ return {
         end
 
         return {
-          lsp_fallback = true,
+          lsp_format = "fallback",
           timeout_ms = 1000,
         }
       end,
@@ -99,6 +99,14 @@ return {
         typescript = { "prettier" },
         typescriptreact = { "prettier" },
         yaml = { "prettier" },
+      },
+      formatters = {
+        prettier = {
+          prepend_args = function(_, ctx)
+            local extension = vim.fn.fnamemodify(ctx.filename, ":e")
+            return (extension == "wiki" or extension == "book") and { "--parser", "markdown" } or {}
+          end,
+        },
       },
     },
   },

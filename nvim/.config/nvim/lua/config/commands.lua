@@ -1,35 +1,23 @@
 local sessions = require("config.sessions")
 
-vim.api.nvim_create_user_command("SessionSave", function(opts)
-  sessions.save(opts.args ~= "" and opts.args or sessions.default_name())
-end, {
-  nargs = "?",
-  complete = "dir",
-  desc = "Save the current session",
-})
+local function command(name, action, description)
+  vim.api.nvim_create_user_command(name, function(opts)
+    action(opts.args ~= "" and opts.args or sessions.default_name())
+  end, {
+    nargs = "?",
+    complete = sessions.complete,
+    desc = description,
+  })
+end
 
-vim.api.nvim_create_user_command("SessionLoad", function(opts)
-  sessions.load(opts.args ~= "" and opts.args or sessions.default_name())
-end, {
-  nargs = "?",
-  desc = "Load a saved session",
-})
-
-vim.api.nvim_create_user_command("SessionDelete", function(opts)
-  sessions.delete(opts.args ~= "" and opts.args or sessions.default_name())
-end, {
-  nargs = "?",
-  desc = "Delete a saved session",
-})
-
-vim.api.nvim_create_user_command("SessionSaveMin", function()
-  vim.opt.sessionoptions = { "buffers", "tabpages" }
-end, {
-  desc = "Save minimal session state",
-})
-
-vim.api.nvim_create_user_command("SessionSaveMax", function()
-  vim.opt.sessionoptions = {
+command("SessionSave", sessions.save, "Save the current session")
+command("SessionLoad", sessions.load, "Load a saved session")
+command("SessionDelete", sessions.delete, "Delete a saved session")
+command("SessionSaveMin", function(name)
+  sessions.save(name, { "buffers", "tabpages" })
+end, "Save minimal session state")
+command("SessionSaveMax", function(name)
+  sessions.save(name, {
     "blank",
     "buffers",
     "curdir",
@@ -39,7 +27,5 @@ vim.api.nvim_create_user_command("SessionSaveMax", function()
     "options",
     "tabpages",
     "winsize",
-  }
-end, {
-  desc = "Save maximal session state",
-})
+  })
+end, "Save maximal session state")

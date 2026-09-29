@@ -30,8 +30,12 @@ map("n", "<leader>;", function()
   vim.cmd.normal({ args = { "@:" }, bang = true })
 end, { desc = "Repeat last command-line command" })
 
-map("n", "j", "gj", { desc = "Move by display line" })
-map("n", "k", "gk", { desc = "Move by display line" })
+map("n", "j", function()
+  return vim.v.count == 0 and "gj" or "j"
+end, { expr = true, desc = "Move down; counts use buffer lines" })
+map("n", "k", function()
+  return vim.v.count == 0 and "gk" or "k"
+end, { expr = true, desc = "Move up; counts use buffer lines" })
 map("n", "Y", "y$", { desc = "Yank to end of line" })
 map("n", "n", "nzz", { desc = "Next search result" })
 map("n", "N", "Nzz", { desc = "Previous search result" })
@@ -64,6 +68,15 @@ map("n", "<leader>qn", "<Cmd>cnext<CR>", { desc = "Quickfix next" })
 map("n", "<leader>qp", "<Cmd>cprevious<CR>", { desc = "Quickfix previous" })
 
 map("n", "<leader>/", "<Cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
+map("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostics" })
+map("n", "<leader>lf", function()
+  local ok, conform = pcall(require, "conform")
+  if ok then
+    conform.format({ async = true, lsp_format = "fallback" })
+  else
+    vim.lsp.buf.format({ async = true })
+  end
+end, { desc = "Format buffer" })
 
 map("n", "<leader>gf", function()
   edit_cfile("p")
