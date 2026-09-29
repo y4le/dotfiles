@@ -64,6 +64,7 @@ for command_name in sheldon curl wget; do
 done
 
 mkdir -p "$test_home/.config/zsh/sources" "$test_home/.config/zsh/hooks"
+ln -s "$test_root/deleted-package/missing.zsh" "$test_home/.config/zsh/sources/dangling.zsh"
 printf '%s\n' 'typeset -g DOTFILES_ENV_MARKER=new' \
   'typeset -g DOTFILES_HOOK_ORDER=env' > \
   "$test_home/.config/zsh/hooks/env.zsh"

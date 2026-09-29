@@ -226,7 +226,7 @@ fi
   fail "available colorscheme was not loaded"
 assert_clean_startup "startup with an available colorscheme"
 
-installed_plug=${HOME:-}/.vim/autoload/plug.vim
+installed_plug=${DOTFILES_TEST_VIM_PLUG:-${HOME:-}/.vim/autoload/plug.vim}
 if [ -n "${HOME:-}" ] && \
   DOTFILES_PINS_FILE="$repo/setup/pins/downloads.txt" \
     sh "$repo/mk/pinned.sh" status vim-plug "$installed_plug" >/dev/null 2>&1; then
@@ -241,7 +241,57 @@ if [ -n "${HOME:-}" ] && \
     fail "startup with pinned vim-plug reported it missing"
   fi
   assert_clean_startup "startup with pinned vim-plug"
+
+  echo "check-vim: commit pin changes update existing checkouts"
+  fixture_git() {
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+      git -c core.hooksPath=/dev/null -c commit.gpgsign=false \
+        -c user.name=test -c user.email=test@example.invalid "$@"
+  }
+  pin_source=$test_root/pin-source
+  fixture_git init -q "$pin_source"
+  printf 'first\n' > "$pin_source/plugin.txt"
+  fixture_git -C "$pin_source" add plugin.txt
+  fixture_git -C "$pin_source" commit -qm first
+  first_pin=$(fixture_git -C "$pin_source" rev-parse HEAD)
+  printf 'second\n' > "$pin_source/plugin.txt"
+  fixture_git -C "$pin_source" commit -qam second
+  second_pin=$(fixture_git -C "$pin_source" rev-parse HEAD)
+  plugged=$test_root/pin-plugins
+  mkdir -p "$plugged"
+  for plugin in pinned branch; do
+    fixture_git clone -q "$pin_source" "$plugged/$plugin"
+    fixture_git -C "$plugged/$plugin" checkout -q --detach "$first_pin"
+  done
+  cat > "$test_root/restore-pins.vim" <<'EOF'
+execute 'source ' . fnameescape($DOTFILES_TEST_VIM_PLUG)
+call plug#begin($DOTFILES_TEST_PLUGGED)
+call plug#('file://' . $DOTFILES_TEST_REMOTE, {'as': 'pinned', 'commit': $DOTFILES_TEST_PIN})
+call plug#('file://' . $DOTFILES_TEST_REMOTE, {'as': 'branch'})
+call plug#end()
+PlugInstall --sync
+execute 'source ' . fnameescape($DOTFILES_TEST_REPO . '/mk/restore-vim-pins.vim')
+execute 'source ' . fnameescape($DOTFILES_TEST_REPO . '/mk/verify-vim-plugins.vim')
+qa!
+EOF
+  HOME="$runtime_home" GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+    DOTFILES_TEST_VIM_PLUG="$installed_plug" DOTFILES_TEST_PLUGGED="$plugged" \
+    DOTFILES_TEST_REMOTE="$pin_source" DOTFILES_TEST_PIN="$second_pin" DOTFILES_TEST_REPO="$repo" \
+    vim -Nu NONE -i NONE -n -es -S "$test_root/restore-pins.vim" || fail "Vim pin restore failed"
+  [ "$(fixture_git -C "$plugged/pinned" rev-parse HEAD)" = "$second_pin" ] || fail "Vim retained its old commit pin"
+  [ "$(fixture_git -C "$plugged/branch" rev-parse HEAD)" = "$first_pin" ] || fail "restore updated an unpinned branch plugin"
+  mv "$pin_source" "$pin_source.offline"
+  HOME="$runtime_home" GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+    DOTFILES_TEST_VIM_PLUG="$installed_plug" DOTFILES_TEST_PLUGGED="$plugged" \
+    DOTFILES_TEST_REMOTE="$pin_source" DOTFILES_TEST_PIN="$second_pin" DOTFILES_TEST_REPO="$repo" \
+    vim -Nu NONE -i NONE -n -es -S "$test_root/restore-pins.vim" || fail "on-pin Vim restore contacted its unavailable remote"
+  DOTFILES_TEST_PLUGIN_DIR="$plugged/pinned" DOTFILES_TEST_PIN="$first_pin" \
+    vim -Nu NONE -i NONE -n -es \
+    -c 'let g:plugs = {"pinned": {"dir": $DOTFILES_TEST_PLUGIN_DIR, "uri": "fixture", "commit": $DOTFILES_TEST_PIN}}' \
+    -S "$repo/mk/verify-vim-plugins.vim" -c 'qa!' > "$test_root/wrong-pin.out" 2>&1 && \
+    fail "Vim verifier accepted an off-pin checkout"
 else
+  [ -z "${CI:-}" ] || fail "pinned vim-plug fixture is required in CI"
   echo "check-vim: pinned vim-plug startup fixture unavailable; skipping"
 fi
 

@@ -79,6 +79,7 @@ link-macos: ## [offline] force macos package set
 	@$(MAKE) _link LINK_PACKAGES="$(MACOS_PACKAGES)" REMOVE_PACKAGES="$(filter-out $(MACOS_PACKAGES),$(KNOWN_PROFILE_PACKAGES))"
 
 _link-plan: _require-stow
+	@sh mk/report-dangling-links.sh "$(CURDIR)" "$(HOME)"
 	@if git -C "$(CURDIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
 		artifacts="$$(git -C "$(CURDIR)" ls-files --others --directory --no-empty-directory -- $(GUARDED_LINK_PACKAGES))" || exit 1; \
 		if [ -n "$$artifacts" ]; then \

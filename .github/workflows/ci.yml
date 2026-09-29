@@ -69,7 +69,7 @@ jobs:
           command -v bash
           bash --version | head -1
 
-      - name: Install pinned Neovim for runtime checks
+      - name: Install pinned editors for runtime checks
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -81,6 +81,7 @@ jobs:
             "$HOME/.local/bin/mise" which nvim)"
           "$nvim_bin" --version | head -1
           make nvim-lazy
+          sh mk/pinned.sh install vim-plug "$RUNNER_TEMP/plug.vim" 0644
 
       - name: Run repo checks
         env:
@@ -88,6 +89,7 @@ jobs:
           HTTP_PROXY: http://127.0.0.1:9
           ALL_PROXY: http://127.0.0.1:9
           MISE_OFFLINE: "1"
+          DOTFILES_TEST_VIM_PLUG: ${{ runner.temp }}/plug.vim
         run: make -k check
 
       - name: Ensure checks leave the repo clean

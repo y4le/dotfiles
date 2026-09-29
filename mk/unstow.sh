@@ -35,6 +35,13 @@ done
 # Package names come from the validated profile data or fixed Make variables.
 # shellcheck disable=SC2086
 set -- $packages
+case " $packages " in
+  *' osx '*)
+    if ! sh "$(dirname "$0")/prepare-zprofile.sh" --is-managed "$home" "$repo"; then
+      set -- --ignore='^\.zprofile$' "$@"
+    fi
+    ;;
+esac
 
 case "$mode" in
   # Keep these Stow options aligned with STOW_FLAGS in mk/config.mk.

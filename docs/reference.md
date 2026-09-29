@@ -54,10 +54,15 @@ these are the main entry points.
 | `check` | Run repository validation | Offline |
 | `check-profiles` | Validate profile syntax, package paths, and mise tool keys | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |
-| `check-nvim-first-open` | Open named Lua, shell, and Org files with restored Neovim plugins | Offline; after `nvim-plugins` |
+| `check-nvim-first-open` | Open named files and exercise Markdown formatting with restored Neovim plugins | Offline; after `nvim-plugins` |
 
 `mise-tools` installs mise and only the selected tool names; `nvim-lazy`
 restores only lazy.nvim.
+
+`link-plan` reports dangling links into this checkout in dotfile destinations
+and helper directories, including links left by deleted packages. It leaves
+them for inspection. On macOS, the plan includes `.zprofile`; when `clean`
+removes that managed profile, it restores the preserved `.zprofile.local`.
 
 `make PLAN_VERBOSE=1 plan` shows the full Stow dry-run trace; the default plan
 hides restow operations that leave existing links unchanged.

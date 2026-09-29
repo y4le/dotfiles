@@ -177,6 +177,9 @@ run_make "$linux_core_home" PLATFORM=linux link \
 
 macos_core_home=$test_root/macos-core-home
 mkdir -p "$macos_core_home"
+run_make "$macos_core_home" PLATFORM=macos link-plan > "$test_root/macos-core-plan.log" 2>&1 || \
+  fail "macOS core plan failed"
+grep -Fq 'LINK: .zprofile => ' "$test_root/macos-core-plan.log" || fail "macOS plan hid the login profile"
 run_make "$macos_core_home" PLATFORM=macos link \
   >/dev/null 2>&1 || fail "macOS core link failed"
 [ -L "$macos_core_home/.config/zsh/sources/osx.zsh" ] || \
@@ -204,6 +207,41 @@ grep -Fqx 'export EXISTING_PROFILE=kept' \
   fail "macOS link changed the preserved profile"
 run_make "$macos_profile_home" PLATFORM=macos link >/dev/null 2>&1 || \
   fail "second macOS link failed"
+run_make "$macos_profile_home" PLATFORM=macos clean >/dev/null 2>&1 || \
+  fail "macOS clean failed"
+[ ! -L "$macos_profile_home/.zprofile" ] && \
+  grep -Fqx 'export EXISTING_PROFILE=kept' "$macos_profile_home/.zprofile" || \
+  fail "macOS clean did not restore the original profile"
+[ ! -e "$macos_profile_home/.zprofile.local" ] || fail "restored profile retained its backup path"
+run_make "$macos_profile_home" PLATFORM=macos clean >/dev/null 2>&1 || fail "second macOS clean failed"
+stray_profile_home=$test_root/stray-profile-home
+mkdir -p "$stray_profile_home"
+printf 'keep-local\n' > "$stray_profile_home/.zprofile.local"
+run_make "$stray_profile_home" PLATFORM=linux clean >/dev/null 2>&1 || fail "clean with a stray local profile failed"
+[ ! -e "$stray_profile_home/.zprofile" ] || fail "clean promoted an unrelated local profile"
+grep -Fxq keep-local "$stray_profile_home/.zprofile.local" || fail "clean modified an unrelated local profile"
+
+echo "check-link: dangling checkout links are reported without removal"
+dangling_home=$test_root/dangling-home
+mkdir -p "$dangling_home/.config/zsh/sources"
+ln -s ../home/dev/dotfiles/deleted-package/.retired "$dangling_home/.retired"
+ln -s "$repo/deleted-package/.config/zsh/sources/missing file.zsh" \
+  "$dangling_home/.config/zsh/sources/missing file.zsh"
+ln -s "$test_root/external-missing" "$dangling_home/.unrelated"
+snapshot_home "$dangling_home" > "$test_root/dangling.before"
+run_make "$dangling_home" link-plan > "$test_root/dangling.plan" 2>&1 || fail "dangling link plan failed"
+grep -Fq 'DANGLING: .retired => ' "$test_root/dangling.plan" || fail "plan missed a relative dangling link"
+grep -Fq 'DANGLING: .config/zsh/sources/missing file.zsh => ' "$test_root/dangling.plan" || \
+  fail "plan missed an absolute dangling link with spaces"
+if grep -Fq 'DANGLING: .unrelated' "$test_root/dangling.plan"; then fail "plan claimed an unrelated link"; fi
+snapshot_home "$dangling_home" > "$test_root/dangling.after"
+cmp -s "$test_root/dangling.before" "$test_root/dangling.after" || fail "dangling link plan changed HOME"
+mkdir "$dangling_home/.config/unreadable"
+chmod 000 "$dangling_home/.config/unreadable"
+plan_failed=no
+run_make "$dangling_home" link-plan > "$test_root/unreadable.plan" 2>&1 || plan_failed=yes
+chmod 700 "$dangling_home/.config/unreadable"
+[ "$plan_failed" = no ] || fail "an unreadable unrelated directory blocked link-plan"
 
 macos_profile_conflict_home=$test_root/macos-profile-conflict-home
 mkdir -p "$macos_profile_conflict_home"

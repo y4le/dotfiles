@@ -27,6 +27,17 @@ real_pins=$repo/setup/pins/downloads.txt
 echo "check-pins: canonical pins"
 DOTFILES_PINS_FILE=$real_pins sh "$pin_script" lint
 
+echo "check-pins: vim-herdr-navigation revisions agree"
+herdr_navigation_pin=$(sed -n 's/.*paulbkim-dev\/vim-herdr-navigation@\([0-9a-f]*\).*/\1/p' mk/config.mk)
+vim_navigation_pin=$(sed -n "/^Plug 'paulbkim-dev\/vim-herdr-navigation'/s/.*'commit': '\([0-9a-f]*\)'.*/\1/p" vim/.vim/config/plugins.vim)
+nvim_navigation_pin=$(awk '/"paulbkim-dev\/vim-herdr-navigation"/ { found = 1; next }
+  found && /commit =/ { gsub(/.*commit = "|".*/, ""); print; exit }' nvim/.config/nvim/lua/plugins/core.lua)
+lock_navigation_pin=$(awk -F '"' '/^  "vim-herdr-navigation":/ { print $10 }' nvim/.config/nvim/lazy-lock.json)
+[ "${#herdr_navigation_pin}" -eq 40 ] || fail "navigation pin must be a full commit"
+for pin in "$vim_navigation_pin" "$nvim_navigation_pin" "$lock_navigation_pin"; do
+  [ "$pin" = "$herdr_navigation_pin" ] || fail "vim-herdr-navigation pins disagree"
+done
+
 expect_lint_failure() {
   label=$1
   file=$2

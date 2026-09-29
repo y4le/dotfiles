@@ -64,7 +64,9 @@ vim-plugins: ## [network] install pinned vim-plug and sync Vim plugins
 			'execute "source " . fnameescape($$VIMHOME . "/config/plugins.vim")' > "$$bootstrap"; \
 		echo "syncing Vim plugins"; \
 		DOTFILES_VERIFY_VIM_PLUGINS="$(CURDIR)/mk/verify-vim-plugins.vim" \
+			DOTFILES_RESTORE_VIM_PINS="$(CURDIR)/mk/restore-vim-pins.vim" \
 			vim -Nu NONE -n -S "$$bootstrap" '+PlugInstall --sync' \
+			'+execute "source " . fnameescape($$DOTFILES_RESTORE_VIM_PINS)' \
 			'+execute "source " . fnameescape($$DOTFILES_VERIFY_VIM_PLUGINS)' +qa
 
 nvim-plugins: ## [network] restore Neovim plugins from the lock
