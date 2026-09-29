@@ -34,7 +34,9 @@ EOF
 chmod +x "$test_root/bin/herdr"
 
 run() {
-  HOME=$home HERDR_BIN_PATH=$test_root/bin/herdr HERDR_TEST_LOG=$test_root/log \
+  HOME=$home HERDR_PREFIXES='ctrl+b ctrl+a ctrl+space' \
+    HERDR_CONFIG_PATH=$home/.config/herdr/config.toml \
+    HERDR_BIN_PATH=$test_root/bin/herdr HERDR_TEST_LOG=$test_root/log \
     bash "$tool" "$@"
 }
 
@@ -78,7 +80,10 @@ run set ctrl+a
 [ -L "$home/.config/herdr/config.toml" ] || fail "config link was replaced"
 [ "$(ls -l "$config" | cut -c1-10)" = "-rw-r-----" ] || fail "config mode changed"
 [ "$(run get)" = ctrl+a ] || fail "get did not report ctrl+a"
-grep -q '^key = "prefix+ctrl+b"$' "$config" || fail "missing ctrl+b switch"
+if ! grep -q '^key = "prefix+ctrl+b"$' "$config"; then
+  sed -n '/^# BEGIN herdr-prefix/,$p' "$config" >&2
+  fail "missing ctrl+b switch"
+fi
 grep -q '^key = "prefix+ctrl+space"$' "$config" || fail "missing ctrl+space switch"
 ! grep -q '^key = "prefix+ctrl+a"$' "$config" || fail "generated reserved ctrl+a switch"
 grep -q '^command = "\$HOME/.config/herdr/herdr-prefix set ctrl+b"$' "$config" || \
