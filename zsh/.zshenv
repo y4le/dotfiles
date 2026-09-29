@@ -15,10 +15,6 @@ fi
 export SHELL=${commands[zsh]:-${SHELL:-/bin/zsh}}
 
 
-export EDITOR=vim # vim 4 life
-export VISUAL=vim
-export GIT_EDITOR=$EDITOR
-
 export LESS='-imJMWR'
 export PAGER="less $LESS"
 
@@ -59,3 +55,10 @@ if [[ -d $HOME/.cargo/bin ]]; then
 fi
 
 export PATH
+
+if command -v nvim >/dev/null 2>&1; then
+  export EDITOR=nvim
+else
+  export EDITOR=vim
+fi
+export VISUAL=$EDITOR
