@@ -17,6 +17,7 @@ export XDG_CACHE_HOME="$test_root/cache"
 
 echo 'check-nvim-setup: file arguments retain read events'
 cat > "$test_root/init.lua" <<'EOF'
+vim.opt.rtp:prepend(vim.env.DOTFILES_REPO .. "/nvim/.config/nvim")
 dofile(vim.env.DOTFILES_TEST_OPTIONS)
 vim.api.nvim_create_autocmd({ "BufReadPre", "BufReadPost" }, {
   callback = function(args)
@@ -25,7 +26,7 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "BufReadPost" }, {
 })
 EOF
 printf 'return true\n' > "$test_root/file.lua"
-DOTFILES_TEST_OPTIONS="$repo/nvim/.config/nvim/lua/config/options.lua" \
+DOTFILES_REPO="$repo" DOTFILES_TEST_OPTIONS="$repo/nvim/.config/nvim/lua/config/options.lua" \
   DOTFILES_TEST_EVENTS="$test_root/events" \
   "$nvim_bin" --headless -u "$test_root/init.lua" -i NONE -n \
     "$test_root/file.lua" +qa > "$test_root/startup.out" 2>&1 || {

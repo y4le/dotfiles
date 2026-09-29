@@ -104,11 +104,13 @@ nvim-plugins: ## [network] restore Neovim plugins from the lock
 	DOTFILES_NVIM_BOOTSTRAP=1 DOTFILES_NVIM_LOCK_SNAPSHOT="$$snapshot" \
 		DOTFILES_NVIM_PARSERS="$(NVIM_TREESITTER_PARSERS)" \
 		DOTFILES_NVIM_PARSER_VERIFY_SCRIPT="$(CURDIR)/mk/verify-nvim-parsers.lua" \
+		DOTFILES_NVIM_ORG_RESTORE_SCRIPT="$(CURDIR)/mk/restore-nvim-org.lua" \
 		DOTFILES_NVIM_VERIFY_SCRIPT="$(CURDIR)/mk/verify-nvim-plugins.lua" \
 		"$$nvim_bin" --headless \
 		"+lua require('lazy').restore({ wait = true, show = false })" \
 		"+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" \
 		"+lua dofile(vim.env.DOTFILES_NVIM_PARSER_VERIFY_SCRIPT)" \
+		"+lua dofile(vim.env.DOTFILES_NVIM_ORG_RESTORE_SCRIPT)" \
 		"+lua dofile(vim.env.DOTFILES_NVIM_VERIFY_SCRIPT)" +qa || exit $$?; \
 	cmp -s "$$snapshot" "$(LAZY_NVIM_LOCK_FILE)" || { \
 		diff -u "$$snapshot" "$(LAZY_NVIM_LOCK_FILE)" || true; \
@@ -126,9 +128,11 @@ nvim-update: ## [network] update Neovim pins and show the lock diff
 	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
 	DOTFILES_NVIM_BOOTSTRAP=1 DOTFILES_NVIM_PARSERS="$(NVIM_TREESITTER_PARSERS)" \
 		DOTFILES_NVIM_PARSER_VERIFY_SCRIPT="$(CURDIR)/mk/verify-nvim-parsers.lua" \
+		DOTFILES_NVIM_ORG_RESTORE_SCRIPT="$(CURDIR)/mk/restore-nvim-org.lua" \
 		"$$nvim_bin" --headless "+Lazy! sync" \
 		"+TSUpdateSync $(NVIM_TREESITTER_PARSERS)" \
-		"+lua dofile(vim.env.DOTFILES_NVIM_PARSER_VERIFY_SCRIPT)" +qa || exit $$?; \
+		"+lua dofile(vim.env.DOTFILES_NVIM_PARSER_VERIFY_SCRIPT)" \
+		"+lua dofile(vim.env.DOTFILES_NVIM_ORG_RESTORE_SCRIPT)" +qa || exit $$?; \
 	git diff --stat -- "$(LAZY_NVIM_LOCK_FILE)"
 
 _restore-lazy-nvim:

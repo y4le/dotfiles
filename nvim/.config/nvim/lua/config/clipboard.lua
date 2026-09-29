@@ -1,5 +1,44 @@
 local M = {}
 
+function M.ssh_provider(env)
+  env = env or vim.env
+  local function present(name)
+    return env[name] ~= nil and env[name] ~= ""
+  end
+  if not (present("SSH_TTY") or present("SSH_CONNECTION"))
+    or present("TMUX")
+    or present("DISPLAY")
+    or present("WAYLAND_DISPLAY")
+  then
+    return nil
+  end
+
+  local osc52 = require("vim.ui.clipboard.osc52")
+  local cache = {}
+  local function copy(reg)
+    local send = osc52.copy(reg)
+    return function(lines, regtype)
+      cache[reg] = { vim.deepcopy(lines), regtype }
+      send(lines)
+    end
+  end
+  local function paste(reg)
+    return function()
+      local saved = cache[reg]
+      if not saved then
+        return 0
+      end
+      return vim.deepcopy(saved[1]), saved[2]
+    end
+  end
+
+  return {
+    name = "OSC 52 copy over SSH",
+    copy = { ["+"] = copy("+"), ["*"] = copy("*") },
+    paste = { ["+"] = paste("+"), ["*"] = paste("*") },
+  }
+end
+
 function M.can_paste()
   local ok, info = pcall(vim.fn.getreginfo, "+")
   if not ok or not info.regcontents or #info.regcontents == 0 then

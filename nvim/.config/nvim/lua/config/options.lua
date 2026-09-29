@@ -42,6 +42,12 @@ vim.opt.showmatch = true
 vim.opt.matchtime = 2
 
 vim.opt.mouse = "a"
+if vim.g.clipboard == nil then
+  local ssh_clipboard = require("config.clipboard").ssh_provider()
+  if ssh_clipboard then
+    vim.g.clipboard = ssh_clipboard
+  end
+end
 vim.opt.clipboard = "unnamed,unnamedplus"
 vim.opt.whichwrap:append("<,>,h,l")
 

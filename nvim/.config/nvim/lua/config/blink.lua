@@ -11,7 +11,7 @@ function M.opts()
       },
     },
     fuzzy = {
-      implementation = "prefer_rust_with_warning",
+      implementation = "lua",
     },
     keymap = {
       preset = "default",

@@ -118,7 +118,13 @@ jobs:
         run: |
           smoke_home="$RUNNER_TEMP/smoke-home"
           mkdir -p "$smoke_home"
-          echo "SMOKE_HOME=$smoke_home" >> "$GITHUB_ENV"
+          {
+            echo "SMOKE_HOME=$smoke_home"
+            echo "XDG_CONFIG_HOME=$smoke_home/.config"
+            echo "XDG_DATA_HOME=$smoke_home/.local/share"
+            echo "XDG_STATE_HOME=$smoke_home/.local/state"
+            echo "XDG_CACHE_HOME=$smoke_home/.cache"
+          } >> "$GITHUB_ENV"
 
       - name: Run bootstrap smoke test
         env:
@@ -140,6 +146,7 @@ jobs:
           test -x "$SMOKE_HOME/.local/bin/sheldon"
           HOME="$SMOKE_HOME" MISE_GLOBAL_CONFIG_FILE="$GITHUB_WORKSPACE/mise/.config/mise/config.toml" \
             "$SMOKE_HOME/.local/bin/mise" which nvim >/dev/null
+          HOME="$SMOKE_HOME" make check-nvim-first-open
 
       - name: Ensure bootstrap does not modify the repo
         run: |

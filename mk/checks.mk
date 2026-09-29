@@ -1,4 +1,4 @@
-.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-herdr check-make
+.PHONY: check check-actions check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-first-open check-nvim-bin check-runtime check-stow check-link check-herdr check-make
 
 check: check-git check-shell check-pins check-brew check-system-packages check-profiles check-vim check-nvim-bin check-runtime check-stow check-link check-herdr check-make ## [offline] run repo validation checks
 
@@ -117,6 +117,10 @@ check-vim: ## [offline] validate portable Vim configuration behavior
 	elif [ -n "$${CI:-}" ]; then \
 		echo "check-vim: Neovim required in CI" >&2; exit 1; \
 	fi
+
+check-nvim-first-open: ## [offline] verify named files after Neovim plugins are restored
+	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
+		sh mk/test-nvim-first-open.sh "$$nvim_bin"
 
 check-nvim-bin: ## [offline] verify Neovim binary selection
 	@sh mk/test-nvim-bin.sh

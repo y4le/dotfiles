@@ -28,6 +28,9 @@ if [ -n "$nvim_bin" ] && [ -x "$nvim_bin" ]; then
   env DOTFILES_REPO="$repo" DOTFILES_TEST_CLIPBOARD="$test_root/clipboard" \
     PATH="$test_root/bin:$PATH" \
     "$nvim_bin" --headless -u NONE -i NONE -n -l "$repo/mk/test-clipboard.lua"
+  echo 'check-clipboard: Neovim SSH copy and internal paste'
+  env DOTFILES_REPO="$repo" \
+    "$nvim_bin" --headless -u NONE -i NONE -n -l "$repo/mk/test-ssh-clipboard.lua"
 elif [ -n "${CI:-}" ]; then
   echo 'check-clipboard: Neovim required in CI' >&2
   exit 1

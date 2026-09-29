@@ -54,6 +54,7 @@ these are the main entry points.
 | `check` | Run repository validation | Offline |
 | `check-profiles` | Validate profile syntax, package paths, and mise tool keys | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |
+| `check-nvim-first-open` | Open named Lua, shell, and Org files with restored Neovim plugins | Offline; after `nvim-plugins` |
 
 `mise-tools` installs mise and only the selected tool names; `nvim-lazy`
 restores only lazy.nvim.
@@ -128,6 +129,11 @@ in that order. VimWiki's root is `g:vimwiki_root`, then `VIMWIKI_ROOT`, then
 Neovim loads `lua/config/`, the local hook, then lazy.nvim with specs from
 `lua/plugins/`. `lazy-lock.json` pins plugin commits; startup does not install
 missing plugins or check for updates.
+
+In a direct SSH session, Neovim sends clipboard copies to the local terminal
+with OSC 52. Pastes use text copied in that Neovim session, so they do not query
+the terminal clipboard. Tmux and sessions with a graphical clipboard retain
+their usual clipboard provider.
 
 Tmux starts with `Ctrl-B`; prefix `a`, `b`, or `Space` changes the active prefix
 to `Ctrl-A`, `Ctrl-B`, or `Ctrl-Space`. Prefix `R` reloads the config and prefix

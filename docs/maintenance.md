@@ -128,7 +128,12 @@ git diff -- nvim/.config/nvim/lazy-lock.json
 
 Review the lock diff before committing it. Use `make nvim-plugins` to restore
 the checked-in lock; it verifies restored commits and parser files, and
-preserves the lock file. Treesitter parsers are installed by these targets.
+preserves the lock file. Treesitter parsers, including orgmode's own grammar,
+are installed by these targets.
+The orgmode grammar tag and commit are pinned in `mk/restore-nvim-org.lua`;
+review and update both when changing the orgmode lock revision or grammar version.
+After restoring plugins, run `make check-nvim-first-open` to check named-file
+startup and confirm that Lua, shell, and Org files open without another download.
 
 ## Recover a rejected Zsh plugin restore
 

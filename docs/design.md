@@ -23,6 +23,10 @@ Startup uses installed plugins. Zsh sources a prebuilt cache and Neovim leaves
 missing plugins alone. Tmux uses only built-in functionality. Opening a terminal
 should not become a package installation.
 
+Neovim uses blink.cmp's Lua matcher so opening a file does not fetch a native
+library. `make nvim-plugins` restores orgmode's grammar before an `.org` file is
+opened; editor startup remains offline after a successful restore.
+
 ## File ownership and information isolation
 
 Stow uses `--no-folding`: managed files are symlinks, while containing
