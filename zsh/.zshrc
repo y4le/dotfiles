@@ -177,7 +177,7 @@ export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(printf %s {} | cpy)'"
 export fzf_preview_opt="--preview-window down:50% --preview '(bat --color=always --line-range :200 {} || cat {} || tree -C {}) 2>/dev/null'"
 export FZF_CTRL_T_OPTS="--bind 'ctrl-l:execute(bat --color=always {} | less -Rf || less -f {}),ctrl-f:execute(bat --paging=always {} || less -f {})' $fzf_preview_opt"
 
-export FZF_TMUX=1
+unset FZF_TMUX
 export FZF_TMUX_HEIGHT=80%
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow -g "!{.git,node_modules,.venv}/*"'

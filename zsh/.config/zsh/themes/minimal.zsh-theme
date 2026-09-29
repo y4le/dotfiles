@@ -9,6 +9,7 @@ MNML_INSERT_CHAR="${MNML_INSERT_CHAR:-›}"
 MNML_NORMAL_CHAR="${MNML_NORMAL_CHAR:-·}"
 MNML_ELLIPSIS_CHAR="${MNML_ELLIPSIS_CHAR:-..}"
 MNML_BGJOB_MODE=${MNML_BGJOB_MODE:-4}
+MNML_LAST_ERR=${MNML_LAST_ERR:-0}
 
 [ "${+MNML_PROMPT}" -eq 0 ] && MNML_PROMPT=(mnml_ssh mnml_pyenv mnml_status mnml_keymap)
 [ "${+MNML_RPROMPT}" -eq 0 ] && MNML_RPROMPT=('mnml_cwd 2 0' mnml_git)
@@ -77,11 +78,11 @@ function mnml_git {
 }
 
 function _mnml_git_precmd {
-	local bname="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
+	local bname="$(git --no-optional-locks rev-parse --abbrev-ref HEAD 2> /dev/null)"
 	MNML_GIT_PROMPT=''
 	if [[ -n "$bname" ]]; then
 		local statc="%{\e[0;3${MNML_OK_COLOR}m%}"
-		if [[ -n "$(git status --porcelain 2> /dev/null)" ]]; then
+		if [[ -n "$(git --no-optional-locks status --porcelain 2> /dev/null)" ]]; then
 			statc="%{\e[0;3${MNML_ERR_COLOR}m%}"
 		fi
 		MNML_GIT_PROMPT="$statc$bname%{\e[0m%}"
@@ -166,7 +167,7 @@ function mnml_me_ls {
 }
 
 function mnml_me_git {
-	git -c color.status=always status -sb 2> /dev/null
+	git --no-optional-locks -c color.status=always status -sb 2> /dev/null
 }
 
 # Wrappers & utils
@@ -206,9 +207,13 @@ function _mnml_me {
 	printf '%b' "${(j:\n:)output}" | less -XFR
 }
 
-# capture exit status and reset prompt
+# Capture command status in precmd, before syntax-highlighting's ZLE wrapper.
+function _mnml_capture_status {
+MNML_LAST_ERR="$?"
+}
+
+# reset prompt
 function _mnml_zle-line-init {
-MNML_LAST_ERR="$?" # I need to capture this ASAP
 zle reset-prompt
 }
 
@@ -259,6 +264,7 @@ function _mnml_bind_widgets() {
 autoload -U colors && colors
 setopt prompt_subst
 autoload -Uz add-zsh-hook
+add-zsh-hook precmd _mnml_capture_status
 add-zsh-hook precmd _mnml_git_precmd
 add-zsh-hook chpwd _mnml_git_precmd
 

@@ -405,6 +405,8 @@ echo "check-runtime: prompt redraw reuses git status"
 cat > "$test_home/bin/git" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >> "$DOTFILES_RUNTIME_LOG"
+[ "$1" = --no-optional-locks ] || exit 98
+shift
 case $1 in
   rev-parse)
     case $PWD in
@@ -439,14 +441,36 @@ case $prompt_state in
   *review-branch*review-branch*other-branch*project* ) : ;;
   *) fail "prompt did not refresh the branch on cd or retain the environment" ;;
 esac
-[ "$(grep -Ec '^(rev-parse|status)' "$runtime_log")" -eq 4 ] || \
+[ "$(grep -Ec '^--no-optional-locks (rev-parse|status)' "$runtime_log")" -eq 4 ] || \
   fail "prompt did not refresh exactly once per directory change"
+if grep -Eq '^(rev-parse|status) ' "$runtime_log"; then
+  fail "prompt Git command took optional locks"
+fi
 if grep -Eq '^(sed|basename|hostname) ' "$runtime_log"; then
   fail "prompt component spawned a basic command"
 fi
 for command_name in sed basename hostname; do
   rm "$test_home/bin/$command_name"
 done
+
+echo "check-runtime: command status survives syntax-highlighting redraws"
+cat > "$test_root/prompt-status.zsh" <<'EOF'
+  source "$HOME/.config/zsh/themes/minimal.zsh-theme"
+  function earlier_hook() { true; }
+  precmd_functions=(earlier_hook $precmd_functions)
+  function zle() { :; }
+  function highlighting_wrapper() { true; _mnml_zle-line-init; }
+  false
+  highlighting_wrapper; print -r -- "FAILED=$MNML_LAST_ERR|$(mnml_err)"
+  true
+  highlighting_wrapper; print -r -- "OK=$MNML_LAST_ERR|$(mnml_err)"
+EOF
+run_zsh -i < "$test_root/prompt-status.zsh" > "$test_root/prompt-status.out" \
+  2> "$test_root/prompt-status.err" || fail "interactive prompt failed"
+grep -Eq '^FAILED=1\|.+1' "$test_root/prompt-status.out" || fail "prompt lost failed command status"
+grep -Fxq 'OK=0|' "$test_root/prompt-status.out" || fail "prompt retained a stale error"
+run_zsh -c 'export FZF_TMUX=1; exec zsh -i -c "(( ! \${+FZF_TMUX} )) && [[ \$FZF_TMUX_HEIGHT == 80% ]]"' \
+  2> "$test_root/fzf-inherited.err" || fail "fzf retained an inherited tmux-helper setting"
 
 if [ -n "$nvim_bin" ]; then
   git_stub=$test_home/bin/git
