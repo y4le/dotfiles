@@ -134,6 +134,21 @@ The Sheldon startup cache is
 `${XDG_CACHE_HOME:-~/.cache}/dotfiles/sheldon.zsh`. Startup reads it without
 running Sheldon or downloading plugins; `make sheldon-plugins` creates it.
 
+## File navigation in Zsh
+
+`nav` opens an fzf picker and changes directory or opens the selected file.
+It is a Zsh helper loaded by `.zshrc`. `EDITOR` accepts an executable followed
+by arguments with shell quoting, such as `nvim -c 'set number'` or
+`emacsclient -a ""`. Empty or whitespace-only settings fall back to Vim.
+Quotes group arguments; variables, `~`, globs, command substitutions, and
+shell operators remain literal words. Use an executable wrapper for a more
+complex launch command. The selected filename stays one argument, including
+spaces and newlines.
+
+Cancelling the picker or choosing no match returns success. Missing tools,
+picker errors, editor errors, and failed directory changes return nonzero
+immediately, with command diagnostics preserved.
+
 ## Local hooks
 
 | Hook | When it loads | Use |
