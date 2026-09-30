@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -eu
+block_name=${BLOCK_NAME:-}
+case $block_name in
+  memory | disk | iface | bandwidth | cpu_usage | keyindicator) ;;
+  *) echo "i3blocks: unsupported block name: $block_name" >&2; exit 1 ;;
+esac
+
+run_blocklet() {
+  for candidate in "$1/$block_name" "$1/$block_name/$block_name"; do
+    if [ -f "$candidate" ] && [ -x "$candidate" ]; then
+      shift
+      exec "$candidate" "$@"
+    fi
+  done
+}
+
+if [ -n "${I3BLOCKS_SCRIPT_DIR:-}" ]; then
+  run_blocklet "$I3BLOCKS_SCRIPT_DIR" "$@"
+else
+  for script_dir in \
+    "$HOME/.local/libexec/i3blocks" \
+    /usr/local/libexec/i3blocks /usr/libexec/i3blocks \
+    /usr/share/i3blocks-contrib /usr/lib/i3blocks /usr/share/i3blocks; do
+    run_blocklet "$script_dir" "$@"
+  done
+fi
+
+printf '[missing %s]\n' "$block_name"
+echo "i3blocks: install compatible blocklets; see docs/setup.md (I3BLOCKS_SCRIPT_DIR selects their directory)" >&2
+exit 1

@@ -185,6 +185,39 @@ configuration; it does not install i3 or Karabiner itself.
 
 Pass `DESKTOP=1` when relinking a desktop installation.
 
+### Linux status-bar scripts
+
+Install i3blocks separately. Its legacy Debian package includes scripts under
+`/usr/share/i3blocks`; the [current Arch package file list](https://archlinux.org/packages/extra/x86_64/i3blocks/files/)
+contains no blocklets. The runtime wrapper also checks user/system libexec
+directories, `/usr/lib/i3blocks`, and flat or nested
+`/usr/share/i3blocks-contrib` layouts. Set `I3BLOCKS_SCRIPT_DIR` in the i3
+session environment to use one explicit directory instead.
+
+With i3blocks 1.5 or newer, install the six scripts used by this configuration
+from the [official contrib repository](https://github.com/vivien/i3blocks-contrib).
+This example checks out a fixed source revision; review it before installation:
+
+```sh
+mkdir -p "$HOME/.local/src"
+git clone https://github.com/vivien/i3blocks-contrib.git "$HOME/.local/src/i3blocks-contrib"
+git -C "$HOME/.local/src/i3blocks-contrib" checkout --detach 9d66d81da8d521941a349da26457f4965fd6fcbd
+install -d "$HOME/.local/libexec/i3blocks"
+for block in memory disk iface bandwidth cpu_usage keyindicator; do
+  install -m 755 "$HOME/.local/src/i3blocks-contrib/$block/$block" \
+    "$HOME/.local/libexec/i3blocks/$block"
+done
+```
+
+These scripts need Bash, Perl, `ip` (iproute2), `bc`, `mpstat` (sysstat), and
+`xset` (Debian's x11-xserver-utils or Arch's xorg-xset), in addition to the
+usual core utilities. Install those desktop dependencies manually; the base
+native package target does not supply them. Existing `instance=swap`, disk
+paths, and network interfaces remain supported by the selected contrib
+revision. Memory formatting can differ from the legacy scripts. Restart
+i3blocks after installing scripts; a missing script displays `[missing name]`
+in the bar and reports the dependency on stderr.
+
 ## Configure Git identity
 
 After linking:

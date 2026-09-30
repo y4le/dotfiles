@@ -1,5 +1,5 @@
 # Global properties
-command=/usr/share/i3blocks/$BLOCK_NAME
+command=~/.config/i3blocks/blocklet
 separator_block_width=15
 markup=none
 
@@ -62,6 +62,7 @@ interval=5
 # bindsym --release Caps_Lock exec pkill -SIGRTMIN+11 i3blocks
 # bindsym --release Num_Lock  exec pkill -SIGRTMIN+11 i3blocks
 [keyindicator]
+markup=pango
 #instance=CAPS
 #interval=once
 #signal=11
