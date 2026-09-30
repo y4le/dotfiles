@@ -83,17 +83,12 @@ jobs:
           make nvim-lazy
           sh mk/pinned.sh install vim-plug "$RUNNER_TEMP/plug.vim" 0644
           sh mk/pinned.sh install sheldon "$RUNNER_TEMP/sheldon" 0755
-          for fixture in \
-            'vimwiki/vimwiki@72792615e739d0eb54a9c8f7e0a46a6e2407c9e8' \
-            'junegunn/goyo.vim@fa0263d456dd43f5926484d1c4c7022dfcb21ba9'; do
-            source="${fixture%@*}"
-            revision="${fixture#*@}"
-            destination="$RUNNER_TEMP/${source##*/}"
-            git init "$destination"
-            git -C "$destination" fetch --depth=1 "https://github.com/$source.git" "$revision"
-            git -C "$destination" checkout --detach FETCH_HEAD
-            test "$(git -C "$destination" rev-parse HEAD)" = "$revision"
-          done
+          revision=72792615e739d0eb54a9c8f7e0a46a6e2407c9e8
+          destination="$RUNNER_TEMP/vimwiki"
+          git init "$destination"
+          git -C "$destination" fetch --depth=1 https://github.com/vimwiki/vimwiki.git "$revision"
+          git -C "$destination" checkout --detach FETCH_HEAD
+          test "$(git -C "$destination" rev-parse HEAD)" = "$revision"
 
       - name: Run repo checks
         env:
@@ -103,7 +98,6 @@ jobs:
           MISE_OFFLINE: "1"
           DOTFILES_TEST_VIM_PLUG: ${{ runner.temp }}/plug.vim
           DOTFILES_TEST_VIMWIKI: ${{ runner.temp }}/vimwiki
-          DOTFILES_TEST_GOYO: ${{ runner.temp }}/goyo.vim
           DOTFILES_TEST_SHELDON: ${{ runner.temp }}/sheldon
         run: make -k check
 

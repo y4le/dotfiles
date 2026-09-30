@@ -25,10 +25,6 @@ function! AuditFiletype() abort
     call writefile([expand('%:p'), &filetype, &syntax] + errors, $DOTFILES_VIM_RESULT)
     cquit
   endif
-  if &filetype ==# 'book' && exists(':Goyo') == 2 && !exists('#goyo')
-    call writefile(['Goyo did not start after book detection'], $DOTFILES_VIM_RESULT)
-    cquit
-  endif
   if expand('%:p') !=# $DOTFILES_VIM_FILE
     call writefile(['startup changed the current buffer'], $DOTFILES_VIM_RESULT)
     cquit
@@ -62,18 +58,16 @@ run_case wiki markdown markdown
 run_case book book vimwiki
 
 vimwiki=${DOTFILES_TEST_VIMWIKI:-$HOME/.local/share/vim/plugged/vimwiki}
-goyo=${DOTFILES_TEST_GOYO:-$HOME/.local/share/vim/plugged/goyo.vim}
 plug=${DOTFILES_TEST_VIM_PLUG:-$HOME/.vim/autoload/plug.vim}
-if [ ! -f "$vimwiki/plugin/vimwiki.vim" ] || [ ! -f "$goyo/plugin/goyo.vim" ] || [ ! -f "$plug" ]; then
-  [ -z "${CI:-}" ] || fail "real VimWiki/Goyo/vim-plug fixtures required in CI"
+if [ ! -f "$vimwiki/plugin/vimwiki.vim" ] || [ ! -f "$plug" ]; then
+  [ -z "${CI:-}" ] || fail "real VimWiki/vim-plug fixtures required in CI"
   echo "check-vim-filetypes: real plugins unavailable; skipping restored cases"
   exit 0
 fi
 mkdir -p "$test_home/.local/share/vim/plugged"
 cp "$plug" "$test_home/.vim/autoload/plug.vim"
 ln -s "$vimwiki" "$test_home/.local/share/vim/plugged/vimwiki"
-ln -s "$goyo" "$test_home/.local/share/vim/plugged/goyo.vim"
-echo "check-vim-filetypes: named files with real VimWiki and Goyo"
+echo "check-vim-filetypes: named files with real VimWiki"
 run_case md markdown markdown
 run_case md vimwiki vimwiki "$test_home/vimwiki/work/wiki/registered.md"
 run_case wiki vimwiki vimwiki

@@ -35,6 +35,8 @@ let &directory = $VIMSTATE . "/swap//"
 let &backupdir = $VIMSTATE . "/backup//"
 let &viewdir = $VIMSTATE . "/view"
 let &viminfofile = $VIMSTATE . "/viminfo"
+" Keep 1000 recently visited files across sessions, preserving other options.
+let &viminfo = substitute(&viminfo, "\\(^\\|,\\)'\\d\\+", "\\1'1000", '')
 set backup " keep backups
 
 " LOOK

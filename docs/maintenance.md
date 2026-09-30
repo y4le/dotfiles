@@ -265,6 +265,8 @@ legacy history file.
 
 ### Vim state
 
+Recent files use Viminfo; the retired MRU plugin's `mru_files` can be deleted.
+
 Close Vim before migrating state. Create the destination directories, then copy
 each existing source that is present:
 
@@ -273,8 +275,6 @@ state_home=${XDG_STATE_HOME:-"$HOME/.local/state"}
 mkdir -p -m 700 "$state_home/vim/undo" "$state_home/vim/view" \
   "$state_home/vim/sessions"
 [ ! -f "$HOME/.viminfo" ] || cp -p "$HOME/.viminfo" "$state_home/vim/viminfo"
-[ ! -f "$HOME/.vim/mru_files" ] || \
-  cp -p "$HOME/.vim/mru_files" "$state_home/vim/mru_files"
 for name in undo view sessions; do
   [ ! -d "$HOME/.vim/$name" ] || \
     cp -Rp "$HOME/.vim/$name/." "$state_home/vim/$name/"

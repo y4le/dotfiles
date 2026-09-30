@@ -64,6 +64,13 @@ echo "check-vim: command-line abbreviations"
 env DOTFILES_REPO="$repo" vim -Nu NONE -i NONE -n -es \
   -S "$repo/mk/test-vim-abbrev.vim" || fail "Vim abbreviations changed commands or word motions"
 
+echo "check-vim: persistent recent-file history"
+env DOTFILES_REPO="$repo" DOTFILES_TEST_ROOT="$test_root" \
+  vim -Nu NONE -i NONE -n -es -S "$repo/mk/test-vim-history.vim" || {
+    [ ! -f "$test_root/errors" ] || cat "$test_root/errors" >&2
+    fail "Vim recent-file history depth failed"
+  }
+
 echo "check-vim: plugin restore verification"
 mkdir -p "$test_root/installed-plugin"
 mkdir -p "$test_root/installed-plugin/.git"
@@ -136,7 +143,7 @@ run_startup() {
     DOTFILES_VIM_MESSAGES="$messages" DOTFILES_VIM_STATE="$state" \
     vim -Nu "$runtime_home/.vimrc" -n -es \
       -c 'call writefile(split(execute("messages"), "\n"), $DOTFILES_VIM_MESSAGES)' \
-      -c 'call writefile([exists("g:MRU_File"), exists(":FzfMru"), maparg("\<Space>Fm", "n"), maparg("\<Space>Fpm", "n"), get(g:, "colors_name", ""), $VIMSTATE, &viminfofile, &undodir, &directory, &backupdir, &viewdir, get(g:, "MRU_File", "")], $DOTFILES_VIM_STATE)' \
+      -c 'call writefile([exists("g:airline#extensions#tabline#formatter"), exists(":FzfMru"), maparg("\<Space>Fm", "n"), maparg("\<Space>Fpm", "n"), get(g:, "colors_name", ""), $VIMSTATE, &viminfofile, &undodir, &directory, &backupdir, &viewdir, get(g:, "MRU_File", "")], $DOTFILES_VIM_STATE)' \
       -c 'qa!' > /dev/null 2> "$runtime_stderr"
 }
 
@@ -211,8 +218,7 @@ fi
 [ "$(sed -n '2p' "$state")" = 2 ] || fail "FzfMru was not defined"
 [ "$(sed -n '3p' "$state")" = ':FzfMru<CR>' ] || fail "FzfMru mapping was not defined"
 [ "$(sed -n '4p' "$state")" = ':FzfMru!<CR>' ] || fail "FzfMru preview mapping was not defined"
-[ "$(sed -n '12p' "$state")" = "$vim_state/mru_files" ] || \
-  fail "MRU state used the wrong path"
+[ -z "$(sed -n '12p' "$state")" ] || fail "disabled MRU plugin retained a state path"
 assert_clean_startup "startup with stub vim-plug"
 
 mkdir -p "$runtime_home/.vim/colors"

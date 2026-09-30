@@ -69,27 +69,32 @@ call s:FzfFileCmdDef('FzfGit', {'source': 'git ls-files'})
 nnoremap <leader>Fg :FzfGit<cr>
 nnoremap <leader>Fpg :FzfGit!<cr>
 
-" most recently used files -> fzf
-if exists('g:MRU_File')
-  call s:FzfFileCmdDef('FzfMru', {'source': 'tail -n +2 ' . g:MRU_File})
-  nnoremap <leader>Fm :FzfMru<cr>
-  nnoremap <leader>Fpm :FzfMru!<cr>
-endif
-" v:oldfiles is vim's builin equivalent
-call s:FzfFileCmdDefRaw('Oldfiles',
-  \ '"source": map(copy(v:oldfiles), "expand(v:val)")',
-  \ { 'down': '100%', 'options': ['--multi', '--preview', 'bat {} || cat {}'] })
+" Recent files combine Vim's persisted history with this session's buffers.
+" Keep both command names, with one picker and no separate MRU state file.
+function! s:RecentFiles(bang) abort
+  call fzf#vim#history(fzf#vim#with_preview({},
+    \ a:bang ? 'right' : 'right:50%:hidden', '?'), a:bang)
+endfunction
+command! -bar -bang FzfMru call s:RecentFiles(<bang>0)
+command! -bar -bang Oldfiles call s:RecentFiles(<bang>0)
+nnoremap <leader>Fm :FzfMru<cr>
+nnoremap <leader>Fpm :FzfMru!<cr>
 
-" open buffers -> fzf
-call s:FzfFileCmdDefRaw('Buffs',
-  \ '"source": map(filter(copy(g:buffergator_mru[1:]), "bufexists(v:val)"), "bufname(v:val)")',
-  \ { 'down': '100%', 'options': ['--multi', '--preview', 'bat {} || cat {}'] })
+" fzf.vim tracks buffer recency and selects by number, including unnamed
+" buffers. AllBuffs also includes existing unlisted buffers (help, scratch).
+function! s:Buffers(all, bang) abort
+  let args = ['']
+  if a:all
+    call add(args, map(getbufinfo(), 'v:val.bufnr'))
+  endif
+  call extend(args, [fzf#vim#with_preview({'placeholder': '{1}'},
+    \ a:bang ? 'right' : 'right:50%:hidden', '?'), a:bang])
+  call call('fzf#vim#buffers', args)
+endfunction
+command! -bar -bang Buffs call s:Buffers(0, <bang>0)
+command! -bar -bang AllBuffs call s:Buffers(1, <bang>0)
 nnoremap <leader>Fb :Buffs<cr>
 nnoremap <leader>Fpb :Buffs!<cr>
-
-call s:FzfFileCmdDefRaw('AllBuffs',
-  \ '"source": map(range(1, bufnr("$")), "bufname(v:val)")',
-  \ { 'down': '100%', 'options': ['--multi', '--preview', 'bat {} || cat {}'] })
 nnoremap <leader>FB :AllBuffs<cr>
 nnoremap <leader>FpB :AllBuffs!<cr>
 

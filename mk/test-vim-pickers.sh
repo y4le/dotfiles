@@ -30,6 +30,12 @@ cat > "$test_root/autoload/fzf/vim.vim" <<'EOF'
 function! fzf#vim#with_preview(options, ...) abort
   return a:options
 endfunction
+function! fzf#vim#history(...) abort
+  let g:history_call = a:000
+endfunction
+function! fzf#vim#buffers(...) abort
+  let g:buffers_call = a:000
+endfunction
 EOF
 cat > "$test_root/fzf-test.vim" <<'EOF'
 execute 'set runtimepath^=' . fnameescape($DOTFILES_TEST_ROOT)
@@ -43,10 +49,52 @@ for bang in ['', '!']
   call assert_equal('late-command', g:picker_output)
   call assert_equal(0, g:picker_status)
 endfor
+" Recent-file commands remain available without the MRU plugin or its file.
+call assert_false(exists('g:MRU_File'))
+for command in ['FzfMru', 'Oldfiles']
+  for bang in ['', '!']
+    execute command . bang
+    call assert_equal(bang ==# '!' ? 1 : 0, g:history_call[-1])
+  endfor
+endfor
+" Create a hole in buffer numbers and an unnamed, unlisted scratch buffer.
+set hidden
+edit first.txt
+let first = bufnr('')
+edit deleted.txt
+let deleted = bufnr('')
+edit last.txt
+execute 'bwipeout ' . deleted
+enew
+setlocal buftype=nofile nobuflisted
+let scratch = bufnr('')
+call assert_false(exists('g:buffergator_mru'))
+for bang in ['', '!']
+  execute 'Buffs' . bang
+  " Let fzf.vim choose and sort listed buffers; do not pass file names.
+  call assert_equal(3, len(g:buffers_call))
+  call assert_equal('', g:buffers_call[0])
+  call assert_equal(bang ==# '!' ? 1 : 0, g:buffers_call[-1])
+  call assert_equal('{1}', g:buffers_call[-2].placeholder)
+  execute 'AllBuffs' . bang
+  call assert_true(index(g:buffers_call[1], first) >= 0)
+  call assert_true(index(g:buffers_call[1], scratch) >= 0)
+  call assert_equal(-1, index(g:buffers_call[1], deleted))
+  call assert_equal(bang ==# '!' ? 1 : 0, g:buffers_call[-1])
+endfor
+" fzf.vim history abbreviates home paths; quickfix needs absolute filenames
+" without expanding literal percent, hash, or wildcard characters.
+execute 'source ' . fnameescape($DOTFILES_REPO . '/vim/.vim/autoload/quickfix.vim')
+let $QF_LITERAL = 'expanded'
+let history_file = $HOME . '/history%#[$QF_LITERAL].txt'
+call writefile(['history'], history_file)
+call quickfix#BuildQuickfix(['~/history%#[$QF_LITERAL].txt'])
+call assert_equal(history_file, getbufinfo(getqflist()[0].bufnr)[0].name)
+call assert_equal(history_file, expand('%:p'))
 if !empty(v:errors) | call writefile(v:errors, $DOTFILES_RESULT) | cquit | endif
 qa!
 EOF
-echo "check-vim-pickers: fzf command uses the current environment"
+echo "check-vim-pickers: file and buffer pickers work without MRU or Buffergator"
 env -i HOME="$test_root/home" PATH=/usr/bin:/bin LC_ALL=C \
   DOTFILES_REPO="$repo" DOTFILES_TEST_ROOT="$test_root" DOTFILES_RESULT="$test_root/result" \
   "$vim_bin" -Nu NONE -i NONE -n -es -S "$test_root/fzf-test.vim" || {

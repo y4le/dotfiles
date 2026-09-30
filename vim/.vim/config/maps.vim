@@ -27,41 +27,30 @@ nnoremap L :tabnext<cr>
 nnoremap X :tabclose<cr>
 
 " buffers
-nnoremap <leader>bp :BuffergatorMruCyclePrev<cr>|" (b)uffer (p)rev by recency
-nnoremap <leader>bn :BuffergatorMruCycleNext<cr>|" (b)uffer (n)ext by recency
 nnoremap <leader>bx :bp\|bd #<cr>|" close buffer and preserve window/split
 
 " switches
 nnoremap <leader>sr :set relativenumber!<cr>|" toggle relative line ##s
-nnoremap <leader>sa :AnsiEsc<cr>|" toggle ANSI escaping (color codes)
 nnoremap <leader>sp :set paste!<cr>|" toggle paste mode
 nnoremap <leader>sc :call conceal#toggle_conceal()<cr>|" toggle concealing chars
-nnoremap <leader>sz :Goyo<cr>|" toggle distraction free mode
 
 " sidebars
-nnoremap <leader>sb :BuffergatorToggle<cr>|" toggle buffer sidebar
-nnoremap <leader>sT :BuffergatorTabsToggle<cr>|" toggle tabs sidebar
-nnoremap <leader>sg :TagbarToggle<cr>|" toggle tagbar ctags browser sidebar
+" nnoremap <leader>sg :TagbarToggle<cr>|" toggle tagbar ctags browser sidebar
 nnoremap <leader>sn :NERDTreeToggle<cr>|" toggle NERDTree directory sidebar
 nnoremap <leader>sN :NERDTreeFind<cr>|" locate current file in NERDTree
-nnoremap <leader>su :GundoToggle<cr>|" toggle UndoTree undo history sidebar
 
 " quickfix
-nnoremap <leader>qq :call asyncrun#quickfix_toggle(8)<cr>|" toggle quickfix pane
+nnoremap <leader>qq :copen<cr>|" open quickfix pane
 nnoremap <leader>qn :cn<cr>|" quickfix next
 nnoremap <leader>qp :cp<cr>|" quickfix prev
-nnoremap <leader>qm :MRU<cr>|" most recently used files in quickfix
+nnoremap <leader>qm :FzfMru<cr>|" recent files; ctrl-q sends selections to quickfix
 
 " other
-vnoremap <leader>n :NarrowRegion<cr>|" open temp buffer to modify selection
 noremap <leader>/ :<C-u>nohlsearch<cr>|" clear highlight for last search
 noremap <C-g> :<C-u>Yazi<cr>|" start yazi file system navigator, zsh keymap
 
 " expand `%%/` to full path of current file on command line
 cnoreabbr <expr> %% expand('%:p:h')
-call abbreviate#Cnoreabbr('to', 'TabooOpen', 'open tab with name')
-call abbreviate#Cnoreabbr('tr', 'TabooRename', 'rename current tab')
-call abbreviate#Cnoreabbr('tR', 'TabooReset', 'reset tab name to default')
 
 " navigation
 nnoremap <leader>gf :call nav#OpenInPrevSplit()<cr>

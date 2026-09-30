@@ -25,6 +25,39 @@ those commands are installed. `shellcheck` enables Bash and POSIX shell linting
 in Neovim and local `make check` runs; CI installs it explicitly. These three
 tools are optional and are not installed by `make tools`.
 
+## Vim files, buffers, and recursive search
+
+`<Space>m` opens recent files from Vim's persisted history and this session's
+buffers. `:FzfMru` and `:Oldfiles` use the same fzf.vim history picker; no MRU
+plugin or separate history file is needed. Add `!` for fullscreen, or press
+`?` to toggle the preview. `<Space>Fm` and `<Space>Fpm` open the same picker.
+`<Space>qm` also opens recent files; select files and press `Ctrl-Q` to send
+them to quickfix.
+
+`<Space>j` (`:Buffs`) lists ordinary buffers in recent-use order, with the
+current buffer shown as a header. `<Space>J` (`:AllBuffs`) also includes existing
+unlisted buffers such as help and scratch buffers. Buffer selection uses
+buffer numbers, so unnamed buffers are selectable. These pickers select one
+buffer at a time; both commands accept `!` for fullscreen.
+
+Ferret's `:Ack` has been removed. Use the existing commands below instead:
+
+| Command | Search behavior |
+| --- | --- |
+| `:Fw literal text` | Recursive, case-insensitive literal search from Vim's working directory, with fzf selection and optional preview |
+| `:Fl literal text` | The same search from the current file's directory |
+| `:grep! -e 'pattern' .` then `:copen` | Recursive ripgrep regex search into quickfix; smart case, honoring ignore files |
+| `:cnext`, `:cprevious` | Move through quickfix matches |
+
+`:Fw` and `:Fl` include hidden and ignored files, follow symlinks, and exclude
+`.git`. Use `Tab` to select several matches, or `Alt-A` to select all; `Enter`
+opens quickfix for multiple selected matches. This provides the search-to-
+quickfix workflow previously supplied by `:Ack`.
+
+For replacement across matched lines, Vim's native quickfix workflow is
+`:cdo s/old/new/ge | update`; use `:cfdo %s/old/new/ge | update` to replace
+throughout each matched file. Review the quickfix results before either.
+
 ## Make targets
 
 `make` defaults to `make help`. The help output is the complete target list;

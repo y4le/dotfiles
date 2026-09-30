@@ -5,7 +5,7 @@ if !filereadable($VIMHOME . '/autoload/plug.vim')
 endif
 
 call plug#begin(expand('~/.local/share/vim/plugged'))
-Plug 'gpanders/vim-man' " :Man pages in vim
+" Plug 'gpanders/vim-man' " :Man pages in vim
 
 " theme plugins
 Plug 'ErichDonGubler/vim-sublime-monokai' " :colorscheme sublimemonokai
@@ -13,50 +13,29 @@ Plug 'vim-airline/vim-airline' " status line replacement
 
 " ui navigation plugins
 Plug 'christoomey/vim-tmux-navigator' " C-h/j/k/l moves vim/tmux panes
-" C-h/j/k/l moves vim/herdr panes; see after/plugin/herdr_nav.vim
 Plug 'paulbkim-dev/vim-herdr-navigation', {'commit': '79679dacc791f70fc34de8b29a3cf9706c0f5b2f'}
 Plug 'dhruvasagar/vim-zoom' " <leader>z zooms pane like tmux
-Plug 'gcmt/taboo.vim' " better tabline / rename tabs
-Plug 'chrisbra/unicode.vim' " unicode search / completion
-
-" command plugins
-Plug 'chrisbra/NrrwRgn' " <leader>n - selection is opened in temp buffer to edit
-Plug 'junegunn/goyo.vim' " minimal distraction writing
-Plug 'junegunn/vim-peekaboo' " show registers when about to use
-Plug 'sickill/vim-pasta' " p now pastes at right indent, like ]p
 
 " motion / target plugins
 Plug 'tpope/vim-surround' " surround nouns, e.g. ysiw[ -> put [ around word
 Plug 'wellle/targets.vim' " di' -> delete inside '
-Plug 'jeetsukumaran/vim-indentwise' " [= / ]= -> prev/next equal indent
 
 " search plugins
 Plug 'markonm/traces.vim' " %s/live preview/substitute commands/
-Plug 'wincent/ferret' " :Ack -> multi file search | quickfix pane
 
 " sidebar / gutter plugins
-Plug 'jeetsukumaran/vim-buffergator' " sidebar showing buffer list
-Plug 'jeffkreeftmeijer/vim-numbertoggle' " hybrid to static line #s on un/focus
 Plug 'mhinz/vim-signify' " git gutter
 Plug 'preservim/nerdtree' " sidebar showing file navigator
-Plug 'sjl/gundo.vim' " sidebar showing full undo history
 
-" " ctags
+" ctags
 " Plug 'ludovicchabant/vim-gutentags' " auto manage ctags
-Plug 'preservim/tagbar' " sidebar showing structure using ctags
+" Plug 'preservim/tagbar' " sidebar showing structure using ctags
 
 " completion / linting plugins
-" Plug 'maralla/completor.vim' " code completion
-" Plug 'Valloric/YouCompleteMe' " code completion
-Plug 'ntpeters/vim-better-whitespace' " highlight trailing whitespace
-Plug 'tomtom/tcomment_vim' " commenting plugin
 Plug 'dense-analysis/ale' " async linting engine
 
 " vimwiki - see $VIMHOME/plugin/wiki.vim
-" Plug 'tbabej/taskwiki' " taskwarrior vimwiki integration
-Plug 'powerman/vim-plugin-AnsiEsc' " colors in taskwiki
 Plug 'vimwiki/vimwiki' " personal wiki: leader w w -> wiki
-Plug 'mattn/calendar-vim' " what is said on the tin, calendar in vim
 Plug 'junegunn/vim-easy-align' " align columns
 
 " fzf plugins
@@ -67,14 +46,11 @@ Plug 'junegunn/fzf.vim' " fuzzy finder integration
 Plug 'tpope/vim-fugitive' " git integration
 
 " system plugins
-Plug 'HerringtonDarkholme/w3m.vim' " w3m cli browser plugin
 Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
-Plug 'skywind3000/asyncrun.vim' " :AsyncRun :AsyncStop commands to async :!cmd
 Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
-Plug 'yegappan/mru' " list most recently used files, cleaner than v:oldfiles
 
 " language specific plugins
-Plug 'psf/black', { 'for': 'python' }
+" Plug 'psf/black', { 'for': 'python' }
 Plug 'leafgarland/typescript-vim', { 'for': 'typescript' }
 Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 
@@ -84,29 +60,10 @@ call util#SourceIfExists($VIMHOME . "/config/plugins.local.vim")
 call plug#end()
 
 
-
 " PLUGIN CONFIG
 
-let g:gundo_prefer_python3 = 1
 let g:signify_vcs_list = ['git'] " vim-signify plugin - only check these VCS
-let g:strip_whitespace_on_save = 1 " vim-better-whitespace plugin - strip on save
-let g:better_whitespace_filetypes_blacklist=
-  \ ['diff', 'gitcommit', 'unite', 'qf', 'help', 'markdown', 'w3m']
-
-" prevent plugin maps
-let g:buffergator_suppress_keymaps = 1
-let g:FerretMap = 0
-let g:w3m#disable_default_keymap = 1
 
 " airline - tab/status line
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
-
-" setup goyo
-let g:goyo_height='100%'
-let g:goyo_margin_top = 0
-let g:goyo_margin_bottom = 0
-
-" setup mru
-let MRU_File = $VIMSTATE . '/mru_files'
-let MRU_Max_Entries = 1000
