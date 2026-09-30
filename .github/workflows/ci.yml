@@ -82,6 +82,7 @@ jobs:
           "$nvim_bin" --version | head -1
           make nvim-lazy
           sh mk/pinned.sh install vim-plug "$RUNNER_TEMP/plug.vim" 0644
+          sh mk/pinned.sh install sheldon "$RUNNER_TEMP/sheldon" 0755
           for fixture in \
             'vimwiki/vimwiki@72792615e739d0eb54a9c8f7e0a46a6e2407c9e8' \
             'junegunn/goyo.vim@fa0263d456dd43f5926484d1c4c7022dfcb21ba9'; do
@@ -103,6 +104,7 @@ jobs:
           DOTFILES_TEST_VIM_PLUG: ${{ runner.temp }}/plug.vim
           DOTFILES_TEST_VIMWIKI: ${{ runner.temp }}/vimwiki
           DOTFILES_TEST_GOYO: ${{ runner.temp }}/goyo.vim
+          DOTFILES_TEST_SHELDON: ${{ runner.temp }}/sheldon
         run: make -k check
 
       - name: Ensure checks leave the repo clean

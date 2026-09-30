@@ -439,6 +439,9 @@ EOF
   [ "$(cksum < "$cache")" = "$real_before" ] || \
     fail "real Sheldon dirty failure replaced the cache"
 else
+  if [ -n "${DOTFILES_TEST_SHELDON:-}" ] || [ "${CI:-}" = true ]; then
+    fail "required pinned Sheldon fixture not found: $real_sheldon"
+  fi
   echo "check-sheldon: pinned Sheldon fixture not found; skipping real integration"
 fi
 
