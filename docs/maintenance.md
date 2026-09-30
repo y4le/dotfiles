@@ -300,3 +300,10 @@ Run `make check-actions` when changing GitHub Actions workflows; it requires
 actionlint. The [CI workflow](../.github/workflows/ci.yml) runs checks on Linux
 and macOS; a manually dispatched run also tests full setup in a clean Linux
 home.
+
+### Repo mise config isolation
+
+`make mise-tools` and Neovim discovery stop ancestor config search at the
+physical checkout root. A parent directory's `mise.toml` or `.tool-versions`
+cannot replace the repo's tool versions. Interactive mise use outside these
+repo operations retains its normal project config behavior.

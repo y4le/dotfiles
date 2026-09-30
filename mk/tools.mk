@@ -7,6 +7,7 @@ mise-tools: mise ## [network] install tools from mise config
 	@if [ -z "$(strip $(PROFILE_TOOLS))" ]; then \
 		echo "no mise tools selected"; \
 	else \
+		MISE_CEILING_PATHS="$$(pwd -P)" \
 		MISE_GLOBAL_CONFIG_FILE="$(MISE_CONFIG_FILE)" "$(MISE_BIN)" install $(PROFILE_TOOLS); \
 	fi
 

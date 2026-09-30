@@ -125,6 +125,7 @@ check-nvim-first-open: ## [offline] verify named files after Neovim plugins are 
 
 check-nvim-bin: ## [offline] verify Neovim binary selection
 	@sh mk/test-nvim-bin.sh
+	@sh mk/test-mise-config.sh
 
 check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh

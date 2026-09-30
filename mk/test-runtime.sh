@@ -27,14 +27,8 @@ fi
 test_root=$(mktemp -d) || exit 1
 original_home=$HOME
 tmux_bin=$(command -v tmux 2>/dev/null || true)
-nvim_bin=$(command -v nvim 2>/dev/null || true)
-if command -v mise >/dev/null 2>&1; then
-  mise_nvim=$(MISE_GLOBAL_CONFIG_FILE="$(pwd -P)/mise/.config/mise/config.toml" \
-    mise which nvim 2>/dev/null || true)
-  if [ -x "$mise_nvim" ]; then
-    nvim_bin=$mise_nvim
-  fi
-fi
+nvim_bin=$(sh mk/find-nvim.sh "$(command -v mise 2>/dev/null || true)" \
+  "$(pwd -P)/mise/.config/mise/config.toml" 2>/dev/null || true)
 tmux_test_socket=/tmp/dotfiles-tmux-test.$$
 cleanup() {
   if [ -n "$tmux_bin" ]; then
