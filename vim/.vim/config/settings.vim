@@ -12,7 +12,6 @@ set wildmenu " command mode tab-completion
 set cmdheight=1 " command bar is 1 line high
 set showcmd " always show command bar
 set lazyredraw " don't redraw e.g. in the middle of macros
-set re=1 " use old regex engine - faster syntax highlighting - relativenumber lags otherwise
 
 " save these things when we save a vim session (:mks ~/foo) (:source ~/foo)
 set sessionoptions=blank,buffers,curdir,folds,globals,help,options,tabpages,winsize

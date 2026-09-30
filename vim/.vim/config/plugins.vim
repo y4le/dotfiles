@@ -62,7 +62,7 @@ call plug#end()
 
 " PLUGIN CONFIG
 
-let g:signify_vcs_list = ['git'] " vim-signify plugin - only check these VCS
+let g:signify_skip = {'vcs': {'allow': ['git']}} " vim-signify plugin - only check these VCS
 
 " airline - tab/status line
 let g:airline#extensions#tabline#enabled = 1

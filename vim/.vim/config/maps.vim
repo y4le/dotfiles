@@ -1,8 +1,8 @@
 nnoremap <leader>; @:|" repeat last command mode command. e.g. :buffernext
 
 " improve defaults
-nnoremap j gj|" j moves down visible instead of file lines
-nnoremap k gk|" k moves up visible instead of file lines
+nnoremap <expr> j v:count ? 'j' : 'gj'|" counts use file lines; otherwise visible lines
+nnoremap <expr> k v:count ? 'k' : 'gk'|" counts use file lines; otherwise visible lines
 nnoremap Y y$|" make Y consistant with C/D
 nnoremap n nzz|" next search result and center
 nnoremap N Nzz|" prev search result and center
