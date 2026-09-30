@@ -12,12 +12,12 @@ local function verify()
       local info = git.info(plugin.dir)
       local actual = info and info.commit
       if not expected or actual ~= expected then
-        vim.api.nvim_err_writeln(
+        io.stderr:write(
           ("Neovim plugin %s mismatch: expected %s, got %s"):format(
             name,
             expected or "missing lock entry",
             actual or "missing"
-          )
+          ) .. "\n"
         )
         failed = true
       end
@@ -29,7 +29,7 @@ end
 
 local ok, verified = xpcall(verify, debug.traceback)
 if not ok then
-  vim.api.nvim_err_writeln(verified)
+  io.stderr:write(verified .. "\n")
 end
 if not ok or not verified then
   vim.cmd("cquit 1")

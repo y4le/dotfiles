@@ -70,4 +70,48 @@ grep -F 'missing Neovim Treesitter parsers: lua' \
   exit 1
 }
 
+echo 'check-nvim-setup: plugin verification survives removed error API'
+cat > "$test_root/check-plugins.lua" <<'EOF'
+vim.api.nvim_err_writeln = nil
+package.loaded["lazy.core.config"] = {
+  plugins = { fixture = { dir = "fixture", _ = { is_local = false } } },
+  spec = { disabled = {}, ignore_installed = {} },
+}
+package.loaded["lazy.manage.git"] = {
+  info = function() return { commit = "actual" } end,
+}
+dofile(vim.env.DOTFILES_NVIM_PLUGIN_VERIFY_SCRIPT)
+EOF
+check_plugins() {
+  DOTFILES_NVIM_LOCK_SNAPSHOT="$test_root/lock.json" \
+    DOTFILES_NVIM_PLUGIN_VERIFY_SCRIPT="$repo/mk/verify-nvim-plugins.lua" \
+    DOTFILES_TEST_PLUGIN_FIXTURE="$test_root/check-plugins.lua" \
+    "$nvim_bin" --headless -u NONE -i NONE -n \
+      '+lua dofile(vim.env.DOTFILES_TEST_PLUGIN_FIXTURE)' +qa
+}
+printf '%s\n' '{"fixture":{"commit":"actual"}}' > "$test_root/lock.json"
+check_plugins > "$test_root/plugins-present.out" 2>&1 || {
+  cat "$test_root/plugins-present.out" >&2
+  exit 1
+}
+printf '%s\n' '{"fixture":{"commit":"expected"}}' > "$test_root/lock.json"
+if check_plugins > "$test_root/plugins-mismatch.out" 2>&1; then
+  echo 'check-nvim-setup: plugin mismatch was accepted' >&2
+  exit 1
+fi
+grep -F 'Neovim plugin fixture mismatch: expected expected, got actual' \
+  "$test_root/plugins-mismatch.out" >/dev/null || {
+  cat "$test_root/plugins-mismatch.out" >&2
+  exit 1
+}
+rm "$test_root/lock.json"
+if check_plugins > "$test_root/plugins-error.out" 2>&1; then
+  echo 'check-nvim-setup: verifier exception was accepted' >&2
+  exit 1
+fi
+grep -F 'lock.json' "$test_root/plugins-error.out" >/dev/null || {
+  cat "$test_root/plugins-error.out" >&2
+  exit 1
+}
+
 echo 'check-nvim-setup: ok'
