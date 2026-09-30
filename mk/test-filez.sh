@@ -89,4 +89,49 @@ done < "$test_root/cdpath.list"
   exit 1
 }
 
+echo 'check-filez: partial source errors never replay the listing'
+partial_bin=$test_root/partial-bin
+mkdir -p "$partial_bin"
+cat > "$partial_bin/rg" <<'EOF'
+#!/bin/sh
+printf './partial\000'
+exit 2
+EOF
+cat > "$partial_bin/fd" <<'EOF'
+#!/bin/sh
+printf './duplicate\000'
+printf fallback >> "$DOTFILES_FALLBACK_LOG"
+exit 1
+EOF
+cat > "$partial_bin/find" <<'EOF'
+#!/bin/sh
+printf './duplicate\000'
+printf fallback >> "$DOTFILES_FALLBACK_LOG"
+EOF
+chmod +x "$partial_bin/rg" "$partial_bin/fd" "$partial_bin/find"
+: > "$test_root/fallback.log"
+PATH="$partial_bin" HOME="$test_root/home" DOTFILES_FALLBACK_LOG="$test_root/fallback.log" \
+  "$repo/scripts/bin/filez" --print0 > "$test_root/partial.list"
+expected=./partial
+IFS= read -r -d '' actual < "$test_root/partial.list" || true
+[ "$actual" = "$expected" ] && [ "$(wc -c < "$test_root/partial.list")" -eq 10 ] || {
+  echo 'check-filez: partial rg result was changed or duplicated' >&2; exit 1;
+}
+[ ! -s "$test_root/fallback.log" ] || { echo 'check-filez: rg error triggered fallback' >&2; exit 1; }
+rm "$partial_bin/rg"
+if PATH="$partial_bin" HOME="$test_root/home" DOTFILES_FALLBACK_LOG="$test_root/fallback.log" \
+  "$repo/scripts/bin/filez" --print0 > "$test_root/partial-fd.list"; then
+  echo 'check-filez: fd failure status was lost' >&2; exit 1
+fi
+[ "$(cat "$test_root/fallback.log")" = fallback ] || {
+  echo 'check-filez: partial fd failure also invoked find' >&2; exit 1;
+}
+rm "$partial_bin/fd"
+: > "$test_root/fallback.log"
+PATH="$partial_bin" HOME="$test_root/home" DOTFILES_FALLBACK_LOG="$test_root/fallback.log" \
+  "$repo/scripts/bin/filez" --print0 > "$test_root/find.list"
+[ "$(cat "$test_root/fallback.log")" = fallback ] || {
+  echo 'check-filez: missing rg and fd did not use find' >&2; exit 1;
+}
+
 echo 'check-filez: ok'

@@ -20,6 +20,10 @@ rg_source() {
   local -a args=(--files -0)
   [[ $hidden = true ]] && args+=(--hidden)
   rg "${args[@]}" "$root_file"
+  local source_rc=$?
+  # No matches (1) and partial I/O failures (2) need no second file listing.
+  (( source_rc <= 2 )) && return 0
+  return "$source_rc"
 }
 
 fd_source() {
@@ -39,13 +43,21 @@ find_source() {
 }
 
 fzf_src() {
-  local source
-  for source in git_source rg_source fd_source find_source; do
-    if "$source"; then
-      [[ $debug = true ]] && printf 'filez source: %s (root: %s)\n' "$source" "$root_file" >&2
-      return 0
+  local source source_rc
+  if git_source; then
+    source=git_source
+    source_rc=0
+  else
+    if command -v rg >/dev/null 2>&1; then
+      source=rg_source
+    elif command -v fd >/dev/null 2>&1; then
+      source=fd_source
+    else
+      source=find_source
     fi
-  done
-  [[ $debug = true ]] && printf 'filez: no source for %s\n' "$root_file" >&2
-  return 1
+    "$source"
+    source_rc=$?
+  fi
+  [[ $debug = true ]] && printf 'filez source: %s (root: %s)\n' "$source" "$root_file" >&2
+  return "$source_rc"
 }
