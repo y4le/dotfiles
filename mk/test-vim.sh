@@ -295,4 +295,6 @@ else
   echo "check-vim: pinned vim-plug startup fixture unavailable; skipping"
 fi
 
+DOTFILES_TEST_VIM_PLUG="$installed_plug" sh "$repo/mk/test-vim-filetypes.sh"
+
 echo "check-vim: ok"

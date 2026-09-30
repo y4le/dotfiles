@@ -16,7 +16,14 @@ function! SetBookSyntax()
 endfunction
 
 " LOAD (80 columns by 100% height) DISTRACTION FREE READING
-Goyo 80x100%
+augroup bookGoyo
+  autocmd! * <buffer>
+  if !v:vim_did_enter
+    autocmd VimEnter <buffer> ++once if exists(':Goyo') == 2 | Goyo 80x100% | endif
+  else
+    autocmd BufWinEnter <buffer> ++once if exists(':Goyo') == 2 | Goyo 80x100% | endif
+  endif
+augroup END
 
 " PROSE SETTINGS
 setlocal wrap " softwrap

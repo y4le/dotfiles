@@ -1,3 +1,6 @@
+" Keep ordinary Markdown outside configured wiki roots.
+let g:vimwiki_global_ext = 0
+
 " setup vimwiki
 
 if exists('g:vimwiki_root') && !empty(g:vimwiki_root)
