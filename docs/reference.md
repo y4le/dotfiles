@@ -123,6 +123,13 @@ These are the repo's startup stages; system-wide Zsh files are separate.
 
 Each hook falls back to its legacy home path when the new file is absent.
 
+When `~/.ghcup/env` exists, `.zshenv` imports its settings and preserves the
+order of paths inherited from the parent shell. Newly added ghcup directories
+follow the last of `~/bin`, `~/.local/bin`, and the configured mise shims.
+With the default PATH order, this puts ghcup ahead of system directories.
+Inherited ordering takes precedence even when user bins follow system bins;
+already inherited ghcup directories keep their positions in child shells.
+
 The Sheldon startup cache is
 `${XDG_CACHE_HOME:-~/.cache}/dotfiles/sheldon.zsh`. Startup reads it without
 running Sheldon or downloading plugins; `make sheldon-plugins` creates it.

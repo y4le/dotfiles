@@ -379,6 +379,51 @@ expected_partial="$expected_partial:/usr/local/bin:/usr/bin:/bin:$test_home/.loc
 [ "$partial_path" = "$expected_partial" ] || \
   fail "missing system path displaced managed tools"
 
+echo 'check-runtime: ghcup preserves inherited precedence and beats system tools'
+mkdir -p "$test_home/.ghcup/bin" "$test_home/.cabal/bin" "$test_root/system-bin"
+for tool_dir in "$test_home/.ghcup/bin" "$test_root/system-bin"; do
+  for tool in ghc cabal; do
+    printf '#!/bin/sh\nexit 0\n' > "$tool_dir/$tool"
+    chmod +x "$tool_dir/$tool"
+  done
+done
+printf '#!/bin/sh\nexit 0\n' > "$test_home/.local/share/mise/shims/ghc"
+chmod +x "$test_home/.local/share/mise/shims/ghc"
+for env_style in guarded unconditional; do
+  if [ "$env_style" = guarded ]; then
+    cat > "$test_home/.ghcup/env" <<'EOF'
+case :$PATH: in
+  *:"$HOME/.ghcup/bin":*) ;;
+  *) export PATH="$HOME/.ghcup/bin:$HOME/.cabal/bin:$PATH" ;;
+esac
+export DOTFILES_GHCUP_MARKER=loaded
+EOF
+  else
+    printf '%s\n' 'export PATH="$HOME/.ghcup/bin:$HOME/.cabal/bin:$PATH"' \
+      'export DOTFILES_GHCUP_MARKER=loaded' > "$test_home/.ghcup/env"
+  fi
+  ghcup_order=$(env -i HOME="$test_home" \
+    PATH="$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims:$test_root/system-bin:/usr/bin:/bin" \
+    DOTFILES_TEST_VENV="$test_root/venv/bin" zsh -c '
+      (( $path[(Ie)$HOME/.ghcup/bin] > $path[(Ie)$HOME/.local/share/mise/shims] )) || exit 1
+      (( $path[(Ie)$HOME/.cabal/bin] < $path[(Ie)/usr/bin] )) || exit 1
+      print -r -- "$commands[ghc]|$commands[cabal]|$DOTFILES_GHCUP_MARKER"
+      path=("$DOTFILES_TEST_VENV" $path)
+      before=$PATH
+      after=$(zsh -c "print -r -- \$PATH")
+      [[ $before == $after ]] || exit 1
+    ') || fail "$env_style ghcup env changed parent/child tool precedence"
+  [ "$ghcup_order" = \
+    "$test_home/.local/share/mise/shims/ghc|$test_home/.ghcup/bin/cabal|loaded" ] || \
+    fail "$env_style ghcup env overrode mise or lost its system-tool override/settings"
+  inherited_ghcup=$(env -i HOME="$test_home" \
+    PATH="$test_home/.ghcup/bin:$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims:/usr/bin:/bin" \
+    zsh -c 'print -r -- $path[1]') || fail "inherited ghcup path failed"
+  [ "$inherited_ghcup" = "$test_home/.ghcup/bin" ] || fail "explicit inherited ghcup position moved"
+done
+rm -rf "$test_home/.ghcup" "$test_home/.cabal"
+rm "$test_home/.local/share/mise/shims/ghc"
+
 echo "check-runtime: mise shim path overrides"
 for shim_override in XDG_DATA_HOME MISE_DATA_DIR MISE_SHIMS_DIR; do
   case $shim_override in
