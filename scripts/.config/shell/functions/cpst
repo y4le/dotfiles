@@ -21,7 +21,7 @@ function cpy() {
     _osc52_copy
   elif command_exists pbcopy; then
     pbcopy
-  elif command_exists wl-copy; then
+  elif [ -n "$WAYLAND_DISPLAY" ] && command_exists wl-copy; then
     wl-copy
   elif command_exists xclip && [ -n "$DISPLAY" ]; then
     xclip -i -sel c -f | xclip -i -sel p
@@ -33,10 +33,9 @@ function cpy() {
 function pst() {
   if command_exists pbpaste; then
     pbpaste
-  elif command_exists wl-paste; then
+  elif [ -n "$WAYLAND_DISPLAY" ] && command_exists wl-paste; then
     wl-paste
-  elif command_exists xclip; then
-    export DISPLAY="${DISPLAY:-:0}"
+  elif command_exists xclip && [ -n "$DISPLAY" ]; then
     xclip -selection clipboard -o
   else
     echo "pst: no clipboard command found (pbpaste, wl-paste, xclip)" >&2

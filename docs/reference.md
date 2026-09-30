@@ -207,3 +207,14 @@ the link into this checkout. Inspect `git diff -- herdr/` after changing Herdr
 settings. Herdr plugins and their lock file are intentionally not tracked.
 Herdr's sockets, logs, and session snapshots under the config directory are an
 upstream layout exception to this repo's normal XDG state boundary.
+
+### Linux clipboard backends
+
+`cpy` and `pst` use `wl-copy`/`wl-paste` only when `WAYLAND_DISPLAY` is set,
+and xclip only when `DISPLAY` is set. Install `wl-clipboard` for a Wayland
+session or `xclip` for X11 (for example, `sudo apt-get install wl-clipboard`
+or `sudo apt-get install xclip`). These are session dependencies rather than
+base setup packages. macOS uses its built-in `pbcopy`/`pbpaste`.
+
+Copy over SSH uses OSC 52. Without a display backend, paste reports that no
+clipboard command is available; it does not invent or export a display.
