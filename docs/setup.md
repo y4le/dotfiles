@@ -185,6 +185,55 @@ configuration; it does not install i3 or Karabiner itself.
 
 Pass `DESKTOP=1` when relinking a desktop installation.
 
+### Linux desktop dependencies
+
+`DESKTOP=1` selects configuration links. Install the X11 desktop and these
+runtime commands separately; profiles and the base native package target do
+not install the complete desktop stack.
+
+| Commands | Used by | Provider or dependency |
+|---|---|---|
+| `i3`, `i3-msg` | Window manager and workspace picker | i3 (typically `i3-wm`) |
+| `kitty` | Terminal binding and `TERMINAL` | Kitty |
+| `rofi` | Launcher and workspace picker | Rofi |
+| `rofimoji`, `xdotool`, `xclip` or `xsel` | Emoji picker, typing, and clipboard actions | Rofimoji plus X11 typing/clipboard backends |
+| `pactl` | Volume bindings | Debian/Ubuntu `pulseaudio-utils`; Arch `libpulse`; a running PulseAudio-compatible server, such as PipeWire-Pulse |
+| `playerctl` | Media bindings and the configured Spotify blocklet | Playerctl and an MPRIS-capable player |
+| `i3blocks` | Status bar | i3blocks plus the [blocklet scripts below](#linux-status-bar-scripts) |
+| `xss-lock`, `xsecurelock`, `xset` | Manual, idle, and suspend locking | See [locking setup](reference.md#linux-desktop-locking) |
+| `dex` | XDG application autostart | dex |
+| `pkill` | Caps/Num Lock indicator updates | Debian/Ubuntu `procps`; Arch `procps-ng` |
+| `xsetroot` | Optional background colour in `.xsessionrc` | Debian/Ubuntu `x11-xserver-utils`; Arch `xorg-xsetroot` |
+| Bash, Perl, `tr`, `grep`, `sed`, `sort`, `seq` | Workspace and media helper scripts | Shell/interpreter packages and standard text/core utilities |
+
+Some distributions do not package `rofimoji`, including
+[Ubuntu 24.04](https://packages.ubuntu.com/search?keywords=rofimoji&searchon=names&suite=noble&section=all).
+Install Python and pipx separately there, then follow the
+[upstream PyPI instructions](https://github.com/fdw/rofimoji#installation):
+
+```sh
+pipx install rofimoji
+```
+
+Keep `~/.local/bin` on the i3 session's PATH, and install an emoji-capable font.
+The supplied `.xsessionrc` is read by Debian-style Xsession; other display
+managers may need their own session hook. A missing `xsetroot` skips the
+optional background change; a failed invocation reports a diagnostic and
+allows the rest of the session settings to load.
+
+The enabled Caps Lock block runs at startup and refreshes on Caps/Num Lock
+key release in i3's default binding mode. The commented Num Lock block is an
+optional additional display; give it `instance=NUM`, `interval=once`, and
+`signal=11` when enabling it. Reload i3 and restart i3blocks after changing
+these configurations, then check the indicator with the actual keyboard
+mapping. See the [locking instructions](reference.md#linux-desktop-locking)
+for changes that require logging out and back in.
+
+If the media block's `instance` changes from `spotify` to `mpd`, `cmus`, or
+`rhythmbox`, its corresponding helper also needs `mpc`, `cmus-remote`, or
+`rhythmbox-client`. The workspace script is supplied at
+`~/bin/i3_switch_workspaces.sh`; `i3-msg` comes with the window manager.
+
 ### Linux status-bar scripts
 
 Install i3blocks separately. Its legacy Debian package includes scripts under

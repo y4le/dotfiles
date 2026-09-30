@@ -4,7 +4,10 @@
 # See i3 docs for more details.
 export GTK_IM_MODULE=xim
 
-# Desktop background color.
-xsetroot -solid "#333333"
+# Desktop background color is optional, including on hosts without X utilities.
+if command -v xsetroot >/dev/null 2>&1; then
+  xsetroot -solid "#333333" ||
+    printf '%s\n' 'dotfiles: could not set the desktop background' >&2
+fi
 
 export TERMINAL=kitty

@@ -134,6 +134,7 @@ check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-utilities.sh
 	@sh mk/test-cpst.sh
 	@sh mk/test-i3blocks.sh
+	@sh mk/test-xsession.sh
 
 check-stow: _require-stow ## [offline] dry-run stow package graphs in temp dirs
 	@fail=0; \

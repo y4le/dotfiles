@@ -57,15 +57,12 @@ interval=5
 
 # Key indicators
 #
-# Add the following bindings to i3 config file:
-#
-# bindsym --release Caps_Lock exec pkill -SIGRTMIN+11 i3blocks
-# bindsym --release Num_Lock  exec pkill -SIGRTMIN+11 i3blocks
+# i3 sends signal 11 on Caps/Num Lock release; update once at startup too.
 [keyindicator]
 markup=pango
-#instance=CAPS
-#interval=once
-#signal=11
+instance=CAPS
+interval=once
+signal=11
 
 #[keyindicator]
 #instance=NUM

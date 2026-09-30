@@ -63,6 +63,10 @@ bindsym XF86AudioPause exec playerctl pause
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
 
+# Refresh lock indicators after the key state changes.
+bindsym --release Caps_Lock exec --no-startup-id pkill -RTMIN+11 -x i3blocks
+bindsym --release Num_Lock exec --no-startup-id pkill -RTMIN+11 -x i3blocks
+
 ###############################################################################
 # RESIZE MODE
 ###############################################################################
