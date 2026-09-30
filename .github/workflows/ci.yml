@@ -57,7 +57,7 @@ jobs:
 
       - name: Install macOS check toolchain
         if: runner.os == 'macOS'
-        run: HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install shellcheck stow tmux
+        run: HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install shellcheck stow tmux vim
 
       - name: Show check toolchain
         run: |

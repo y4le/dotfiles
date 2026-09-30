@@ -15,10 +15,11 @@ function! s:YaziOpen(...) abort
     call add(l:cmd, l:entry)
   endif
 
+  let l:origin = win_getid()
   botright 15new
   call term_start(l:cmd, {
         \ 'curwin': 1,
-        \ 'exit_cb': function('s:OnYaziExit', [l:cwd_file, l:chooser_file]),
+        \ 'exit_cb': function('s:OnYaziExit', [l:origin, l:cwd_file, l:chooser_file]),
         \ 'term_finish': 'close',
         \ })
   startinsert
@@ -38,12 +39,26 @@ function! s:DefaultEntry() abort
   return fnamemodify(l:path, ':h')
 endfunction
 
-function! s:OnYaziExit(cwd_file, chooser_file, job, status) abort
+function! s:OnYaziExit(origin, cwd_file, chooser_file, job, status) abort
   let l:cwd = filereadable(a:cwd_file) ? join(readfile(a:cwd_file), "\n") : ''
   let l:chosen = filereadable(a:chooser_file) ? readfile(a:chooser_file) : []
 
   call delete(a:cwd_file)
   call delete(a:chooser_file)
+
+  if !win_gotoid(a:origin)
+    let l:found = 0
+    for l:window in getwininfo()
+      if l:window.tabnr == tabpagenr() && getbufvar(l:window.bufnr, '&buftype') ==# ''
+        call win_gotoid(l:window.winid)
+        let l:found = 1
+        break
+      endif
+    endfor
+    if !l:found
+      new
+    endif
+  endif
 
   if !empty(l:cwd) && isdirectory(l:cwd)
     execute 'cd ' . fnameescape(l:cwd)

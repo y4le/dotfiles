@@ -48,7 +48,7 @@ function! s:FzfFileCmdDefRaw(name, rawtext, options)
 endfunction
 
 " FZF_DEFAULT_COMMAND - contextual project files -> fzf
-call s:FzfFileCmdDef('FzfDefault', {'source': $FZF_DEFAULT_COMMAND})
+call s:FzfFileCmdDef('FzfDefault', {})
 nnoremap <leader>Ff :FzfDefault<cr>
 nnoremap <leader>Fpf :FzfDefault!<cr>
 
