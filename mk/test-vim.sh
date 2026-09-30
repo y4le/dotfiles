@@ -311,5 +311,6 @@ fi
 
 DOTFILES_TEST_VIM_PLUG="$installed_plug" sh "$repo/mk/test-vim-filetypes.sh" || fail "Vim filetype checks failed"
 sh "$repo/mk/test-vim-pickers.sh" || fail "Vim picker checks failed"
+sh "$repo/mk/test-vim-paths.sh" || fail "Vim path checks failed"
 
 echo "check-vim: ok"
