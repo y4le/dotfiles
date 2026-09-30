@@ -15,7 +15,7 @@ and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 | Linux core | Selected profile and machine-local packages |
 | macOS core | Selected profile and machine-local packages, plus `osx` |
 | Linux desktop (`DESKTOP=1`) | Linux core plus `linux-desktop` (X11/i3) |
-| macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner) |
+| macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner); see [GUI save recovery](maintenance.md#recover-a-karabiner-configuration-replaced-by-the-gui) |
 
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
 `scripts` supplies `~/bin` commands and `~/.config/shell/functions/` helpers.

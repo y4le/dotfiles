@@ -161,6 +161,41 @@ files into `local/` or real directories under `~`. Track a new portable file
 before linking it. Do not bypass the guard by adding files to `.gitignore`;
 ignored package files are rejected too.
 
+### Recover a Karabiner configuration replaced by the GUI
+
+Karabiner can replace `~/.config/karabiner/karabiner.json` with a regular file
+when saving changes, breaking the managed symlink. Quit the Karabiner-Elements
+Settings app before recovering it. From this checkout, confirm the home file is regular (not a
+symlink), save a copy outside the Karabiner directory, and compare it with the
+tracked configuration:
+
+```sh
+test -f "$HOME/.config/karabiner/karabiner.json" &&
+  test ! -L "$HOME/.config/karabiner/karabiner.json" &&
+  backup=$(mktemp "$HOME/karabiner-recovery.XXXXXX") &&
+  cp "$HOME/.config/karabiner/karabiner.json" "$backup" &&
+  diff -u osx-desktop/.config/karabiner/karabiner.json "$backup"
+```
+
+Continue only after the regular-file checks pass and the backup contains the
+saved settings. `diff` returns status 1 when the files differ; differences are
+expected here. A failed regular-file check stops the chain before creating a
+backup. Copy desired changes from the backup into
+`osx-desktop/.config/karabiner/karabiner.json`, then review
+`git diff -- osx-desktop/`. Remove the conflicting home file and restore the
+managed link:
+
+```sh
+rm "$HOME/.config/karabiner/karabiner.json"
+make DESKTOP=1 link-plan
+make DESKTOP=1 link
+test -L "$HOME/.config/karabiner/karabiner.json"
+```
+
+Reopen Karabiner and keep the backup until the recovered settings are verified.
+Keep its directory real: linking the entire directory would put GUI-generated
+backups and other runtime files into the checkout.
+
 ## Migrate older installs
 
 ### Setup profiles
