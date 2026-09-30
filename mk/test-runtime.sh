@@ -107,6 +107,7 @@ run_zsh() {
     TERM=dumb \
     LC_ALL=C \
     TMUX="${DOTFILES_TEST_TMUX:-}" \
+    DOTFILES_TEST_VENV="${DOTFILES_TEST_VENV:-}" \
     DOTFILES_RUNTIME_LOG="$runtime_log" \
     HTTPS_PROXY=http://127.0.0.1:9 \
     HTTP_PROXY=http://127.0.0.1:9 \
@@ -359,17 +360,70 @@ cargo_paths=$(run_zsh -c 'print -r -- "$commands[cargo]|$commands[cargo-tool]"')
   "$test_home/.local/share/mise/shims/cargo|$test_home/.cargo/bin/cargo-tool" ] || \
   fail "cargo env overrode pinned Rust or hid cargo-installed tools"
 
-echo "check-runtime: macOS login restores user tool precedence"
-printf '%s\n' 'typeset -g LOCAL_PROFILE_MARKER=loaded' > "$test_home/.zprofile.local"
+echo "check-runtime: child shells preserve activated tool precedence"
+mkdir -p "$test_root/venv/bin"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_root/venv/bin/python"
+chmod +x "$test_root/venv/bin/python"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_home/.local/share/mise/shims/python"
+chmod +x "$test_home/.local/share/mise/shims/python"
+child_python=$(DOTFILES_TEST_VENV="$test_root/venv/bin" run_zsh -c '
+  path=("$DOTFILES_TEST_VENV" $path)
+  zsh -c "print -r -- \$commands[python]"
+') || fail "child Zsh failed"
+[ "$child_python" = "$test_root/venv/bin/python" ] || fail "child Zsh demoted the activated venv"
+
+fresh_python=$(env -i HOME="$test_home" PATH="$test_root/venv/bin:/usr/bin:/bin" \
+  zsh -c 'print -r -- $commands[python]') || fail "fresh Zsh failed"
+[ "$fresh_python" = "$test_root/venv/bin/python" ] || fail "missing defaults displaced the inherited venv"
+
+partial_path=$(env -i HOME="$test_home" \
+  PATH="$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims:/usr/bin:/bin" \
+  zsh -c 'print -r -- $PATH') || fail "partial defaults failed"
+expected_partial="$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims"
+[ ! -d /opt/homebrew/bin ] || expected_partial="$expected_partial:/opt/homebrew/bin"
+expected_partial="$expected_partial:/usr/local/bin:/usr/bin:/bin:$test_home/.local/share/npm/bin:$test_home/.cargo/bin"
+[ "$partial_path" = "$expected_partial" ] || \
+  fail "missing system path displaced managed tools"
+
+echo "check-runtime: mise shim path overrides"
+for shim_override in XDG_DATA_HOME MISE_DATA_DIR MISE_SHIMS_DIR; do
+  case $shim_override in
+    XDG_DATA_HOME) expected_shims=$test_root/custom/mise/shims ;;
+    MISE_DATA_DIR) expected_shims=$test_root/custom/shims ;;
+    MISE_SHIMS_DIR) expected_shims=$test_root/custom ;;
+  esac
+  shim_path=$(env -i HOME="$test_home" PATH=/usr/bin:/bin \
+    "$shim_override=$test_root/custom" zsh -c 'print -r -- $path[3]') || fail "shim override failed"
+  [ "$shim_path" = "$expected_shims" ] || fail "$shim_override was ignored"
+done
+
+echo "check-runtime: macOS login restores pre-path_helper order"
+printf '%s\n' 'typeset -g LOCAL_PROFILE_MARKER=loaded' 'path=(/usr/bin /bin /legacy/bin $path)' > "$test_home/.zprofile.local"
 profile_paths=$(env -i HOME="$test_home" PATH=/usr/bin:/bin \
-  DOTFILES_REPO="$repo" zsh -f -c '
-    path=(/usr/bin /bin)
+  DOTFILES_REPO="$repo" zsh -f -l -c '
+    OSTYPE=darwin
+    source "$DOTFILES_REPO/zsh/.zshenv"
+    path=(/usr/bin /bin /new-system/bin $path)
     source "$DOTFILES_REPO/osx/.zprofile"
-    print -r -- "$path[1]|$path[2]|$path[3]|$path[4]|$LOCAL_PROFILE_MARKER"
+    print -r -- "$path[1]|$path[2]|$path[3]|$LOCAL_PROFILE_MARKER|$path[-2]|$path[-1]"
   ') || fail "macOS login profile failed"
 [ "$profile_paths" = \
-  "$test_home/bin|$test_home/.local/bin|$test_home/.local/share/mise/shims|/opt/homebrew/bin|loaded" ] || \
-  fail "macOS login profile lost user tools or existing profile"
+  "$test_home/bin|$test_home/.local/bin|$test_home/.local/share/mise/shims|loaded|/legacy/bin|/new-system/bin" ] || \
+  fail "macOS login profile lost inherited order, new system paths, or existing profile"
+
+printf '%s\n' 'path=("$HOME/.pyenv/shims" /opt/homebrew/sbin $path)' > "$test_home/.zprofile.local"
+profile_prefix=$(env -i HOME="$test_home" PATH=/usr/bin:/bin DOTFILES_REPO="$repo" \
+  zsh -f -l -c '
+    OSTYPE=darwin
+    source "$DOTFILES_REPO/zsh/.zshenv"
+    path=(/usr/bin /bin $path)
+    source "$DOTFILES_REPO/osx/.zprofile"
+    (( $path[(Ie)$HOME/.pyenv/shims] > $path[(Ie)$HOME/.local/share/mise/shims] )) || exit 1
+    (( $path[(Ie)$HOME/.pyenv/shims] < $path[(Ie)/usr/local/bin] )) || exit 1
+    (( $path[(Ie)/opt/homebrew/sbin] < $path[(Ie)/usr/local/bin] )) || exit 1
+    print ok
+  ') || fail "macOS profile demoted its custom prefix"
+[ "$profile_prefix" = ok ] || fail "macOS custom prefix failed"
 
 echo "check-runtime: interactive startup uses command presence without probes"
 : > "$runtime_log"

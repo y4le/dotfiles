@@ -185,6 +185,16 @@ does not relocate them.
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 
+Zsh inserts missing default PATH entries before their next configured neighbor,
+preserving custom prefixes and the order of entries inherited from
+its parent. Activated virtual environments keep their precedence in child
+shells. Mise
+shims use `MISE_SHIMS_DIR`, then `MISE_DATA_DIR/shims`, then
+`${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims`. The macOS login profile
+restores the order captured before `path_helper` after loading the original
+local profile. Entries that profile prepends stay ahead of system directories
+and behind the managed tools; additional system entries are retained.
+
 Zsh history honors `XDG_STATE_HOME`; the npm prefix and Sheldon's data path
 honor `XDG_DATA_HOME`; the Sheldon startup cache honors `XDG_CACHE_HOME`.
 Neovim uses its standard config, data, and state paths. Vim keeps legacy config
