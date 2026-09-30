@@ -88,6 +88,24 @@ the native package lists. `DESKTOP=0` leaves previously linked desktop files
 in place; `clean` removes them regardless of its value. `link-linux` and
 `link-macos` force only the Stow package set, not the host's package manager.
 
+## Linux desktop locking
+
+The opt-in i3 configuration needs `xss-lock`, `xsecurelock`, and `xset`
+(Debian's x11-xserver-utils or Arch's xorg-xset). Install them separately;
+`make system-packages` installs base prerequisites only. The configuration
+sets the X screensaver timeout to three minutes and starts
+`xss-lock -l -- xsecurelock`, which handles idle and logind suspend events.
+The manual lock binding (`$meta+l`) requests `xset s activate` through that
+same locker. This follows [XSecureLock's integration guidance](https://github.com/google/xsecurelock#automatic-locking).
+
+After installing dependencies and linking, log out of the X11/i3 session and
+log back in. Reloading or restarting i3 does not rerun these `exec` startup
+commands; an existing xautolock process otherwise keeps running. Avoid
+starting a second locker through another desktop autostart entry. Verify
+manual lock, the three-minute idle lock, and suspend/resume on the machine
+before relying on this configuration. Repository checks validate syntax;
+they do not exercise authentication or display-server behavior.
+
 ## Zsh startup
 
 These are the repo's startup stages; system-wide Zsh files are separate.

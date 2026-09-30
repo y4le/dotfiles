@@ -10,9 +10,12 @@ set $ctl Control
 ###############################################################################
 # MAPS
 ###############################################################################
-bindsym $mod+Return exec kitty # start a terminal
-bindsym $mod+i reload # reload i3 config
-bindsym $mod+Shift+i restart # restart i3
+# start a terminal
+bindsym $mod+Return exec kitty
+# reload i3 config
+bindsym $mod+i reload
+# restart i3
+bindsym $mod+Shift+i restart
 
 # start rofi, launch stuff
 bindsym $mod+semicolon exec rofi -show combi
@@ -212,10 +215,10 @@ focus_follows_mouse no
 # The middle button over a titlebar kills the window
 bindsym --release button2 kill
 
-# lock screen
-bindsym $meta+l exec xsecurelock
-# autolock
-exec --no-startup-id env LOCKED_BY_SESSION_IDLE=true xautolock -time 3 -locker xsecurelock
+# Use one locker for manual, idle, and logind suspend requests.
+bindsym $meta+l exec --no-startup-id xset s activate
+exec --no-startup-id xset s 180 5
+exec --no-startup-id xss-lock -l -- xsecurelock
 
 # auto start system services
 exec dex -ae i3
