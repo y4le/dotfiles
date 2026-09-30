@@ -55,7 +55,7 @@ else ifeq ($(PACKAGE_MANAGER),pacman)
 		echo "no pacman packages configured"; \
 		exit 0; \
 	fi; \
-	sudo pacman -S --needed $$packages
+	sudo pacman -Syu --needed $$packages
 else
 	@echo "unsupported package manager for $(PLATFORM)"; \
 	echo "supported package managers: Homebrew, apt-get, pacman"; \

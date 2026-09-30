@@ -16,6 +16,10 @@ printf 'curl\ngit\n' > "$test_root/apt-packages.txt"
 
 cat > "$test_root/bin/sudo" <<'EOF'
 #!/bin/sh
+if [ "$1" = pacman ]; then
+  printf '%s\n' "$*" >> "$DOTFILES_PACMAN_LOG"
+  exit "${DOTFILES_PACMAN_EXIT:-0}"
+fi
 printf '%s\n' "$*" >> "$DOTFILES_APT_LOG"
 if [ "$*" = 'apt-get update' ]; then
   exit "${DOTFILES_APT_UPDATE_EXIT:-0}"
@@ -49,5 +53,21 @@ grep -Fx 'apt-get install -y curl git' "$test_root/apt.log" >/dev/null || \
   fail "system-packages did not install packages"
 [ "$(wc -l < "$test_root/apt.log" | tr -d ' ')" -eq 2 ] || \
   fail "system-packages ran unexpected package commands"
+
+run_pacman() {
+  env -i HOME="$test_root/home" PATH="$test_root/bin:/usr/bin:/bin" \
+    DOTFILES_PACMAN_LOG="$test_root/pacman.log" DOTFILES_PACMAN_EXIT="$1" \
+    make -s -C "$repo" PLATFORM=linux PACKAGE_MANAGER=pacman \
+      PACMAN_PACKAGES_FILE="$test_root/apt-packages.txt" system-packages
+}
+echo "check-system-packages: pacman refreshes and upgrades with confirmation"
+run_pacman 0 > "$test_root/pacman-success.out" 2>&1 || fail "pacman installation failed"
+[ "$(cat "$test_root/pacman.log")" = 'pacman -Syu --needed curl git' ] || \
+  fail "pacman skipped refresh/upgrade or suppressed confirmation"
+: > "$test_root/pacman.log"
+if run_pacman 42 > "$test_root/pacman-failure.out" 2>&1; then
+  fail "pacman failure was ignored"
+fi
+[ "$(cat "$test_root/pacman.log")" = 'pacman -Syu --needed curl git' ] || fail "pacman failure retried installation"
 
 echo "check-system-packages: ok"

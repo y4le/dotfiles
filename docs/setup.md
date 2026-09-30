@@ -166,6 +166,11 @@ Rerun the target after updating Herdr so its managed hook versions stay current.
 On a machine where native package installation is permitted, use `make setup`
 to run `system-packages` followed by `setup-user`.
 
+On Arch, `system-packages` uses `pacman -Syu --needed`: it refreshes package
+databases and performs a full system upgrade while installing prerequisites.
+Pacman's confirmation prompt remains enabled. See the
+[pacman manual](https://archlinux.org/pacman/pacman.8.html) for these options.
+
 ## Include desktop configuration
 
 On a personal desktop:
