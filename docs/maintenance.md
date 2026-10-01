@@ -277,7 +277,8 @@ if a previous cleanup removed it.
 `zsh-vimode-visual` was removed from Sheldon; native Zsh vi mode remains.
 Run `make sheldon-plugins` to rebuild an existing startup cache, then start a
 new shell. The generated cache can still load the retired plugin until rebuilt.
-Forgit's interactive Git helpers remain enabled.
+Forgit's shell Git helpers were also retired. Fugitive remains enabled in Vim
+and Neovim. The same cache refresh and fresh-shell steps apply to forgit.
 
 The minimal theme builds its own ANSI color escapes and no longer initializes
 Zsh's color arrays. Local prompt code using `$fg`, `$bg`, or `$reset_color` can

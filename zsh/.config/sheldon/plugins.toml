@@ -20,11 +20,6 @@ use = ["minimal.zsh-theme"]
 
 # -- plugins (deferred) ------------------------------------------------------
 
-[plugins.forgit]
-github = "wfxr/forgit"
-rev = "d4bece432b8c4d2be631abf1e2e76b49f5c87f26"
-apply = ["defer"]
-
 [plugins.fzf]
 local = "~/.config/zsh/plugins"
 use = ["fzf.zsh"]

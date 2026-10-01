@@ -43,7 +43,10 @@ Neovim declarations are in [`editing.lua`](../../nvim/.config/nvim/lua/plugins/e
 
 ## Shell decisions
 
-`wfxr/forgit` is retained: its interactive shell Git helpers are actively used.
+`wfxr/forgit` was retired after clarifying that the actively used Git integration
+is Fugitive in Vim and Neovim. Fugitive and the other editor Git integrations
+remain. Run `make sheldon-plugins` to regenerate the shell startup cache, then
+open a fresh shell; an existing shell retains functions it already loaded.
 `b4b4r07/zsh-vimode-visual` was retired; native Zsh vi mode remains enabled.
 The implicit `~/.ghcup/env` startup import and its PATH adjustment code were
 also retired. Machines that need Haskell can activate their local toolchain
