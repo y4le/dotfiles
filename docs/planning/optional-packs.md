@@ -2,7 +2,10 @@
 
 Design pass with Claude Fable, 2026-10-01. This is a proposal; the current
 profile behavior documented in [setup](../setup.md) and [design](../design.md)
-still applies. No new packs or installers are provided by this document.
+still applies. Catalog discovery, shared tool references, and explicit complete
+selection saving are now implemented. Selected mise activation and development
+pack defaults remain the next implementation slices. No additional installers
+are provided by this document.
 
 ## Recommendation
 
@@ -98,7 +101,7 @@ synthetic all-packs selection in checks. Keep explicit tests of the actual
 
 Use the existing `PROFILE` and `WITH` Make arguments. Avoid a second selection
 file or a new CLI. The following commands describe the proposed interface;
-`packs` and `pack` do not exist today, and the example language packs are not
+`packs` and `pack` are available today; the example language packs are not yet
 implemented:
 
 ```sh

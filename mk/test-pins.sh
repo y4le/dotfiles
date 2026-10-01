@@ -740,7 +740,7 @@ grep -F "make link" "$test_root/vim-no-config.out" >/dev/null || \
 
 repo_copy=$test_root/repo-copy
 mkdir -p "$repo_copy"
-(cd "$repo" && tar -cf - Makefile mk setup vim) | (cd "$repo_copy" && tar -xf -)
+(cd "$repo" && tar -cf - Makefile mk setup vim mise) | (cd "$repo_copy" && tar -xf -)
 rm -rf "$repo_copy/vim/.vim/autoload"
 mkdir -p "$repo_copy/vim/.vim/autoload"
 for folded_kind in autoload vim vim-missing-autoload; do

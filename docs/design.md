@@ -11,12 +11,15 @@ plugins, `setup` for native packages, `DESKTOP=1` for desktop files, and
 `agents-enable-private` for private skills. The command decides what a machine
 gets.
 
-`setup/profiles.yaml` keeps component selection shallow: `full` includes every
-component, `lite` includes core, and `WITH` adds named components. Each
+`setup/profiles.yaml` keeps component selection shallow: `full` is a curated
+preset, `lite` includes core, and `WITH` adds named packs. Tools can be shared
+across packs; Stow packages retain one owner. Each
 component lists its Stow packages and mise tool keys directly. This avoids a
 second dependency graph for configs that already work independently. A saved
 `profile.mk` selects a checkout default, and explicit Make arguments can
-override it. Switching profiles reconciles managed links; installed binaries
+override it. Saving requires both `PROFILE` and `WITH` to make dropping add-ons
+explicit. Discovery remains available when an old saved selection is stale.
+Switching profiles reconciles managed links; installed binaries
 and user data remain, so profile selection is reversible without deleting state.
 
 Make owns target dependencies, selected steps, and configuration overrides.

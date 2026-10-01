@@ -2,19 +2,25 @@
 # Native packages, the machine-local package, and DESKTOP remain separate.
 components:
   core:
+    summary: Shell, Git, Vim, tmux, agent config and everyday CLI tools
     packages: [agents, bash, git, mise, scripts, tmux, vim, zsh]
     tools: [aqua:junegunn/fzf, aqua:BurntSushi/ripgrep, aqua:sharkdp/bat, aqua:dandavison/delta, aqua:ajeetdsouza/zoxide]
   atuin:
+    summary: Shell history sync and search
     packages: [atuin]
     tools: [aqua:atuinsh/atuin]
   yazi:
+    summary: Terminal file manager and shell navigation
     tools: [aqua:sxyazi/yazi]
   nvim:
+    summary: Neovim editor and plugin configuration
     packages: [nvim]
     tools: [aqua:neovim/neovim]
   herdr:
+    summary: Herdr terminal workspace and agent integration config
     packages: [herdr]
   dev:
+    summary: Language runtimes, servers and development tools
     tools: [go, node, python, rust, aqua:astral-sh/uv, npm:typescript-language-server, pipx:basedpyright, pipx:ruff, aqua:LuaLS/lua-language-server]
 profiles:
   lite: [core]

@@ -92,6 +92,10 @@ make profile-set PROFILE=lite WITH="yazi nvim"
 make profile
 ```
 
+`make packs` lists available packs and their preset membership.
+`make pack NAME=nvim` shows one pack's payload and restore steps. Both commands
+work even when a saved selection is stale.
+
 `make profile-set` writes an ignored `profile.mk` in this checkout. `WITH` can
 contain `atuin`, `yazi`, `nvim`, `herdr`, and `dev`; see
 [`setup/profiles.yaml`](../setup/profiles.yaml) for their exact packages and
@@ -99,10 +103,12 @@ tools. Pass `PROFILE` and `WITH` as Make arguments, such as
 `make PROFILE=lite WITH=yazi plan`; setting them in the shell environment is
 ignored. A command-line choice applies only to that command. Repeat it for
 each command if you do not save a choice: a plain `make setup-user` after that
-preview would use the saved or default profile instead. Saving a profile
-without `WITH` clears saved add-ons; pass `WITH=` to drop saved add-ons for
-one command. To return to the default full setup, run
-`make profile-set PROFILE=full`, then `make plan` and `make setup-user`.
+preview would use the saved or default profile instead. Saving requires both
+`PROFILE` and `WITH`; use `WITH=""` to clear saved
+add-ons explicitly. The save reports the previous and new selection and dropped
+packs. Pass `WITH=` to drop saved add-ons for one command. To return to the
+default full setup, run
+`make profile-set PROFILE=full WITH=""`, then `make plan` and `make setup-user`.
 
 The `dev` add-on provides the language servers used by Neovim. Profiles select
 Stow links, mise tools, and plugin steps; `make setup` still installs the same

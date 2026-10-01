@@ -7,32 +7,25 @@ data=${DOTFILES_PROFILE_DATA_FILE:-$repo/setup/profiles.yaml}
 action=${1:-}
 profile=${2-full}
 addons=${3:-}
+catalog=${DOTFILES_TOOL_CATALOG:-$repo/mise/.config/mise/config.toml}
+catalog_tools=$(awk -v action=keys -f "$repo/mk/catalog.awk" "$catalog") || exit 1
 
 case "$action" in
-  components|packages|tools|all-packages|all-tools|profiles)
+  components|packages|tools|all-packages|all-tools|profiles|packs|pack|tool-users)
     exec awk -v action="$action" -v wanted_profile="$profile" \
-      -v addons="$addons" -f "$repo/mk/profile.awk" "$data"
+      -v addons="$addons" -v catalog_tools="$catalog_tools" -f "$repo/mk/profile.awk" "$data"
     ;;
   validate)
-    awk -v action=validate -f "$repo/mk/profile.awk" "$data" || exit 1
-    packages=$(awk -v action=all-packages -f "$repo/mk/profile.awk" "$data") || exit 1
+    awk -v action=validate -v catalog_tools="$catalog_tools" -f "$repo/mk/profile.awk" "$data" || exit 1
+    packages=$(awk -v action=all-packages -v catalog_tools="$catalog_tools" -f "$repo/mk/profile.awk" "$data") || exit 1
     for package in $packages; do
       if [ ! -d "$repo/$package" ]; then
         echo "profile: missing Stow package: $package" >&2
         exit 1
       fi
     done
-    tools=$(awk -v action=all-tools -f "$repo/mk/profile.awk" "$data") || exit 1
-    configured=$(awk '
-      /^\[tools\]$/ { in_tools = 1; next }
-      /^\[/ { in_tools = 0 }
-      in_tools && /^[[:space:]]*("[^"]+"|[A-Za-z0-9_-]+)[[:space:]]*=/ {
-        key = $0
-        sub(/[[:space:]]*=.*/, "", key)
-        gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", key)
-        printf "%s%s", (seen++ ? " " : ""), key
-      }
-    ' "$repo/mise/.config/mise/config.toml") || exit 1
+    tools=$(awk -v action=all-tools -v catalog_tools="$catalog_tools" -f "$repo/mk/profile.awk" "$data") || exit 1
+    configured=$catalog_tools
     for tool in $tools; do
       case " $configured " in
         *" $tool "*) ;;
@@ -42,12 +35,12 @@ case "$action" in
     for tool in $configured; do
       case " $tools " in
         *" $tool "*) ;;
-        *) echo "profile: mise tool has no component: $tool" >&2; exit 1 ;;
+        *) echo "profile: catalog tool has no pack: $tool" >&2; exit 1 ;;
       esac
     done
     ;;
   *)
-    echo "usage: sh mk/profile.sh {components|packages|tools|all-packages|all-tools|profiles|validate} [profile] [addons]" >&2
+    echo "usage: sh mk/profile.sh {components|packages|tools|all-packages|all-tools|profiles|packs|pack|tool-users|validate} [profile] [addons]" >&2
     exit 2
     ;;
 esac

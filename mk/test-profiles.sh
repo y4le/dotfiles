@@ -78,6 +78,7 @@ trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
 cat > "$test_root/bad.yaml" <<'EOF'
 components:
   core:
+    summary: Test core
     packages: [agents]
     tools: [aqua:junegunn/fzf]
 profiles:
@@ -88,6 +89,71 @@ EOF
 if DOTFILES_PROFILE_DATA_FILE="$test_root/bad.yaml" \
   sh mk/profile.sh components lite > /dev/null 2>&1; then
   fail "unsupported YAML syntax was accepted"
+fi
+
+echo "check-profiles: shared runtimes, optional catalog entries and stable ordering"
+awk '
+  /^profiles:/ {
+    print "  node:"
+    print "    summary: Standalone Node runtime"
+    print "    tools: [node]"
+    print "  web-dev:"
+    print "    summary: Web development"
+    print "    tools: [node, npm:typescript-language-server]"
+  }
+  { print }
+' setup/profiles.yaml > "$test_root/shared.yaml"
+fixture_profile() {
+  DOTFILES_PROFILE_DATA_FILE="$test_root/shared.yaml" sh mk/profile.sh "$@"
+}
+fixture_profile validate || fail "shared tools or optional packs were rejected"
+first=$(fixture_profile tools lite 'node web-dev') || fail "shared tools did not resolve"
+second=$(fixture_profile tools lite 'web-dev node') || fail "reverse selection failed"
+[ "$first" = "$second" ] || fail "tool order depends on WITH order"
+[ "$first" = "$lite_tools node npm:typescript-language-server" ] || \
+  fail "shared runtime was duplicated or ordered incorrectly: $first"
+retained=$(fixture_profile tools lite node) || fail "runtime retention failed"
+[ "$retained" = "$lite_tools node" ] || fail "deselecting web-dev lost the shared runtime"
+[ "$(fixture_profile tools lite '')" = "$lite_tools" ] || fail "optional tools leaked into lite"
+fixture_profile packs | grep -Eq '^node +optional +Standalone Node runtime$' || \
+  fail "optional pack discovery omitted preset status"
+fixture_profile pack web-dev | grep -Fq 'mise tools: node npm:typescript-language-server' || \
+  fail "pack description omitted its direct tools"
+fixture_profile tool-users lite 'node web-dev' | grep -Fxq 'node: node web-dev' || \
+  fail "shared-tool attribution is wrong"
+sed 's/tools: \[node, npm:typescript-language-server\]/tools: [npm:typescript-language-server]/' \
+  "$test_root/shared.yaml" > "$test_root/missing-node.yaml"
+if DOTFILES_PROFILE_DATA_FILE="$test_root/missing-node.yaml" sh mk/profile.sh validate >/dev/null 2>&1; then
+  fail "npm pack without its Node runtime was accepted"
+fi
+awk '{ print; if ($0 == "    summary: Standalone Node runtime") print "    packages: [nvim]" }' \
+  "$test_root/shared.yaml" > "$test_root/duplicate-owner.yaml"
+if DOTFILES_PROFILE_DATA_FILE="$test_root/duplicate-owner.yaml" sh mk/profile.sh validate >"$test_root/duplicate-owner.log" 2>&1; then
+  fail "duplicate Stow ownership was accepted"
+fi
+grep -Fq "package nvim belongs to multiple components" "$test_root/duplicate-owner.log" || \
+  fail "duplicate-owner fixture failed for an unrelated reason"
+sed 's/go, node/node/' setup/profiles.yaml > "$test_root/unowned.yaml"
+if DOTFILES_PROFILE_DATA_FILE="$test_root/unowned.yaml" sh mk/profile.sh validate >/dev/null 2>&1; then
+  fail "unreferenced catalog key was accepted"
+fi
+if make -n PROFILE=full profile-set >/dev/null 2>&1; then
+  fail "profile-set accepted missing WITH"
+fi
+if make -n WITH= profile-set >/dev/null 2>&1; then
+  fail "profile-set accepted missing PROFILE"
+fi
+
+echo "check-profiles: unsupported tool subtables fail instead of disappearing"
+cp mise/.config/mise/config.toml "$test_root/subtable.toml"
+printf '\n[tools.extra]\nversion = "1.0.0"\n' >> "$test_root/subtable.toml"
+if DOTFILES_TOOL_CATALOG="$test_root/subtable.toml" sh mk/profile.sh validate >"$test_root/subtable.log" 2>&1; then
+  fail "catalog silently ignored a tool subtable"
+fi
+grep -Fq 'tool subtables' "$test_root/subtable.log" || fail 'subtable rejection failed for an unrelated reason'
+if command -v busybox >/dev/null 2>&1; then
+  busybox awk -v action=validate -v catalog_tools="$(sh mk/profile.sh all-tools)" \
+    -f mk/profile.awk setup/profiles.yaml || fail 'profile parser is not portable to busybox awk'
 fi
 
 echo "check-profiles: ok"

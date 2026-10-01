@@ -759,8 +759,14 @@ if run_make "$profile_home" PROFILE=lite WITH=unknown profile-set \
 fi
 grep -Fqx 'WITH := yazi herdr' "$repo/profile.mk" || \
   fail "invalid profile changed the saved choice"
-run_make "$profile_home" PROFILE=lite profile-set >/dev/null 2>&1 || \
-  fail "saving lite without add-ons failed"
+cp "$repo/profile.mk" "$test_root/saved-before-incomplete"
+if run_make "$profile_home" PROFILE=lite profile-set >/dev/null 2>&1; then
+  fail "saving an incomplete selection was accepted"
+fi
+cmp -s "$repo/profile.mk" "$test_root/saved-before-incomplete" || \
+  fail "incomplete profile-set changed the saved choice"
+run_make "$profile_home" PROFILE=lite WITH= profile-set >/dev/null 2>&1 || \
+  fail "saving lite with explicitly empty add-ons failed"
 grep -Fqx 'WITH := ' "$repo/profile.mk" || \
   fail "saving lite kept old add-ons"
 run_make "$profile_home" check-make > "$test_root/saved-lite-make.log" 2>&1 || \
@@ -775,6 +781,16 @@ if run_make "$profile_home" plan > "$test_root/stale-profile.log" 2>&1; then
 fi
 grep -Fq 'profile.mk is stale' "$test_root/stale-profile.log" || \
   fail "stale profile error omitted recovery guidance"
+for discovery in help packs 'pack NAME=nvim'; do
+  # Intentional splitting of a fixed test command, not user input.
+  run_make "$profile_home" $discovery > "$test_root/discovery.log" 2>&1 || \
+    fail "stale profile blocked discovery: $discovery"
+done
+if run_make "$profile_home" packs link >/dev/null 2>&1; then
+  fail "mixed discovery and apply goals bypassed selection validation"
+fi
+run_make "$profile_home" -n packs >/dev/null 2>&1 || \
+  fail "stale profile blocked dry-run discovery"
 if run_make "$profile_home" PROFILE=full profile-set plan \
   > /dev/null 2>&1; then
   fail "mixed goals bypassed stale profile validation"
@@ -785,7 +801,7 @@ if run_make "$profile_home" PROFILE=full WITH=retired-component profile-set \
 fi
 grep -Fqx 'WITH := retired-component' "$repo/profile.mk" || \
   fail "invalid profile-set changed the stale choice"
-run_make "$profile_home" PROFILE=full profile-set >/dev/null 2>&1 || \
+run_make "$profile_home" PROFILE=full WITH= profile-set >/dev/null 2>&1 || \
   fail "profile-set could not recover from a stale saved add-on"
 grep -Fqx 'PROFILE := full' "$repo/profile.mk" || \
   fail "profile-set did not replace the stale profile"

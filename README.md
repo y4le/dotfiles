@@ -21,7 +21,7 @@ cd ~/dev/dotfiles
 
 The default `full` profile keeps the existing setup. `lite` links the core
 shell, Git, Vim, tmux, scripts, and agent configuration, and selects fzf,
-ripgrep, fd, bat, delta, and zoxide for installation. To choose a smaller
+ripgrep, bat, delta, and zoxide for installation. To choose a smaller
 setup, optionally save `lite` with any add-ons before linking:
 
 ```sh
@@ -41,7 +41,8 @@ that step is offline, and shell and editor config remain usable before optional
 plugins are restored. Keep the checkout in place; the links point into it.
 
 [`setup/profiles.yaml`](setup/profiles.yaml) lists each component's Stow
-packages and mise tools. `make profile` shows the resolved selection; a saved
+packages and mise tools. `make packs` discovers packs; `make pack NAME=nvim`
+describes one payload. `make profile` shows the resolved selection; a saved
 choice applies to later Make commands in this checkout.
 
 Profiles select links, tool installs, and plugin steps; they do not change the

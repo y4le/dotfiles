@@ -72,6 +72,7 @@ these are the main entry points.
 
 | Target | Effect | Access |
 | --- | --- | --- |
+| `packs`, `pack NAME=...` | Discover packs or inspect one payload and restore steps | Offline |
 | `profile` | Show selected components, Stow packages, tools, and restore steps | Offline |
 | `profile-set` | Save `PROFILE` and `WITH` to ignored `profile.mk` | Offline |
 | `plan` | Show profile and preview link changes | Offline |
@@ -108,7 +109,8 @@ hides restow operations that leave existing links unchanged.
 
 `WITH` adds components to `PROFILE` for one invocation. Pass both as Make
 arguments (`make PROFILE=lite WITH=yazi plan`); environment variables with
-those names are ignored. `profile-set` saves the choice for this checkout;
+those names are ignored. `profile-set` requires explicit `PROFILE` and `WITH` and saves the complete
+choice for this checkout;
 absent a saved choice, `PROFILE=full`. Shrinking a profile does not prune
 installed binaries. An old installation cannot satisfy a newer pin. If an
 unselected tool's pin changes, its leftover shim uses a same-named system

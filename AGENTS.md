@@ -15,7 +15,7 @@ Personal dotfiles repo managed with symlinks.
 
 - `setup/profiles.yaml` owns membership for profile-controlled Stow packages
   and mise tools. Assign new packages and tool keys to a component, preserve
-  its fixed YAML shape, and update `mk/test-profiles.sh` when full or lite
+  its shallow YAML shape (inline lists and one-line summaries), and update `mk/test-profiles.sh` when full or lite
   membership changes. See [profile maintenance](docs/maintenance.md#add-a-package-tool-or-component).
 - Keep native packages, `DESKTOP`, `local/`, and the private agent overlay
   separate from profiles. The ignored `profile.mk` and `local/` are

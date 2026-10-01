@@ -95,11 +95,14 @@ and use `herdr integration status` to inspect the installed hook versions.
 ## Add a package, tool, or component
 
 Assign every new profile-controlled Stow package or mise tool key to a
-component in [`setup/profiles.yaml`](../setup/profiles.yaml); new top-level
+pack in [`setup/profiles.yaml`](../setup/profiles.yaml); new top-level
 Stow directories are not discovered automatically. The file uses a limited
 YAML shape: component properties and profiles are inline lists separated by
-comma-space, with no nested components. Each package or tool key belongs to
-one component, and `full` includes every component. Put tool versions in
+comma-space, plus a plain one-line `summary`, with no nested components. Each
+Stow package has one owner. Several packs may reference the same tool key; each
+pack includes its runtime prerequisites directly (Node for npm, Python and uv
+for pipx). `full` is a curated preset, while validation checks the whole catalog.
+Put tool versions in
 [`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml), not the
 profile file. Update the expected full or lite sets in `mk/test-profiles.sh`
 when membership changes. Run `make check-profiles` to check package paths and
@@ -213,12 +216,12 @@ for settings you want to keep. Review and commit any Herdr settings written
 through its tracked config link (`git diff -- herdr/`) before removing that
 link.
 
-To return to full, run `make profile-set PROFILE=full`, `make plan`, and
+To return to full, run `make profile-set PROFILE=full WITH=""`, `make plan`, and
 `make setup-user`. Deleting the ignored `profile.mk` also restores the default
 full selection. `DESKTOP=1` is independent and must be passed again when
 relinking desktop files.
 If a saved add-on was removed from `setup/profiles.yaml`,
-`make profile-set PROFILE=full` clears the stale choice so Make commands work
+`make profile-set PROFILE=full WITH=""` clears the stale choice so Make commands work
 again. Pass a valid `WITH=` value when saving a different selection.
 
 ### Retired utilities and Vim profiler

@@ -35,18 +35,32 @@ function add_selected(name) {
 
 function emit_members(kind, all,    i, count, names, j, name, item, output, seen) {
   output = ""
-  for (i = 1; i <= (all ? component_count : selected_count); i++) {
-    name = all ? component_order[i] : selected_order[i]
+  for (i = 1; i <= component_count; i++) {
+    name = component_order[i]
+    if (!all && !(name in selected)) continue
     count = split(kind == "packages" ? packages[name] : tools[name], names, " ")
     for (j = 1; j <= count; j++) {
       item = names[j]
       if (item != "" && !(item in seen)) {
         seen[item] = 1
-        output = output (output == "" ? "" : " ") item
+        if (kind == "packages") output = output (output == "" ? "" : " ") item
       }
     }
   }
+  if (kind == "tools") {
+    count = split(catalog_tools, names, " ")
+    for (i = 1; i <= count; i++)
+      if (names[i] in seen) output = output (output == "" ? "" : " ") names[i]
+  }
   print output
+}
+
+function presets(name,    i, result) {
+  result = ""
+  for (i = 1; i <= profile_count; i++)
+    if (index(" " profiles[profile_order[i]] " ", " " name " "))
+      result = result (result == "" ? "" : ", ") profile_order[i]
+  return result == "" ? "optional" : result
 }
 
 BEGIN {
@@ -77,6 +91,18 @@ BEGIN {
     if (current_component in components) fail("duplicate component: " current_component)
     components[current_component] = 1
     component_order[++component_count] = current_component
+    next
+  }
+
+  if ($0 ~ /^    summary: /) {
+    if (section != "components" || current_component == "")
+      fail("summary without a component")
+    if (seen_property[current_component SUBSEP "summary"]++)
+      fail("duplicate summary for component " current_component)
+    value = substr($0, 14)
+    if (value !~ /^[A-Za-z0-9][A-Za-z0-9 ,.\/()+_-]*$/ || value ~ / $/)
+      fail("summary must be a plain one-line description")
+    summaries[current_component] = value
     next
   }
 
@@ -122,14 +148,14 @@ END {
     for (j = 1; j <= count; j++)
       if (!(members[j] in components)) fail("unknown component in " name ": " members[j])
   }
-  count = split(profiles["full"], full_members, " ")
-  for (i = 1; i <= count; i++) full_has[full_members[i]] = 1
-  for (i = 1; i <= component_count; i++)
-    if (!(component_order[i] in full_has))
-      fail("full profile omits component: " component_order[i])
+
+  count = split(catalog_tools, catalog_members, " ")
+  for (i = 1; i <= count; i++) catalog_rank[catalog_members[i]] = i
 
   for (i = 1; i <= component_count; i++) {
     name = component_order[i]
+    if (!(name in summaries)) fail("missing summary for component " name)
+    if (packages[name] == "" && tools[name] == "") fail("empty component: " name)
     count = split(packages[name], members, " ")
     for (j = 1; j <= count; j++) {
       item = members[j]
@@ -141,10 +167,20 @@ END {
     for (j = 1; j <= count; j++) {
       item = members[j]
       if (item == "") continue
-      if (item in tool_owner) fail("tool " item " belongs to multiple components")
-      tool_owner[item] = name
+      tool_referenced[item] = 1
+      if (item ~ /^npm:/ && (!index(" " tools[name] " ", " node ") || catalog_rank["node"] >= catalog_rank[item]))
+        fail("npm tools require node before them in component " name)
+      if (item ~ /^pipx:/ && (!index(" " tools[name] " ", " python ") ||
+          !index(" " tools[name] " ", " aqua:astral-sh/uv ") ||
+          catalog_rank["python"] >= catalog_rank[item] || catalog_rank["aqua:astral-sh/uv"] >= catalog_rank[item]))
+        fail("pipx tools require python and uv before them in component " name)
     }
   }
+
+  count = split(catalog_tools, catalog_members, " ")
+  for (i = 1; i <= count; i++) catalog_has[catalog_members[i]] = 1
+  for (item in tool_referenced)
+    if (!(item in catalog_has)) fail("tool absent from catalog: " item)
 
   if (action == "validate") exit 0
   if (action == "profiles") {
@@ -153,6 +189,25 @@ END {
   }
   if (action == "all-packages") { emit_members("packages", 1); exit 0 }
   if (action == "all-tools") { emit_members("tools", 1); exit 0 }
+
+  if (action == "packs") {
+    for (i = 1; i <= component_count; i++) {
+      name = component_order[i]
+      printf "%-12s %-14s %s\n", name, presets(name), summaries[name]
+    }
+    exit 0
+  }
+  if (action == "pack") {
+    if (!(wanted_profile in components)) fail("unknown pack: " wanted_profile)
+    name = wanted_profile
+    print "pack: " name
+    print "summary: " summaries[name]
+    print "presets: " presets(name)
+    selected[name] = 1
+    printf "Stow packages: "; emit_members("packages", 0)
+    printf "mise tools: "; emit_members("tools", 0)
+    exit 0
+  }
 
   if (!(wanted_profile in profiles)) fail("unknown profile: " wanted_profile)
   count = split(profiles[wanted_profile], members, " ")
@@ -167,6 +222,21 @@ END {
     for (i = 1; i <= selected_count; i++)
       printf "%s%s", (i == 1 ? "" : " "), selected_order[i]
     print ""
+  } else if (action == "tool-users") {
+    count = split(catalog_tools, catalog_members, " ")
+    for (i = 1; i <= count; i++) {
+      item = catalog_members[i]
+      owners = ""
+      owner_count = 0
+      for (j = 1; j <= component_count; j++) {
+        name = component_order[j]
+        if (name in selected && index(" " tools[name] " ", " " item " ")) {
+          owners = owners (owners == "" ? "" : " ") name
+          owner_count++
+        }
+      }
+      if (owner_count > 1) print item ": " owners
+    }
   } else if (action == "packages" || action == "tools") {
     emit_members(action, 0)
   } else {
