@@ -53,11 +53,11 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends python3 ripgrep shellcheck stow tmux vim zsh
+          sudo apt-get install -y --no-install-recommends jq python3 ripgrep shellcheck stow tmux vim zsh
 
       - name: Install macOS check toolchain
         if: runner.os == 'macOS'
-        run: HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install ripgrep shellcheck stow tmux vim
+        run: HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install jq ripgrep shellcheck stow tmux vim
 
       - name: Show check toolchain
         run: |

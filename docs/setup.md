@@ -195,7 +195,7 @@ not install the complete desktop stack.
 |---|---|---|
 | `i3`, `i3-msg` | Window manager and workspace picker | i3 (typically `i3-wm`) |
 | `kitty` | Terminal binding and `TERMINAL` | Kitty |
-| `rofi` | Launcher and workspace picker | Rofi |
+| `rofi` | Launcher and workspace picker | Rofi 1.6+ (row metadata) |
 | `rofimoji`, `xdotool`, `xclip` or `xsel` | Emoji picker, typing, and clipboard actions | Rofimoji plus X11 typing/clipboard backends |
 | `pactl` | Volume bindings | Debian/Ubuntu `pulseaudio-utils`; Arch `libpulse`; a running PulseAudio-compatible server, such as PipeWire-Pulse |
 | `playerctl` | Media bindings and the configured Spotify blocklet | Playerctl and an MPRIS-capable player |
@@ -204,7 +204,7 @@ not install the complete desktop stack.
 | `dex` | XDG application autostart | dex |
 | `pkill` | Caps/Num Lock indicator updates | Debian/Ubuntu `procps`; Arch `procps-ng` |
 | `xsetroot` | Optional background colour in `.xsessionrc` | Debian/Ubuntu `x11-xserver-utils`; Arch `xorg-xsetroot` |
-| Bash, POSIX shell, `tr`, `grep`, `sed`, `sort`, `seq` | Workspace and media helper scripts | Shell/interpreter packages and standard text/core utilities |
+| Bash, POSIX shell, `jq` | Workspace and media helper scripts | Shell packages; jq is supplied by the base native package lists |
 
 Some distributions do not package `rofimoji`, including
 [Ubuntu 24.04](https://packages.ubuntu.com/search?keywords=rofimoji&searchon=names&suite=noble&section=all).
@@ -235,7 +235,12 @@ adjusts volume. No player running produces no text; missing playerctl is
 visible in the bar. Separate mpc/cmus/rhythmbox adapters are retired.
 
 The workspace script is supplied at `~/bin/i3_switch_workspaces.sh`;
-`i3-msg` comes with the window manager.
+`i3-msg` comes with the window manager. Its `empty (new workspace)` action
+creates the first unused number from 1 through 10 and reports exhaustion. Rofi metadata
+separates that action from a workspace actually named `empty`; typed text
+selects a literal name. Existing names remain intact. Numeric keybindings
+reuse workspaces by number, including ones created or renamed by the picker.
+Workspace names containing newlines are outside the line-based picker contract.
 
 ### Linux status-bar scripts
 
