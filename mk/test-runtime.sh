@@ -191,13 +191,14 @@ cat > "$test_home/bin/atuin" <<'EOF'
 #!/bin/sh
 case $1 in
   init) exit 0 ;;
-  search) printf 'chosen command\000' ;;
+  search) printf '%s\n' "$@" > "$HOME/atuin-args"; printf 'chosen command\000' ;;
 esac
 EOF
 cat > "$test_home/bin/fzf" <<'EOF'
 #!/bin/sh
-cat >/dev/null
-[ "${DOTFILES_TEST_CANCEL:-}" != 1 ] || exit 1
+printf '%s\n' "$@" > "$HOME/fzf-args"
+cat > "$HOME/fzf-input"
+[ -z "${DOTFILES_TEST_CANCEL:-}" ] || exit "$DOTFILES_TEST_CANCEL"
 printf 'chosen command\n'
 EOF
 chmod +x "$test_home/bin/atuin" "$test_home/bin/fzf"
@@ -230,6 +231,15 @@ widget_state=$(run_zsh -i -c '
 ' 2> "$test_root/widget.err") || fail "successful-history widget errored"
 [ "$widget_state" = 'chosen command|14
 before|6' ] || fail "successful-history widget lost selection or changed a cancellation"
+if grep -q -- '--tmux' "$test_home/fzf-args"; then
+  fail "history search requested a popup outside tmux"
+fi
+printf 'chosen command\000' > "$test_root/history-input"
+cmp -s "$test_root/history-input" "$test_home/fzf-input" || fail "history input lost NUL framing"
+printf '%s\n' --read0 --scheme=history --query before '--prompt=success> ' > "$test_root/history-args"
+cmp -s "$test_root/history-args" "$test_home/fzf-args" || fail "history search lost query or options"
+printf '%s\n' search --exit 0 --cmd-only --print0 --limit 10000 > "$test_root/atuin-args"
+cmp -s "$test_root/atuin-args" "$test_home/atuin-args" || fail "history search lost its successful-command filter"
 fzf_commands=$(run_zsh -i -c 'print -r -- "$FZF_DEFAULT_COMMAND|$FZF_CTRL_T_COMMAND"' \
   2> "$test_root/fzf-commands.err") || fail "could not read file-picker commands"
 [ "$fzf_commands" = 'filez|filez --print0' ] || \
@@ -465,18 +475,53 @@ printf '%s\n' 'fzf-tmux invoked' >> "$DOTFILES_RUNTIME_LOG"
 exit 97
 EOF
 chmod +x "$test_home/bin/fzf-tmux"
-widget_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
-  DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
+echo "check-runtime: native history popups and older tmux fallback"
+for test_version in 3.2 3.3 3.3a 4.0 unavailable; do
+  widget_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
+    DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
+    test_tmux_version=$1
+    function tmux() {
+      if [[ $1 == -V ]]; then print "tmux 4.0"; return; fi
+      [[ $1 == display-message && $2 == -p && $3 == "#{version}" && $test_tmux_version != unavailable ]] || return 97
+      print -r -- "$test_tmux_version"
+    }
+    function zle() { :; }
+    BUFFER=before; CURSOR=6
+    atuin-success-history
+    print -r -- "$BUFFER|$CURSOR"
+    for cancel_status in 1 130; do
+      export DOTFILES_TEST_CANCEL=$cancel_status
+      BUFFER=before; CURSOR=6
+      atuin-success-history
+      print -r -- "$BUFFER|$CURSOR"
+    done
+  ' history-test "$test_version" 2> "$test_root/tmux-widget.err") || \
+    fail "history widget failed with tmux $test_version"
+  [ "$widget_state" = 'chosen command|14
+before|6
+before|6' ] || fail "tmux $test_version lost selection or changed cancellation"
+  case $test_version in
+    3.3|3.3a|4.0)
+      grep -Fxq -- '--tmux=center,90%,70%' "$test_home/fzf-args" || fail "native popup lost default size" ;;
+    *)
+      if grep -q -- '--tmux' "$test_home/fzf-args"; then
+        fail "history search requested a popup with unsupported tmux $test_version"
+      fi ;;
+  esac
+done
+DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
+  function tmux() { print "3.3"; }
   function zle() { :; }
-  BUFFER=before; CURSOR=6
+  ATUIN_TMUX_POPUP_WIDTH=80%; ATUIN_TMUX_POPUP_HEIGHT=55%
+  BUFFER=before
   atuin-success-history
-  print -r -- "$BUFFER|$CURSOR"
-'  2> "$test_root/legacy-tmux-widget.err") || \
-  fail "successful-history widget failed without tmux popup support"
-[ "$widget_state" = 'chosen command|14' ] || \
-  fail "successful-history widget did not fall back to fzf"
+  [[ $(< "$HOME/fzf-args") == *--tmux=center,80%,55%* ]] || exit 1
+  ATUIN_TMUX_POPUP=false
+  atuin-success-history
+  [[ $(< "$HOME/fzf-args") != *--tmux* ]] || exit 1
+' 2> "$test_root/tmux-custom.err" || fail "popup size override or opt-out failed"
 if grep -Fq 'fzf-tmux invoked' "$runtime_log"; then
-  fail "successful-history widget used unsupported tmux popup"
+  fail "successful-history widget used the retired wrapper"
 fi
 
 echo "check-runtime: prompt redraw reuses git status"

@@ -168,6 +168,12 @@ owns activation and PATH ordering. Portable PATH defaults preserve inherited
 entries. The hook runs before those defaults, so toolchain paths it prepends
 take precedence over managed bins and mise shims.
 
+Successful-history search (`Ctrl-X o`) uses fzf's native popup with a tmux 3.3 or
+newer server, with inline selection elsewhere. Popup size defaults to 90% width
+and 70% height; `ATUIN_TMUX_POPUP_WIDTH` and `ATUIN_TMUX_POPUP_HEIGHT` override it.
+`ATUIN_TMUX_POPUP=false` disables the popup. Selection replaces the command
+line; cancellation preserves it.
+
 The Sheldon startup cache is
 `${XDG_CACHE_HOME:-~/.cache}/dotfiles/sheldon.zsh`. Startup reads it without
 running Sheldon or downloading plugins; `make sheldon-plugins` creates it.

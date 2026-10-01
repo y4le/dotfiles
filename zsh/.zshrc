@@ -140,13 +140,13 @@ if (( atuin_managed )) && command -v atuin &>/dev/null; then
 
     zle -I
     local -a selector=(fzf)
-    if [[ "$ATUIN_TMUX_POPUP" == "true" ]] && \
-      command -v fzf-tmux &>/dev/null && \
-      tmux list-commands 2>/dev/null | command grep -q '^display-popup '; then
-      selector=(
-        fzf-tmux
-        -p "${ATUIN_TMUX_POPUP_WIDTH:-90%},${ATUIN_TMUX_POPUP_HEIGHT:-70%}"
-      )
+    if [[ "$ATUIN_TMUX_POPUP" == "true" ]]; then
+      # Query the running server: an upgraded client may still use an old session.
+      local tmux_version=$(tmux display-message -p '#{version}' 2>/dev/null)
+      autoload -Uz is-at-least
+      if [[ -n "$tmux_version" ]] && is-at-least 3.3 "$tmux_version"; then
+        selector+=("--tmux=center,${ATUIN_TMUX_POPUP_WIDTH:-90%},${ATUIN_TMUX_POPUP_HEIGHT:-70%}")
+      fi
     fi
 
     local selected
