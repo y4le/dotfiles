@@ -230,8 +230,9 @@ check-make: ## [offline] dry-run make target graph and help output
 	}
 	@echo "check-make: lite mise install selects only core pins"
 	@mise_plan="$$( $(MAKE) -n -s --no-print-directory PROFILE=lite WITH= mise-tools )" || exit $$?; \
-	printf '%s\n' "$$mise_plan" | grep -Fq ' install aqua:junegunn/fzf aqua:BurntSushi/ripgrep aqua:sharkdp/fd aqua:sharkdp/bat aqua:dandavison/delta aqua:ajeetdsouza/zoxide;' || { \
-		echo "check-make: lite mise install did not name the six core tools"; exit 1; \
+	lite_tools="$$(sh mk/profile.sh tools lite '')" || exit $$?; \
+	printf '%s\n' "$$mise_plan" | grep -Fq " install $$lite_tools;" || { \
+		echo "check-make: lite mise install did not name the selected core tools"; exit 1; \
 	}
 	@echo "check-make: make -n link-linux"
 	@$(CHECK_MAKE) -n link-linux >/dev/null

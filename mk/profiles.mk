@@ -28,6 +28,10 @@ PROFILE_PACKAGES := $(shell sh mk/profile.sh packages $(call profile_shell_quote
 PROFILE_TOOLS := $(shell sh mk/profile.sh tools $(call profile_shell_quote,$(PROFILE)) $(call profile_shell_quote,$(PROFILE_SELECTION_WITH)))
 KNOWN_PROFILE_PACKAGES := $(shell sh mk/profile.sh all-packages)
 
+# Keep the execution order and the profile summary on the same selection.
+TOOL_STEPS := $(strip $(if $(filter mise,$(PROFILE_PACKAGES)),mise-tools) $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon) $(if $(filter herdr,$(PROFILE_PACKAGES)),herdr))
+PLUGIN_STEPS := $(strip $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon-plugins) $(if $(filter vim,$(PROFILE_PACKAGES)),vim-plugins) $(if $(filter nvim,$(PROFILE_PACKAGES)),nvim-plugins) $(if $(filter herdr,$(PROFILE_PACKAGES)),herdr-plugins))
+
 .PHONY: profile profile-set
 
 profile: ## [offline] show the selected setup components and tools
@@ -36,8 +40,8 @@ profile: ## [offline] show the selected setup components and tools
 	@echo "components: $(PROFILE_COMPONENTS)"
 	@echo "Stow packages: $(PROFILE_PACKAGES)"
 	@echo "mise tools: $(PROFILE_TOOLS)"
-	@echo "tool steps: $(if $(filter mise,$(PROFILE_PACKAGES)),mise-tools) $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon) $(if $(filter herdr,$(PROFILE_PACKAGES)),herdr)"
-	@echo "plugin steps: $(if $(filter zsh,$(PROFILE_PACKAGES)),sheldon-plugins) $(if $(filter vim,$(PROFILE_PACKAGES)),vim-plugins) $(if $(filter nvim,$(PROFILE_PACKAGES)),nvim-plugins) $(if $(filter herdr,$(PROFILE_PACKAGES)),herdr-plugins)"
+	@echo "tool steps: $(TOOL_STEPS)"
+	@echo "plugin steps: $(PLUGIN_STEPS)"
 
 profile-set: ## [offline] save PROFILE and WITH as this checkout's default
 	@set -eu; \

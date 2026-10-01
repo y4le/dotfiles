@@ -9,30 +9,18 @@ setup-user: ## [network] user-space tools, links, and plugins; no sudo
 	@$(MAKE) link
 	@$(MAKE) plugins
 
+# Emit separate recursive recipe lines so Make preserves ordering and stops
+# the phase on the first failed step. + keeps recursion active under make -n.
+define run_setup_step
++@$(MAKE) $(1)
+
+endef
+
 tools: ## [network] install user-space tools
-ifneq ($(filter mise,$(PROFILE_PACKAGES)),)
-	@$(MAKE) mise-tools
-endif
-ifneq ($(filter zsh,$(PROFILE_PACKAGES)),)
-	@$(MAKE) sheldon
-endif
-ifneq ($(filter herdr,$(PROFILE_PACKAGES)),)
-	@$(MAKE) herdr
-endif
+	$(foreach step,$(TOOL_STEPS),$(call run_setup_step,$(step)))
 
 plugins: ## [network] restore shell, Vim, Neovim, and Herdr plugins
-ifneq ($(filter zsh,$(PROFILE_PACKAGES)),)
-	@$(MAKE) sheldon-plugins
-endif
-ifneq ($(filter vim,$(PROFILE_PACKAGES)),)
-	@$(MAKE) vim-plugins
-endif
-ifneq ($(filter nvim,$(PROFILE_PACKAGES)),)
-	@$(MAKE) nvim-plugins
-endif
-ifneq ($(filter herdr,$(PROFILE_PACKAGES)),)
-	@$(MAKE) herdr-plugins
-endif
+	$(foreach step,$(PLUGIN_STEPS),$(call run_setup_step,$(step)))
 
 system-packages: ## [sudo, network] install native packages
 ifeq ($(PACKAGE_MANAGER),brew)
