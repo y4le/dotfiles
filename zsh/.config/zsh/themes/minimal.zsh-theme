@@ -234,7 +234,6 @@ fi
 }
 
 # Setup
-autoload -U colors && colors
 setopt prompt_subst
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _mnml_capture_status

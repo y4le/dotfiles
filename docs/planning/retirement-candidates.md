@@ -56,15 +56,17 @@ candidate; no Haskell component or installer is provided today. Occasional
 standalone commands (`fd`, `wget`, `rclone`) remain local installations as
 previously decided.
 
+The unused `link-linux` / `link-macos` shortcuts and the theme's redundant
+`autoload colors` were retired. Explicit `PLATFORM` arguments select linking;
+the prompt uses its own ANSI escapes.
+
 ## Compatibility and convenience candidates
 
 | Candidate | Current use | Decision and checks before retirement |
 | --- | --- | --- |
 | Legacy plugin-local fzf binary cleanup in [`vim-plugins.sh`](../../mk/vim-plugins.sh) | Removes an untracked `bin/fzf` left by the old vim-plug install hook, so it cannot override the mise binary. Tracked plugin helpers remain. | Keep until the relevant machines have restored Vim plugins since that hook was removed. Removing the cleanup early leaves an existing plugin-local binary overriding mise on machines not yet cleaned. |
 | Older path migrations in [`bootstrap.mk`](../../mk/bootstrap.mk) | Replaces owned legacy IdeaVim/tmux links, migrates old local Zsh hook paths, and handles the former managed Git config. Runtime fallback paths also keep older local hooks usable. | Check which machines still need migration, then choose a documented sunset. Review link cleanup and runtime fallback together; preserve creation of the machine-local `~/.gitconfig` for identity. Recent retired-helper migrations should remain until machines have had time to use them. |
-| Theme `autoload colors` in [`minimal.zsh-theme`](../../zsh/.config/zsh/themes/minimal.zsh-theme) | Initializes Zsh color arrays; the public prompt builds ANSI escapes directly. No public use of `$fg`, `$bg`, or `$reset_color` was found. | Check whether local theme code or shell plugins rely on the initialized arrays before removing this startup work. |
 | Optional `fzf-tmux` branch in [successful-history search](../../zsh/.zshrc) | Successful-history search automatically requests a popup inside tmux. It uses `fzf-tmux` when that separate helper is on `PATH` and tmux supports `display-popup`; otherwise it calls fzf directly. The installed mise fzf package on the reviewed host contains only the binary. | Check whether that display mode is used. Compare fzf's built-in tmux support before replacing the helper path; preserve cancellation and command selection behavior. |
-| [`link-linux` and `link-macos`](../../mk/bootstrap.mk) | Convenience targets calling `_link` with the Linux or macOS package set. | Check command habits or external scripts. `make PLATFORM=linux link` and `make PLATFORM=macos link` already express the same selection. |
 
 ## Behavior to preserve during a later cleanup
 

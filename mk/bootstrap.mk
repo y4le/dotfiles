@@ -1,4 +1,4 @@
-.PHONY: setup setup-user tools plugins system-packages plan link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
+.PHONY: setup setup-user tools plugins system-packages plan link link-plan _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -59,12 +59,6 @@ link: ## [offline] link selected dotfiles and remove unselected add-on links
 
 link-plan: ## [offline] show link actions without changing anything
 	@$(MAKE) --no-print-directory _link-plan LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
-
-link-linux: ## [offline] force linux package set
-	@$(MAKE) _link LINK_PACKAGES="$(LINUX_PACKAGES)" REMOVE_PACKAGES="$(filter-out $(LINUX_PACKAGES),$(KNOWN_PROFILE_PACKAGES))"
-
-link-macos: ## [offline] force macos package set
-	@$(MAKE) _link LINK_PACKAGES="$(MACOS_PACKAGES)" REMOVE_PACKAGES="$(filter-out $(MACOS_PACKAGES),$(KNOWN_PROFILE_PACKAGES))"
 
 _link-plan: _require-stow
 	@sh mk/report-dangling-links.sh "$(CURDIR)" "$(HOME)"

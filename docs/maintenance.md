@@ -279,6 +279,14 @@ Run `make sheldon-plugins` to rebuild an existing startup cache, then start a
 new shell. The generated cache can still load the retired plugin until rebuilt.
 Forgit's interactive Git helpers remain enabled.
 
+The minimal theme builds its own ANSI color escapes and no longer initializes
+Zsh's color arrays. Local prompt code using `$fg`, `$bg`, or `$reset_color` can
+initialize them with `autoload -Uz colors; colors` in a local shell hook.
+
+The unused `link-linux` and `link-macos` shortcuts were removed. Use
+`make PLATFORM=linux link` or `make PLATFORM=macos link` for an explicit
+platform; use `make plan` with the same arguments to preview it.
+
 Machines using a locally installed Haskell toolchain can explicitly source
 `~/.ghcup/env` from `~/.config/zsh/hooks/env.zsh`. That hook runs in all shells
 before portable PATH defaults, so paths prepended by the env file take

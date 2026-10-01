@@ -77,7 +77,6 @@ these are the main entry points.
 | `plan` | Show profile and preview link changes | Offline |
 | `link-plan` | Preview selected links and detect conflicts | Offline |
 | `link` | Restow selected packages, remove unselected add-on links, ensure a local Git config | Offline |
-| `link-linux`, `link-macos` | Link an explicit platform's package set | Offline |
 | `setup-user` | Run `tools`, `link`, then `plugins` | Network; no sudo |
 | `setup` | Run `system-packages`, then `setup-user` | Network; sudo on Linux |
 | `system-packages` | Install the native package list | Network; sudo on Linux |
@@ -127,8 +126,6 @@ value is ignored. An explicitly empty `PROFILE` is rejected. `DESKTOP` affects
 package selection for linking, not the native package lists. Neither `PROFILE`
 nor `WITH` changes the native package lists. `DESKTOP=0` leaves previously
 linked desktop files in place; `clean` removes them regardless of its value.
-`link-linux` and `link-macos` force only the Stow package set, not the host's
-package manager.
 
 ## Linux desktop locking
 

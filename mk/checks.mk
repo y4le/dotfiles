@@ -160,10 +160,6 @@ check-make: ## [offline] dry-run make target graph and help output
 	printf '%s\n' "$$mise_plan" | grep -Fq " install $$lite_tools;" || { \
 		echo "check-make: lite mise install did not name the selected core tools"; exit 1; \
 	}
-	@echo "check-make: make -n link-linux"
-	@$(CHECK_MAKE) -n link-linux >/dev/null
-	@echo "check-make: make -n link-macos"
-	@$(CHECK_MAKE) -n link-macos >/dev/null
 	@echo "check-make: make -n DESKTOP=1 link"
 	@$(CHECK_MAKE) -n DESKTOP=1 link >/dev/null
 	@echo "check-make: reject invalid DESKTOP values"
