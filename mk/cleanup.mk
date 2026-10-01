@@ -3,6 +3,7 @@
 KNOWN_CLEAN_PACKAGES := $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES) osx linux-desktop osx-desktop
 
 clean: _require-stow ## [offline] unstow all known public packages
+	@sh mk/select-mise.sh --clean "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)"
 	@echo "planning removal of managed packages: $(KNOWN_CLEAN_PACKAGES)"
 	@sh mk/unstow.sh --plan "$(CURDIR)" "$(HOME)" "$(STOW)" $(KNOWN_CLEAN_PACKAGES)
 	@echo "unstowing managed packages: $(KNOWN_CLEAN_PACKAGES)"

@@ -1,10 +1,11 @@
-.PHONY: setup setup-user tools plugins system-packages plan link link-plan _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
+.PHONY: setup setup-user tools plugins system-packages plan link link-plan _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages _mise-preflight
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
 	@$(MAKE) setup-user
 
 setup-user: ## [network] user-space tools, links, and plugins; no sudo
+	@$(MAKE) _mise-preflight
 	@$(MAKE) tools
 	@$(MAKE) link
 	@$(MAKE) plugins
@@ -60,7 +61,15 @@ link: ## [offline] link selected dotfiles and remove unselected add-on links
 link-plan: ## [offline] show link actions without changing anything
 	@$(MAKE) --no-print-directory _link-plan LINK_PACKAGES="$(PACKAGES)" REMOVE_PACKAGES="$(UNSELECTED_PROFILE_PACKAGES)"
 
+_mise-preflight:
+	@if printf '%s\n' " $(PROFILE_PACKAGES) " | grep -q ' mise '; then \
+		sh mk/select-mise.sh --check "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)" "$(PROFILE_TOOLS)"; \
+	fi
+
 _link-plan: _require-stow
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' mise '; then \
+		sh mk/select-mise.sh --plan "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)" "$(PROFILE_TOOLS)" || exit $$?; \
+	fi
 	@sh mk/report-dangling-links.sh "$(CURDIR)" "$(HOME)"
 	@if git -C "$(CURDIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
 		artifacts="$$(git -C "$(CURDIR)" ls-files --others --directory --no-empty-directory -- $(GUARDED_LINK_PACKAGES))" || exit 1; \
@@ -109,6 +118,9 @@ _link: _link-plan
 	fi
 	@echo "linking $(PLATFORM) packages: $(LINK_PACKAGES)"
 	@$(STOW) -R $(STOW_FLAGS) $(LINK_PACKAGES)
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' mise '; then \
+		sh mk/select-mise.sh --apply "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)" "$(PROFILE_TOOLS)" || exit $$?; \
+	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' scripts '; then \
 		$(MAKE) _remove-legacy-functions; \
 	fi

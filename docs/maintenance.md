@@ -34,6 +34,21 @@ Switching the Herdr prefix edits the tracked config through that link. Run
 `herdr/.config/herdr/herdr-prefix`; change it there and rerun `reset` to
 regenerate the block between the `herdr-prefix` markers.
 
+## Tool selection fragment
+
+`make link` prepares `~/.config/mise/conf.d/dotfiles.toml` from the selected
+catalog entries. This file is derived machine state with a checkout ownership
+marker; it is a regular file rather than a Stow symlink. Preview its diff with
+`make plan`. Apply replaces an owned file, including local edits. Put overrides
+in `~/.config/mise/config.local.toml` instead. Foreign files, symlinks, and a
+fragment owned by another checkout are rejected before tools are downloaded.
+`make clean` removes only this checkout's marked fragment and preserves others.
+
+This is the preparatory migration stage: the linked global config still holds
+all pins and overrides the fragment. The catalog and settings-only cutover will
+follow separately. Run `make link` on existing machines before that cutover to
+prepare the fragment without changing their current tool activation.
+
 ## Restore tools and plugins
 
 On Intel Macs, follow the [Sheldon workaround](setup.md#intel-macs) instead of
@@ -43,7 +58,8 @@ running `make setup-user`.
 make setup-user
 ```
 
-This reruns `tools`, `link`, and `plugins` for the selected profile. `make tools`
+This preflights the derived mise file, then reruns `tools`, `link`, and `plugins`
+for the selected profile. `make tools`
 restores the selected Herdr, mise, and Sheldon binaries to their pins, replacing
 drifted binaries, and installs the selected mise tool versions. `make plugins`
 needs tools and links in place; it never installs a missing tool binary. To

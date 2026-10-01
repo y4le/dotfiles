@@ -51,6 +51,7 @@ check-nvim-first-open: ## [offline] verify named files after Neovim plugins are 
 check-nvim-bin: ## [offline] verify Neovim binary selection
 	@sh mk/test-nvim-bin.sh
 	@sh mk/test-mise-config.sh
+	@sh mk/test-mise-selection.sh
 
 check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh
@@ -100,7 +101,7 @@ check-make: ## [offline] dry-run make target graph and help output
 	fi
 	@echo "check-make: make -n setup-user"
 	@setup_user="$$( $(CHECK_MAKE) -n -s --no-print-directory MAKE=/bin/echo setup-user )" || exit $$?; \
-	expected="$$(printf '/bin/echo tools\ntools\n/bin/echo link\nlink\n/bin/echo plugins\nplugins')"; \
+	expected="$$(printf '/bin/echo _mise-preflight\n_mise-preflight\n/bin/echo tools\ntools\n/bin/echo link\nlink\n/bin/echo plugins\nplugins')"; \
 	if [ "$$setup_user" != "$$expected" ]; then \
 		echo "check-make: setup-user phase order changed"; exit 1; \
 	fi

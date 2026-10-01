@@ -168,7 +168,8 @@ them yourself before linking.
 make setup-user
 ```
 
-This installs selected user-space tools, links configuration, and restores the
+This first checks ownership conflicts for the derived mise file, then installs
+selected user-space tools, links configuration, and restores the
 selected shell and editor plugins. It uses the network but not sudo. Start a
 new Zsh shell after it finishes. When selected, Herdr is installed from its
 checksum-pinned release binary. Use `make herdr` when you only need to install

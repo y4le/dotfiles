@@ -77,8 +77,8 @@ these are the main entry points.
 | `profile-set` | Save `PROFILE` and `WITH` to ignored `profile.mk` | Offline |
 | `plan` | Show profile and preview link changes | Offline |
 | `link-plan` | Preview selected links and detect conflicts | Offline |
-| `link` | Restow selected packages, remove unselected add-on links, ensure a local Git config | Offline |
-| `setup-user` | Run `tools`, `link`, then `plugins` | Network; no sudo |
+| `link` | Restow selected packages, prepare the owned mise fragment, remove unselected links, ensure a local Git config | Offline |
+| `setup-user` | Preflight mise file ownership, then run `tools`, `link`, and `plugins` | Network; no sudo |
 | `setup` | Run `system-packages`, then `setup-user` | Network; sudo on Linux |
 | `system-packages` | Install the native package list | Network; sudo on Linux |
 | `tools` | Install selected user-space tools | Network |
@@ -90,7 +90,7 @@ these are the main entry points.
 | `agents-plan-private` | Preview private agent links | Offline |
 | `agents-enable-private` | Link the private agent package | Offline |
 | `agents-disable-private` | Unstow the private agent package | Offline |
-| `clean` | Unstow all known public, desktop, and local packages | Offline |
+| `clean` | Remove the owned mise fragment and unstow known public, desktop, and local packages | Offline |
 | `check` | Run repository validation | Offline |
 | `check-profiles` | Validate profile syntax, package paths, and mise tool keys | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |

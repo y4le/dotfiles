@@ -93,6 +93,10 @@ if ! run_make "$fresh_home" link > "$fresh_log" 2>&1; then
   cat "$fresh_log" >&2
   fail "fresh link failed"
 fi
+[ -f "$fresh_home/.config/mise/conf.d/dotfiles.toml" ] || \
+  fail "fresh link did not prepare the owned mise selection"
+[ "$(head -n 1 "$fresh_home/.config/mise/conf.d/dotfiles.toml")" = "# dotfiles mise selection: $repo" ] || \
+  fail "link used the wrong checkout ownership marker"
 [ -L "$fresh_home/.zshrc" ] || fail "fresh link did not create .zshrc"
 [ "$(readlink "$fresh_home/.zshrc")" = "../home/dev/dotfiles/zsh/.zshrc" ] || \
   fail "fresh .zshrc points to the wrong source"
@@ -285,6 +289,20 @@ run_make "$macos_desktop_home" PLATFORM=macos DESKTOP=1 link \
   fail "macOS desktop link included Linux config"
 assert_no_directory_links "$macos_desktop_home" || \
   fail "macOS desktop link folded directories"
+
+echo "check-link: derived mise conflicts are non-mutating"
+mise_conflict_home=$test_root/mise-conflict-home
+mkdir -p "$mise_conflict_home/.config/mise/conf.d"
+printf '[tools]\nnode = "22"\n' > "$mise_conflict_home/.config/mise/conf.d/dotfiles.toml"
+snapshot_home "$mise_conflict_home" > "$test_root/mise-conflict-before"
+if run_make "$mise_conflict_home" link > "$test_root/mise-conflict.log" 2>&1; then
+  fail "link accepted an unmanaged mise fragment"
+fi
+grep -Fq 'refusing foreign file' "$test_root/mise-conflict.log" || \
+  fail "mise conflict omitted its ownership diagnostic"
+snapshot_home "$mise_conflict_home" > "$test_root/mise-conflict-after"
+cmp -s "$test_root/mise-conflict-before" "$test_root/mise-conflict-after" || \
+  fail "mise conflict mutated HOME before rejecting the file"
 
 echo "check-link: conflict is non-mutating"
 conflict_home=$test_root/conflict-home
