@@ -556,6 +556,32 @@ for command_name in sed basename hostname; do
   rm "$test_home/bin/$command_name"
 done
 
+echo "check-runtime: prompt hooks preserve existing widgets on reload"
+prompt_hooks=$(run_zsh -i -c '
+  function previous_line_init() { :; }
+  function previous_keymap_select() { :; }
+  zle -N zle-line-init previous_line_init
+  zle -N zle-keymap-select previous_keymap_select
+  source "$HOME/.config/zsh/themes/minimal.zsh-theme"
+  source "$HOME/.config/zsh/themes/minimal.zsh-theme"
+  zstyle -g line_hooks zle-line-init widgets
+  zstyle -g keymap_hooks zle-keymap-select widgets
+  print -r -- "LINE=$line_hooks"
+  print -r -- "KEYMAP=$keymap_hooks"
+  [[ $widgets[zle-line-init] == user:azhw:zle-line-init ]] || exit 1
+  [[ $widgets[zle-keymap-select] == user:azhw:zle-keymap-select ]] || exit 1
+  bindkey -M main "^M"
+  bindkey -M vicmd "^M"
+' 2> "$test_root/prompt-hooks.err") || fail "prompt hook registration failed"
+printf '%s\n' "$prompt_hooks" | grep -Fx \
+  'LINE=0:user:previous_line_init 1:_mnml_zle-line-init' >/dev/null || \
+  fail "prompt reload lost an existing line-init widget or duplicated its hook"
+printf '%s\n' "$prompt_hooks" | grep -Fx \
+  'KEYMAP=0:user:previous_keymap_select 1:_mnml_zle-keymap-select' >/dev/null || \
+  fail "prompt reload lost an existing keymap widget or duplicated its hook"
+[ "$(printf '%s\n' "$prompt_hooks" | grep -Fxc '"^M" buffer-empty')" -eq 2 ] || \
+  fail "magic Enter was not bound in both main and vicmd"
+
 echo "check-runtime: command status survives syntax-highlighting redraws"
 cat > "$test_root/prompt-status.zsh" <<'EOF'
   source "$HOME/.config/zsh/themes/minimal.zsh-theme"

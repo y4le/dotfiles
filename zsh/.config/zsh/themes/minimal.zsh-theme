@@ -233,33 +233,6 @@ else
 fi
 }
 
-# properly bind widgets
-# see: https://github.com/zsh-users/zsh-syntax-highlighting/blob/1f1e629290773bd6f9673f364303219d6da11129/zsh-syntax-highlighting.zsh#L292-L356
-function _mnml_bind_widgets() {
-	zmodload zsh/zleparameter
-
-	local -a to_bind
-	to_bind=(zle-line-init zle-keymap-select buffer-empty)
-
-	typeset -F SECONDS
-	local zle_wprefix=s$SECONDS-r$RANDOM
-
-	local cur_widget
-	for cur_widget in $to_bind; do
-		case "${widgets[$cur_widget]:-""}" in
-			user:_mnml_*);;
-			user:*)
-				zle -N $zle_wprefix-$cur_widget ${widgets[$cur_widget]#*:}
-				eval "_mnml_ww_${(q)zle_wprefix}-${(q)cur_widget}() { _mnml_${(q)cur_widget}; zle ${(q)zle_wprefix}-${(q)cur_widget} }"
-				zle -N $cur_widget _mnml_ww_$zle_wprefix-$cur_widget
-				;;
-			*)
-				zle -N $cur_widget _mnml_$cur_widget
-				;;
-		esac
-	done
-}
-
 # Setup
 autoload -U colors && colors
 setopt prompt_subst
@@ -271,7 +244,12 @@ add-zsh-hook chpwd _mnml_git_precmd
 PROMPT='$(_mnml_wrap MNML_PROMPT) '
 RPROMPT='$(_mnml_wrap MNML_RPROMPT)'
 
-_mnml_bind_widgets
+# Load ZLE explicitly: the theme also runs in interactive shells without a tty.
+zmodload zsh/zle
+autoload -Uz add-zle-hook-widget
+add-zle-hook-widget line-init _mnml_zle-line-init
+add-zle-hook-widget keymap-select _mnml_zle-keymap-select
+zle -N buffer-empty _mnml_buffer-empty
 
 bindkey -M main  "^M" buffer-empty
 bindkey -M vicmd "^M" buffer-empty
