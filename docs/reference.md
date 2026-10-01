@@ -169,6 +169,38 @@ running Sheldon or downloading plugins; `make sheldon-plugins` creates it.
 
 ## File navigation in Zsh
 
+`filez` supplies candidates for the default fzf picker (including Vim's
+`:FzfDefault`) and Zsh Ctrl-T. It runs independently of shell initialization
+or a stowed helper. Its scope is the current directory, recursively; it does
+not expand a subdirectory to the repository root.
+
+Inside a Git worktree, it lists existing tracked files and nonignored
+untracked files. Tracked files matching ignore rules and nonignored dotfiles
+remain visible. Deleted files, broken symlinks, directory entries, and
+submodule contents are excluded; symlinks to existing files remain usable.
+Git metadata directories and bare repositories produce a clear error.
+
+Outside Git, it uses `rg --no-config --files`, respecting rg's ignore files.
+`--hidden` (or `-h`) enables hidden paths in this filesystem scan; Git
+membership already includes dotfiles. `.git` entries are excluded from the scan.
+This requires Git 2.31+ for worktrees and ripgrep elsewhere, both provided by
+the normal setup. There is no fd/find fallback with different ignore behavior.
+
+`--root DIR` (or `-r DIR`) selects a directory. The default `.` emits `./`
+paths; other roots emit physical absolute paths, so selections remain
+openable from the caller's directory. `--debug` reports the selected source
+on stderr, and `--help` describes the options. Unknown arguments and missing
+root values fail with status 2; invalid roots fail with status 1.
+
+An empty listing succeeds. Producer failures retain their nonzero status,
+diagnostics, and any partial output; no second source retries the scan.
+Default output uses newlines for existing fzf/Vim consumers, so filenames
+containing newlines require `--print0`. Ctrl-T reads candidates with fzf's
+`--read0`, but the upstream Zsh widget inserts selections line by line, so
+newline-containing filenames are not supported through Ctrl-T insertion.
+A separate machine pipeline must preserve NUL delimiters through selection
+and consumption; other text pickers keep their own delimiter settings.
+
 `nav` opens an fzf picker and changes directory or opens the selected file.
 It is a Zsh helper loaded by `.zshrc`. `EDITOR` accepts an executable followed
 by arguments with shell quoting, such as `nvim -c 'set number'` or

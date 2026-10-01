@@ -88,6 +88,14 @@ for bang in ['', '!']
   call assert_equal(0, g:picker_status)
   call assert_equal("tracked.txt\n", g:picker_output)
 endfor
+" The default picker consumes the standalone Git-aware command at invocation.
+let $FZF_DEFAULT_COMMAND = shellescape($DOTFILES_REPO . '/scripts/bin/filez')
+for bang in ['', '!']
+  execute 'FzfDefault' . bang
+  call assert_equal(0, g:picker_status)
+  call assert_true(stridx(g:picker_output, "./tracked.txt\n") >= 0)
+  call assert_true(stridx(g:picker_output, "./untracked.txt\n") >= 0)
+endfor
 " Recent-file commands remain available without the MRU plugin or its file.
 call assert_false(exists('g:MRU_File'))
 for command in ['FzfMru', 'Oldfiles']

@@ -224,6 +224,10 @@ widget_state=$(run_zsh -i -c '
 ' 2> "$test_root/widget.err") || fail "successful-history widget errored"
 [ "$widget_state" = 'chosen command|14
 before|6' ] || fail "successful-history widget lost selection or changed a cancellation"
+fzf_commands=$(run_zsh -i -c 'print -r -- "$FZF_DEFAULT_COMMAND|$FZF_CTRL_T_COMMAND"' \
+  2> "$test_root/fzf-commands.err") || fail "could not read file-picker commands"
+[ "$fzf_commands" = 'filez|filez --print0' ] || \
+  fail "file pickers did not select the standalone command"
 fzf_opts=$(run_zsh -i -c 'print -r -- "$FZF_CTRL_T_OPTS"' 2> "$test_root/fzf-opts.err") || \
   fail "could not read Ctrl-T options"
 case $fzf_opts in

@@ -1,94 +1,103 @@
 #!/bin/bash
 
-# Sources emit NUL-delimited paths; filez chooses the delimiter for its caller.
-git_source() {
-  command -v git >/dev/null 2>&1 || return 1
-  git -C "$root_file" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
+# File-picker candidates, with Git membership preferred over filesystem scans.
+# Every source emits NUL-delimited paths. Keep producer failures through pipes.
+set -o pipefail
 
-  local path
-  while IFS= read -r -d '' path; do
-    [[ -f $root_file/$path ]] && printf '%s/%s\0' "$root_file" "$path"
-  done < <(git -C "$root_file" ls-files --cached --others --exclude-standard -z)
-  return 0
+usage() {
+  cat <<'HELP'
+Usage: filez [-r DIR] [-h] [-0] [-d]
+
+List existing tracked and nonignored untracked files below the root in Git
+worktrees, or use ripgrep's filesystem scan elsewhere. Git metadata roots
+are rejected. Directories and submodule contents are not listed.
+
+  -r, --root DIR  Search DIR (default: .); nondefault roots emit absolute paths
+  -h, --hidden    Include hidden paths in filesystem scans; Git includes dotfiles
+  -0, --print0    Separate paths with NUL (default: newline)
+  -d, --debug     Report the selected source and root on stderr
+      --help      Show this help
+
+Requires Git 2.31+ in worktrees, or ripgrep elsewhere. Newline output cannot
+represent filenames containing newlines; use --print0 for machine consumers.
+HELP
 }
 
-rg_source() {
-  command -v rg >/dev/null 2>&1 || return 1
-  local -a args=(--files -0)
+usage_error() {
+  printf 'filez: %s\nTry filez --help.\n' "$*" >&2
+  exit 2
+}
+
+git_files() {
+  local root=$1 path
+  git -C "$root" ls-files --cached --others --exclude-standard --deduplicate -z |
+    while IFS= read -r -d '' path; do
+      if [[ -f $root/$path ]]; then
+        printf '%s/%s\0' "$root" "$path" || return
+      fi
+    done
+}
+
+filesystem_files() {
+  local root=$1 hidden=$2 source_rc
+  local -a args=(--no-config --files -0 -g '!.git')
   [[ $hidden = true ]] && args+=(--hidden)
-  rg "${args[@]}" "$root_file"
-  local source_rc=$?
-  # No matches (1) and partial I/O failures (2) need no second file listing.
-  (( source_rc <= 2 )) && return 0
+  rg "${args[@]}" -- "$root"
+  source_rc=$?
+  # An empty listing is success. Preserve partial I/O errors and diagnostics.
+  [[ $source_rc = 1 ]] && return 0
   return "$source_rc"
 }
 
-fd_source() {
-  command -v fd >/dev/null 2>&1 || return 1
-  local -a args=(--type f -0)
-  [[ $hidden = true ]] && args+=(--hidden)
-  fd "${args[@]}" . "$root_file" 2>/dev/null
-}
-
-find_source() {
-  command -v find >/dev/null 2>&1 || return 1
-  if [[ $hidden = true ]]; then
-    find "$root_file" -type f -print0
-  else
-    find "$root_file" -mindepth 1 -name '.*' -prune -o -type f -print0
-  fi
-}
-
-fzf_src() {
-  local source source_rc
-  if git_source; then
-    source=git_source
-    source_rc=0
-  else
-    if command -v rg >/dev/null 2>&1; then
-      source=rg_source
-    elif command -v fd >/dev/null 2>&1; then
-      source=fd_source
-    else
-      source=find_source
-    fi
-    "$source"
-    source_rc=$?
-  fi
-  [[ $debug = true ]] && printf 'filez source: %s (root: %s)\n' "$source" "$root_file" >&2
-  return "$source_rc"
-}
-
-root_file=.
+root=.
 hidden=false
-debug=false
 print0=false
-
-while [ "$1" != "" ]; do
+debug=false
+while (( $# )); do
   case $1 in
-    -r | --root )
+    -r | --root)
+      (( $# >= 2 )) && [[ -n $2 ]] || usage_error "$1 requires a directory"
+      root=$2
+      shift 2
+      ;;
+    -h | --hidden) hidden=true; shift ;;
+    -0 | --print0) print0=true; shift ;;
+    -d | --debug) debug=true; shift ;;
+    --help) usage; exit 0 ;;
+    --)
       shift
-      root_file=$1
+      (( $# == 0 )) || usage_error "unexpected argument: $1"
+      break
       ;;
-    -h | --hidden )
-      hidden=true
-      ;;
-    -d | --debug )
-      debug=true
-      ;;
-    -0 | --print0 )
-      print0=true
-      ;;
+    *) usage_error "unknown argument: $1" ;;
   esac
-  shift
 done
 
-if [ "$root_file" != . ]; then
-  root_file=$(CDPATH='' cd -- "$root_file" && pwd -P) || exit 1
+[[ -d $root ]] || { printf 'filez: not a directory: %s\n' "$root" >&2; exit 1; }
+if [[ $root != . ]]; then
+  # Resolve inside this process to preserve newlines; ./ makes '-' literal.
+  [[ $root = /* ]] || root=./$root
+  CDPATH='' cd -P -- "$root" || exit 1
+  root=$PWD
 fi
 
-if [ "$print0" = true ]; then
-  fzf_src
+source=filesystem_files
+if command -v git >/dev/null 2>&1; then
+  if [[ $(git -C "$root" rev-parse --is-inside-work-tree 2>/dev/null) = true ]]; then
+    source=git_files
+  elif [[ $(git -C "$root" rev-parse --is-inside-git-dir 2>/dev/null) = true ]]; then
+    printf 'filez: root is Git metadata; choose a working directory: %s\n' "$root" >&2
+    exit 1
+  fi
+fi
+if [[ $source = filesystem_files ]] && ! command -v rg >/dev/null 2>&1; then
+  printf 'filez: ripgrep is required outside Git worktrees; run make tools\n' >&2
+  exit 127
+fi
+[[ $debug = true ]] && printf 'filez source: %s (root: %s)\n' "$source" "$root" >&2
+
+if [[ $print0 = true ]]; then
+  "$source" "$root" "$hidden"
 else
-  fzf_src | tr '\000' '\n'
+  "$source" "$root" "$hidden" | tr '\000' '\n'
 fi
