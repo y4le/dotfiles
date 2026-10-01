@@ -5,7 +5,7 @@ set -eu
 repo=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd -P) || exit 1
 data=${DOTFILES_PROFILE_DATA_FILE:-$repo/setup/profiles.yaml}
 action=${1:-}
-profile=${2:-full}
+profile=${2-full}
 addons=${3:-}
 
 case "$action" in

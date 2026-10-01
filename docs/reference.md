@@ -117,11 +117,13 @@ use `profile-set` before running `plan` and `setup-user`.
 `HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
 overridden when invoking `herdr-integrations`.
 
-`DESKTOP` accepts `0` (default) or `1`. It affects package selection for
-linking, not the native package lists. Neither `PROFILE` nor `WITH` changes
-the native package lists. `DESKTOP=0` leaves previously linked desktop files
-in place; `clean` removes them regardless of its value. `link-linux` and
-`link-macos` force only the Stow package set, not the host's package manager.
+`DESKTOP` accepts `0` (default) or `1` as a Make argument; an environment
+value is ignored. An explicitly empty `PROFILE` is rejected. `DESKTOP` affects
+package selection for linking, not the native package lists. Neither `PROFILE`
+nor `WITH` changes the native package lists. `DESKTOP=0` leaves previously
+linked desktop files in place; `clean` removes them regardless of its value.
+`link-linux` and `link-macos` force only the Stow package set, not the host's
+package manager.
 
 ## Linux desktop locking
 

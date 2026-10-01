@@ -31,6 +31,9 @@ MACOS_DESKTOP := osx-desktop
 
 LINUX_BASE_PACKAGES := $(COMMON) $(LOCAL_PACKAGES)
 MACOS_BASE_PACKAGES := $(COMMON) $(LOCAL_PACKAGES) $(MACOS_CORE)
+ifeq ($(origin DESKTOP),environment)
+  DESKTOP := 0
+endif
 DESKTOP ?= 0
 ifneq ($(DESKTOP),0)
   ifneq ($(DESKTOP),1)

@@ -36,12 +36,35 @@ case " $dev_tools " in
 esac
 
 echo "check-profiles: reject unknown selections and malformed YAML"
+if sh mk/profile.sh components '' > /dev/null 2>&1; then
+  fail "empty profile was accepted"
+fi
+if empty_profile=$(make -n PROFILE= WITH= profile-set 2>&1); then
+  fail "Make accepted an empty saved profile"
+fi
+printf '%s\n' "$empty_profile" | grep -F 'unknown profile:' >/dev/null || \
+  fail "empty saved profile failed for an unrelated reason: $empty_profile"
 if sh mk/profile.sh components unknown > /dev/null 2>&1; then
   fail "unknown profile was accepted"
 fi
 if sh mk/profile.sh components lite unknown > /dev/null 2>&1; then
   fail "unknown add-on was accepted"
 fi
+
+echo "check-profiles: desktop selection requires a Make argument"
+ambient_packages=$(MAKEFLAGS='' MFLAGS='' MAKEOVERRIDES='' DESKTOP=1 \
+  make -s PROFILE=lite WITH= PLATFORM=linux _print-packages) || \
+  fail "ambient desktop selection failed"
+case " $ambient_packages " in
+  *' linux-desktop '*) fail "ambient DESKTOP selected desktop packages" ;;
+esac
+explicit_packages=$(MAKEFLAGS='' MFLAGS='' MAKEOVERRIDES='' DESKTOP=0 \
+  make -s PROFILE=lite WITH= PLATFORM=linux DESKTOP=1 _print-packages) || \
+  fail "explicit desktop selection failed"
+case " $explicit_packages " in
+  *' linux-desktop '*) ;;
+  *) fail "explicit DESKTOP did not select desktop packages" ;;
+esac
 
 test_root=$(mktemp -d) || exit 1
 trap 'rm -rf "$test_root"' EXIT
