@@ -2,15 +2,10 @@
 
 set -eu
 
-fail() {
-  echo "check-nvim-bin: $*" >&2
-  exit 1
-}
-
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P) || exit 1
-test_root=$(mktemp -d) || exit 1
-trap 'rm -rf "$test_root"' EXIT
-trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
+# shellcheck source=mk/test-lib.sh
+. "$repo/mk/test-lib.sh"
+test_init check-nvim-bin
 mkdir -p "$test_root/bin" "$test_root/empty"
 
 printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_root/preferred-nvim"

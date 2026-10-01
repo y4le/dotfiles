@@ -4,22 +4,14 @@ set -eu
 
 unset DOTFILES_PLATFORM DOTFILES_SHA256_TOOL
 
-fail() {
-  echo "check-pins: $*" >&2
-  exit 1
-}
-
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P) || exit 1
 cd "$repo"
+# shellcheck source=mk/test-lib.sh
+. "$repo/mk/test-lib.sh"
+test_init check-pins
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || \
   fail "repository checks require a Git checkout"
 
-test_root=$(mktemp -d) || exit 1
-cleanup() {
-  rm -rf "$test_root"
-}
-trap cleanup EXIT
-trap 'cleanup; exit 1' HUP INT TERM
 
 pin_script=$repo/mk/pinned.sh
 real_pins=$repo/setup/pins/downloads.txt
@@ -41,6 +33,9 @@ done
 expect_lint_failure() {
   label=$1
   file=$2
+  if cmp -s "$real_pins" "$file"; then
+    fail "negative test did not change the manifest: $label"
+  fi
   if DOTFILES_PINS_FILE=$file sh "$pin_script" lint >/dev/null 2>&1; then
     fail "accepted $label"
   fi
@@ -51,8 +46,8 @@ awk 'BEGIN { changed = 0 } !changed && /https:\/\// { sub("https://", "http://")
   "$real_pins" > "$bad"
 expect_lint_failure "a non-HTTPS URL" "$bad"
 
-awk 'BEGIN { changed = 0 } !changed && /releases\/download\/v2026\.9\.0/ {
-  sub("releases/download/v2026.9.0", "releases/download/master"); changed = 1
+awk 'BEGIN { changed = 0 } !changed && $5 ~ /\/releases\/download\// {
+  sub(/\/releases\/download\/[^/]+\//, "/releases/download/master/", $5); changed = 1
 } { print }' "$real_pins" > "$bad"
 expect_lint_failure "a mutable URL" "$bad"
 

@@ -68,8 +68,8 @@ done
 if command -v shellcheck >/dev/null 2>&1; then
 	if [ -n "$sh_files" ] && [ -n "$bash_files" ]; then
 		echo "check-shell: shellcheck"
-		shellcheck -S warning -s sh $sh_files || fail=1
-		shellcheck -S warning -s bash $bash_files || fail=1
+		shellcheck -x -S warning -s sh $sh_files || fail=1
+		shellcheck -x -S warning -s bash $bash_files || fail=1
 	fi
 else
 	echo "check-shell: shellcheck not found"

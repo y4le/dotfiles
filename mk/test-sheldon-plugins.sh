@@ -2,20 +2,12 @@
 
 set -eu
 
-fail() {
-  echo "check-sheldon: $*" >&2
-  exit 1
-}
-
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P) || exit 1
 cd "$repo"
 
-test_root=$(mktemp -d) || exit 1
-cleanup() {
-  rm -rf "$test_root"
-}
-trap cleanup EXIT
-trap 'cleanup; exit 1' HUP INT TERM
+# shellcheck source=mk/test-lib.sh
+. "$repo/mk/test-lib.sh"
+test_init check-sheldon
 
 verify_script=$repo/mk/verify-sheldon-plugins.sh
 real_config=$repo/zsh/.config/sheldon/plugins.toml
@@ -29,6 +21,8 @@ expect_lint_failure() {
   label=$1
   config=$2
   mise_config=${3:-$real_mise}
+  cmp -s "$real_config" "$config" && [ "$mise_config" = "$real_mise" ] && \
+    fail "mutation for $label did not change the fixture"
   if sh "$verify_script" lint "$config" "$mise_config" >/dev/null 2>&1; then
     fail "accepted $label"
   fi
@@ -43,7 +37,7 @@ awk 'BEGIN { changed = 0 } !changed && /^rev =/ { $0 = "rev = \"1234567\""; chan
   "$real_config" > "$mutated"
 expect_lint_failure "a short rev" "$mutated"
 
-awk 'BEGIN { changed = 0 } !changed && /^rev =/ { $0 = "rev = \"v0.70.0\""; changed = 1 } { print }' \
+awk 'BEGIN { changed = 0 } !changed && /^rev =/ { $0 = "rev = \"v-fixture-tag\""; changed = 1 } { print }' \
   "$real_config" > "$mutated"
 expect_lint_failure "a tag used as rev" "$mutated"
 
@@ -100,10 +94,10 @@ printf '%s\n' \
   'rev = "0123456789012345678901234567890123456789"' >> "$mutated"
 expect_lint_failure "conflicting revs for one repo" "$mutated"
 
-sed 's/" # v0\.70\.0/"/' "$real_config" > "$mutated"
+sed '/^rev = .* # v/s/ # v.*//' "$real_config" > "$mutated"
 expect_lint_failure "a missing fzf version note" "$mutated"
 
-sed 's/# v0\.70\.0/# v0.71.0/' "$real_config" > "$mutated"
+sed '/^rev = .* # v/s/ # v.*/ # v-fixture-mismatch/' "$real_config" > "$mutated"
 expect_lint_failure "a mismatched fzf version note" "$mutated"
 
 mise_without_fzf=$test_root/mise-without-fzf.toml
@@ -404,8 +398,10 @@ shell = "zsh"
 github = "fixture/alpha"
 rev = "$real_rev"
 EOF
+  sheldon_version=$(awk '$1 == "sheldon" { print $2; exit }' "$repo/setup/pins/downloads.txt")
+  [ -n "$sheldon_version" ] || fail "Sheldon version missing from pins"
   cat > "$real_data/plugins.lock" <<EOF
-version = "0.8.5"
+version = "$sheldon_version"
 home = "$real_home"
 config_dir = "${real_config%/*}"
 data_dir = "$real_data"
