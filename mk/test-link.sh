@@ -417,19 +417,23 @@ run_make "$retired_helper_home" link >/dev/null 2>&1 || \
   fail "link left the relative retired-helper link"
 
 echo "check-link: unused helper links are retired without deleting user files"
-for retired in .config/shell/functions/cpst .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
+for retired in .config/shell/functions/cpst .config/shell/functions/nav bin/compair.sh bin/benchmark.sh; do
   mkdir -p "$retired_helper_home/$(dirname "$retired")"
   ln -s "$repo/scripts/$retired" "$retired_helper_home/$retired"
 done
 run_make "$retired_helper_home" link >/dev/null 2>&1 || fail "unused helper migration failed"
-for retired in .config/shell/functions/cpst .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
+for retired in .config/shell/functions/cpst .config/shell/functions/nav bin/compair.sh bin/benchmark.sh; do
   [ ! -L "$retired_helper_home/$retired" ] || fail "retired helper link survived: $retired"
   printf 'user helper\n' > "$retired_helper_home/$retired"
 done
 run_make "$retired_helper_home" link >/dev/null 2>&1 || fail "user-owned retired helper blocked link"
-for retired in .config/shell/functions/cpst .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
+for retired in .config/shell/functions/cpst .config/shell/functions/nav bin/compair.sh bin/benchmark.sh; do
   [ "$(cat "$retired_helper_home/$retired")" = 'user helper' ] || fail "user helper removed: $retired"
 done
+
+[ -L "$retired_helper_home/.config/shell/functions/y" ] || fail "link did not restore the active Yazi helper"
+run_make "$retired_helper_home" _remove-legacy-functions >/dev/null 2>&1 || fail "legacy cleanup failed"
+[ -L "$retired_helper_home/.config/shell/functions/y" ] || fail "legacy cleanup removed active Yazi helper"
 
 echo "check-link: unrelated shell helpers are preserved"
 external_helper_home=$test_root/external-helper-home

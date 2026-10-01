@@ -18,8 +18,9 @@ and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 | macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner); see [GUI save recovery](maintenance.md#recover-a-karabiner-configuration-replaced-by-the-gui) |
 
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
-`scripts` supplies standalone `~/bin` commands. Local shell functions can
-still live in `~/.config/shell/functions/` for Zsh to source.
+`scripts` supplies standalone `~/bin` commands and the sourced Yazi wrapper
+at `~/.config/shell/functions/y`. Local shell functions can also live in
+`~/.config/shell/functions/` for Zsh to source.
 
 Neovim uses `stylua` for Lua formatting and `taplo` for TOML formatting when
 those commands are installed. `shellcheck` enables Bash and POSIX shell linting
@@ -204,8 +205,12 @@ and consumption; other text pickers keep their own delimiter settings.
 
 For directory jumps, use `z` or interactive `zi`; fzf supplies Alt-C for
 choosing a directory and Ctrl-T for inserting a file path. Yazi remains
-available through its optional component and editor integrations. The unused
-`nav`, `y`/Ctrl-G, `compair.sh`, and `benchmark.sh` helpers are retired.
+available through its optional component and editor integrations. Shell
+Ctrl-G invokes the sourced `y` wrapper to open Yazi and change the current
+shell directory on exit. Calling `y` directly provides the same behavior;
+Yazi and directory-change failures return nonzero and temporary files are
+cleaned up. The unused `nav`, `compair.sh`, and `benchmark.sh` helpers are
+retired.
 Use `vim -d first second` for ordinary file comparisons and shell `time` for
 occasional measurements. After changing shell config, open a fresh shell;
 re-sourcing `.zshrc` does not clear deleted definitions or bindings.
@@ -282,7 +287,7 @@ does not relocate them.
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
 | npm | Environment in `~/.zshenv` | Global packages under `~/.local/share/npm/` |
-| Scripts | `~/bin/` | No shared state directory |
+| Scripts | `~/bin/`, `~/.config/shell/functions/y` | No shared state directory |
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 

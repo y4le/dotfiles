@@ -102,6 +102,20 @@ setopt share_history          # share history data
 
 # SHORTCUTS
 
+# ctrl-g Yazi navigator: keep directory changes in the current shell.
+function yazinav() {
+  emulate -L zsh
+  zle -I
+  local yazi_rc
+  y < "$TTY"
+  yazi_rc=$?
+  zle reset-prompt
+  zle redisplay
+  return "$yazi_rc"
+}
+zle -N yazinav
+bindkey '^g' yazinav
+
 # ctrl-R history search
 if (( atuin_managed )) && command -v atuin &>/dev/null; then
   export ATUIN_NOBIND="true"
