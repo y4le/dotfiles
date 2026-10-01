@@ -79,3 +79,6 @@ PACKAGES_DIR         := setup/packages
 BREW_PACKAGES_FILE   := $(PACKAGES_DIR)/brew.txt
 APT_PACKAGES_FILE    := $(PACKAGES_DIR)/apt.txt
 PACMAN_PACKAGES_FILE := $(PACKAGES_DIR)/pacman.txt
+
+# Optional explicit binary for rebuilding bundled fzf shell integration.
+FZF_BIN ?=

@@ -23,6 +23,7 @@ zsh_path_files="$( \
 		zsh/.zshrc \
 		osx/.zprofile \
 		'zsh/.config/zsh/themes/*' \
+		'zsh/.config/zsh/plugins/*' \
 		'*/.config/zsh/sources/*' \
 		'*/.config/shell/functions/*' \
 )" || {

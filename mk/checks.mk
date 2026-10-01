@@ -23,6 +23,7 @@ check-shell: ## [offline] syntax-check and lint tracked shell files
 check-pins: ## [offline] validate download pins and the verified installer
 	@sh mk/test-pins.sh
 	@sh mk/test-sheldon-plugins.sh
+	@sh mk/test-fzf.sh
 
 check-brew: ## [offline] verify Homebrew remains an explicit prerequisite
 	@sh mk/test-brew.sh

@@ -79,9 +79,9 @@ NSS modules may not resolve.
 
 For a branch head, obtain the full commit with `git ls-remote` and review the log
 and sourced-file diff from the old pin in a scratch clone. For a reviewed tag,
-use its peeled `refs/tags/<tag>^{}` commit. The fzf plugin must use the peeled tag
-matching the `aqua:junegunn/fzf` version in the mise config, and its `# v<version>`
-comment must change in the same commit.
+use its peeled `refs/tags/<tag>^{}` commit. fzf shell integration comes from the
+installed binary instead of a separate plugin checkout. After changing its mise
+pin, run `make tools sheldon-plugins` to rebuild the bundled startup cache.
 
 After updating a 40-character `rev`, run `make check-pins` and `make plugins`.
 The latter fetches the commit and verifies the final checkout before replacing

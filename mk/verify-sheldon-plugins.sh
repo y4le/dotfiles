@@ -168,14 +168,8 @@ parse_config() {
 
 lint_config() {
   config=$1
-  mise_config=$2
   records=$tmp_dir/records
   parse_config "$config" "$records"
-
-  fzf_version=$(awk -F '"' '/^[[:space:]]*"aqua:junegunn\/fzf"[[:space:]]*=/ { print $4 }' \
-    "$mise_config")
-  [ -n "$fzf_version" ] || fail "mise fzf version is missing"
-  fzf_count=0
 
   while IFS='|' read -r kind name source rev note; do
     if [ "$kind" = local ]; then
@@ -194,13 +188,10 @@ lint_config() {
         fi
       done
     elif [ "$source" = junegunn/fzf ]; then
-      fzf_count=$((fzf_count + 1))
-      [ "$note" = "v$fzf_version" ] || \
-        fail "fzf rev comment must be # v$fzf_version"
+      fail "fzf shell integration must use the local wrapper, not a GitHub checkout"
     fi
   done < "$records"
 
-  [ "$fzf_count" -eq 1 ] || fail "expected one junegunn/fzf plugin"
   echo "check-pins: Sheldon plugin config ok"
 }
 
@@ -291,13 +282,13 @@ command=${1:-}
 case $command in
   lint)
     shift
-    [ "$#" -eq 2 ] || fail "lint requires CONFIG and MISE_CONFIG"
-    lint_config "$1" "$2"
+    [ "$#" -eq 1 ] || fail "lint requires CONFIG"
+    lint_config "$1"
     ;;
   verify)
     shift
     [ "$#" -eq 3 ] || fail "verify requires CONFIG, DATA_DIR, and CACHE"
     verify_checkouts "$1" "$2" "$3"
     ;;
-  *) fail "usage: $0 {lint CONFIG MISE_CONFIG|verify CONFIG DATA_DIR CACHE}" ;;
+  *) fail "usage: $0 {lint CONFIG|verify CONFIG DATA_DIR CACHE}" ;;
 esac

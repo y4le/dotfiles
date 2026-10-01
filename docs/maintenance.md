@@ -111,8 +111,8 @@ are managed separately.
 
 Edit tool versions in [`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml)
 and follow the [pin review procedures](../setup/pins/README.md) for bootstrap
-artifacts and Zsh plugins. Keep the fzf binary version and Zsh plugin revision
-in sync.
+artifacts and Zsh plugins. After changing the fzf binary pin, rebuild its
+bundled shell integration with `make tools sheldon-plugins`.
 
 To update Herdr, change all four platform rows in
 `setup/pins/downloads.txt`, run `make herdr`, and review both the release notes

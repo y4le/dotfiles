@@ -170,6 +170,13 @@ already inherited ghcup directories keep their positions in child shells.
 The Sheldon startup cache is
 `${XDG_CACHE_HOME:-~/.cache}/dotfiles/sheldon.zsh`. Startup reads it without
 running Sheldon or downloading plugins; `make sheldon-plugins` creates it.
+That restore also bundles `fzf --zsh` from the mise-selected binary (falling
+back to `PATH`) and loads it at the existing deferred position before syntax
+highlighting. It does not
+run fzf to initialize each shell. If necessary, pass `FZF_BIN=/path/to/fzf`
+to the restore target; the binary must support `--zsh`. After updating an
+existing checkout, run `make link sheldon-plugins` to link the new wrapper and
+refresh the cache.
 
 ## File navigation in Zsh
 

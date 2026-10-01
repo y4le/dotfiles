@@ -69,14 +69,14 @@ jobs:
           command -v bash
           bash --version | head -1
 
-      - name: Install pinned editors for runtime checks
+      - name: Install pinned runtime fixtures
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           make mise
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           MISE_GLOBAL_CONFIG_FILE="$PWD/mise/.config/mise/config.toml" \
-            "$HOME/.local/bin/mise" install "aqua:neovim/neovim"
+            "$HOME/.local/bin/mise" install "aqua:neovim/neovim" "aqua:junegunn/fzf"
           nvim_bin="$(MISE_GLOBAL_CONFIG_FILE="$PWD/mise/.config/mise/config.toml" \
             "$HOME/.local/bin/mise" which nvim)"
           "$nvim_bin" --version | head -1

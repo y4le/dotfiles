@@ -26,9 +26,8 @@ rev = "d4bece432b8c4d2be631abf1e2e76b49f5c87f26"
 apply = ["defer"]
 
 [plugins.fzf]
-github = "junegunn/fzf"
-rev = "eacef5ea6e39c6be3fff4e231fc6d10ba2ff9491" # v0.70.0
-use = ["shell/*.zsh"]
+local = "~/.config/zsh/plugins"
+use = ["fzf.zsh"]
 apply = ["defer"]
 
 [plugins.fast-syntax-highlighting]

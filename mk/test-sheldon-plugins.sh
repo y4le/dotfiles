@@ -11,19 +11,17 @@ test_init check-sheldon
 
 verify_script=$repo/mk/verify-sheldon-plugins.sh
 real_config=$repo/zsh/.config/sheldon/plugins.toml
-real_mise=$repo/mise/.config/mise/config.toml
 real_git=$(command -v git) || fail "git not found"
 
 echo "check-sheldon: config lint"
-sh "$verify_script" lint "$real_config" "$real_mise"
+sh "$verify_script" lint "$real_config"
 
 expect_lint_failure() {
   label=$1
   config=$2
-  mise_config=${3:-$real_mise}
-  cmp -s "$real_config" "$config" && [ "$mise_config" = "$real_mise" ] && \
+  cmp -s "$real_config" "$config" && \
     fail "mutation for $label did not change the fixture"
-  if sh "$verify_script" lint "$config" "$mise_config" >/dev/null 2>&1; then
+  if sh "$verify_script" lint "$config" >/dev/null 2>&1; then
     fail "accepted $label"
   fi
 }
@@ -79,11 +77,11 @@ sed 's/use = \["minimal\.zsh-theme"\]/use = ["missing.zsh"]/' \
   "$real_config" > "$mutated"
 expect_lint_failure "an untracked local file" "$mutated"
 
-sed 's#use = \["shell/\*\.zsh"\]#use = ["../escape.zsh"]#' \
+awk 'BEGIN { added = 0 } { print } !added && /^github =/ { print "use = [\"../escape.zsh\"]"; added = 1 }' \
   "$real_config" > "$mutated"
 expect_lint_failure "a parent path in github use" "$mutated"
 
-sed 's#use = \["shell/\*\.zsh"\]#use = ["/etc/zshrc"]#' \
+awk 'BEGIN { added = 0 } { print } !added && /^github =/ { print "use = [\"/etc/zshrc\"]"; added = 1 }' \
   "$real_config" > "$mutated"
 expect_lint_failure "an absolute path in github use" "$mutated"
 
@@ -94,15 +92,10 @@ printf '%s\n' \
   'rev = "0123456789012345678901234567890123456789"' >> "$mutated"
 expect_lint_failure "conflicting revs for one repo" "$mutated"
 
-sed '/^rev = .* # v/s/ # v.*//' "$real_config" > "$mutated"
-expect_lint_failure "a missing fzf version note" "$mutated"
-
-sed '/^rev = .* # v/s/ # v.*/ # v-fixture-mismatch/' "$real_config" > "$mutated"
-expect_lint_failure "a mismatched fzf version note" "$mutated"
-
-mise_without_fzf=$test_root/mise-without-fzf.toml
-awk '!/aqua:junegunn\/fzf/' "$real_mise" > "$mise_without_fzf"
-expect_lint_failure "a missing mise fzf pin" "$real_config" "$mise_without_fzf"
+cp "$real_config" "$mutated"
+printf '%s\n' '[plugins.github-fzf]' 'github = "junegunn/fzf"' \
+  'rev = "0123456789012345678901234567890123456789"' >> "$mutated"
+expect_lint_failure "a separate GitHub fzf checkout" "$mutated"
 
 awk 'BEGIN { changed = 0 } !changed && /^apply =/ {
   print "apply = ["; print "  \"source\""; print "]"; changed = 1; next

@@ -55,7 +55,7 @@ sheldon: ## [network] install the pinned, verified sheldon binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install sheldon "$(SHELDON_BIN)" 0755
 
 sheldon-plugins: ## [network] restore pinned zsh plugins and build startup cache
-	@sh mk/sheldon-plugins.sh "$(SHELDON_BIN)" "$(SHELDON_CONFIG_FILE)" "$(SHELDON_DATA_DIR)" "$(HOME)"
+	@sh mk/sheldon-plugins.sh "$(SHELDON_BIN)" "$(SHELDON_CONFIG_FILE)" "$(SHELDON_DATA_DIR)" "$(HOME)" "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" "$(FZF_BIN)"
 
 brew: ## [offline] report the Homebrew installation required by system-packages
 ifeq ($(PLATFORM),macos)
