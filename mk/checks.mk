@@ -18,84 +18,7 @@ check-git: ## [offline] check the tracked tree for whitespace errors
 	@sh mk/test-git-pager.sh
 
 check-shell: ## [offline] syntax-check and lint tracked shell files
-	@fail=0; \
-	sh_files="$$(git ls-files | while IFS= read -r file; do \
-		[ ! -f "$$file" ] || awk \
-			'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)(sh|dash)([[:space:]]|$$)/ { print FILENAME }' "$$file"; \
-	done)" || { \
-		echo "check-shell: sh discovery failed"; \
-		fail=1; \
-	}; \
-	bash_files="$$(git ls-files | while IFS= read -r file; do \
-		[ ! -f "$$file" ] || awk \
-			'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)bash([[:space:]]|$$)/ { print FILENAME }' "$$file"; \
-	done)" || { \
-		echo "check-shell: bash discovery failed"; \
-		fail=1; \
-	}; \
-	zsh_path_files="$$( \
-		git ls-files -- \
-			zsh/.zshenv \
-			zsh/.zshrc \
-			osx/.zprofile \
-			'zsh/.config/zsh/themes/*' \
-			'*/.config/zsh/sources/*' \
-			'*/.config/shell/functions/*' \
-	)" || { \
-		echo "check-shell: zsh path discovery failed"; \
-		fail=1; \
-	}; \
-	zsh_shebang_files="$$( \
-		git ls-files | while IFS= read -r file; do \
-			[ ! -f "$$file" ] || awk \
-				'FNR == 1 && /^#!(\/usr\/bin\/env[[:space:]]+|\/bin\/|\/usr\/bin\/)zsh([[:space:]]|$$)/ { print FILENAME }' "$$file"; \
-		done \
-	)" || { \
-		echo "check-shell: zsh shebang discovery failed"; \
-		fail=1; \
-	}; \
-	zsh_files="$$( \
-		printf '%s\n%s\n' "$$zsh_path_files" "$$zsh_shebang_files" | \
-			sed '/^$$/d' | LC_ALL=C sort -u \
-	)" || { \
-		echo "check-shell: zsh list normalization failed"; \
-		fail=1; \
-	}; \
-	for entry in "sh:$$sh_files" "bash:$$bash_files" "zsh:$$zsh_files"; do \
-		label=$${entry%%:*}; \
-		files=$${entry#*:}; \
-		if [ -z "$$files" ]; then \
-			echo "check-shell: no tracked $$label files discovered"; \
-			fail=1; \
-		fi; \
-	done; \
-	echo "check-shell: sh -n"; \
-	for f in $$sh_files; do \
-		sh -n "$$f" || fail=1; \
-	done; \
-	echo "check-shell: bash -n"; \
-	for f in $$bash_files; do \
-		bash -n "$$f" || fail=1; \
-	done; \
-	echo "check-shell: zsh -n"; \
-	for f in $$zsh_files; do \
-		zsh -n "$$f" || fail=1; \
-	done; \
-	if command -v shellcheck >/dev/null 2>&1; then \
-		if [ -n "$$sh_files" ] && [ -n "$$bash_files" ]; then \
-			echo "check-shell: shellcheck"; \
-			shellcheck -S warning -s sh $$sh_files || fail=1; \
-			shellcheck -S warning -s bash $$bash_files || fail=1; \
-		fi; \
-	else \
-		echo "check-shell: shellcheck not found"; \
-		if [ -n "$${CI:-}" ]; then \
-			fail=1; \
-		else \
-			echo "check-shell: skipping shellcheck outside CI"; \
-		fi; \
-	fi; \
-	exit $$fail
+	@sh mk/check-shell.sh
 
 check-pins: ## [offline] validate download pins and the verified installer
 	@sh mk/test-pins.sh
@@ -180,7 +103,8 @@ check-make: ## [offline] dry-run make target graph and help output
 		echo "check-make: setup-user phase order changed"; exit 1; \
 	fi
 	@setup_user_plan="$$( $(CHECK_MAKE) -n -s --no-print-directory setup-user )" || exit $$?; \
-	if printf '%s\n' "$$setup_user_plan" | grep -Eq '^[[:space:]]*(sudo|doas)[[:space:]]|integration install'; then \
+	setup_scripts="$$(cat mk/vim-plugins.sh mk/nvim-plugins.sh mk/nvim-update.sh mk/restore-lazy-nvim.sh mk/sheldon-plugins.sh)" || exit $$?; \
+	if printf '%s\n%s\n' "$$setup_user_plan" "$$setup_scripts" | grep -Eq '^[[:space:]]*(sudo|doas)[[:space:]]|integration install'; then \
 		echo "check-make: setup-user contains a privileged or opt-in integration command"; \
 		exit 1; \
 	fi

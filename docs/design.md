@@ -19,6 +19,10 @@ second dependency graph for configs that already work independently. A saved
 override it. Switching profiles reconciles managed links; installed binaries
 and user data remain, so profile selection is reversible without deleting state.
 
+Make owns target dependencies, selected steps, and configuration overrides.
+The larger editor restore, shell cache, and shell validation programs live in
+`mk/*.sh`, where shell syntax checks and ShellCheck can inspect them directly.
+
 Startup uses installed plugins. Zsh sources a prebuilt cache and Neovim leaves
 missing plugins alone. Tmux uses only built-in functionality. Opening a terminal
 should not become a package installation.

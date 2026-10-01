@@ -97,7 +97,7 @@ awk 'BEGIN { changed = 0 } /^#/ { print; next } !changed { $6 = "../mise"; chang
   "$real_pins" > "$bad"
 expect_lint_failure "an unsafe archive member" "$bad"
 
-if grep -n 'mise\.run' Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
+if grep -n 'mise\.run' Makefile mk/config.mk mk/tools.mk mk/vim-plugins.sh mk/sheldon-plugins.sh >/dev/null 2>&1; then
   fail "mise.run remains in bootstrap code"
 fi
 if grep -Eiq '^[[:space:]]*("[^"]*herdr[^"]*"|herdr)[[:space:]]*=' \
@@ -105,7 +105,7 @@ if grep -Eiq '^[[:space:]]*("[^"]*herdr[^"]*"|herdr)[[:space:]]*=' \
   fail "Herdr remains configured through mise instead of verified download pins"
 fi
 if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|VIM_PLUG_URL|vim-plug/master|bash -s' \
-  Makefile mk/config.mk mk/tools.mk >/dev/null 2>&1; then
+  Makefile mk/config.mk mk/tools.mk mk/vim-plugins.sh mk/sheldon-plugins.sh >/dev/null 2>&1; then
   fail "legacy unverified installer remains in bootstrap code"
 fi
 legacy_brew=$(
