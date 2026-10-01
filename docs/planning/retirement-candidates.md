@@ -32,6 +32,14 @@ Neovim also retires `mini.nvim`, whose only configured module was `mini.misc`
 for zoom. `<Space>z` and `:Zoom` now use a native temporary tab, preserving the
 original split layout and returning the zoomed buffer and cursor.
 
+Prettier was retired from the public tool catalog and Neovim formatting setup.
+This removes its formatting integration for Markdown/wiki/book, JSON/YAML, and
+web filetypes. The proposed `prose` pack was withdrawn rather than replaced with
+another formatter. Filetypes, note-editing plugins, other language formatters,
+and LSP formatting fallback remain. Node is retained for the TypeScript language
+server; runtime selection is a separate optional-pack decision. See the
+[Prettier migration notes](../maintenance.md#retired-prettier-formatting).
+
 ## Retained editor behavior
 
 Vim declarations are in [`plugins.vim`](../../vim/.vim/config/plugins.vim).

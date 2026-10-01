@@ -23,6 +23,10 @@ expected_full=$(printf '%s\n' agents atuin bash git herdr mise nvim scripts tmux
 actual_full=$(printf '%s\n' $full_packages | sort)
 [ "$actual_full" = "$expected_full" ] || fail "full package set differs from the old default"
 
+full_tools=$(sh mk/profile.sh tools full) || fail "full tools did not resolve"
+[ "$full_tools" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim go node python rust aqua:astral-sh/uv npm:typescript-language-server pipx:basedpyright pipx:ruff aqua:LuaLS/lua-language-server" ] || \
+  fail "full tool set changed: $full_tools"
+
 with_packages=$(sh mk/profile.sh packages lite 'nvim herdr') || fail "add-on packages did not resolve"
 [ "$with_packages" = "$lite_packages nvim herdr" ] || \
   fail "add-ons did not extend lite packages: $with_packages"

@@ -60,16 +60,23 @@ For example, prospective packs could be:
 
 | Pack | Direct tool references | Purpose |
 | --- | --- | --- |
-| `web-dev` | Node, Prettier, TypeScript language server | Web editing and development |
-| `prose` | Node, Prettier | Markdown, wiki, and book formatting |
+| `node` | Node | Runtime for locally installed Node-based tools |
+| `web-dev` | Node, TypeScript language server | Web editing and development |
 | `python-dev` | Python, uv, basedpyright, Ruff | Python tooling |
 | `haskell-dev` | Provider and tool selection still to be designed | Haskell development on machines that need it |
 
 These names and the split of today's `dev` component are illustrative.
-Selecting both `web-dev` and `prose` installs Node and Prettier once. Removing
-`web-dev` retains them while `prose` is selected. Each pack lists its own
+Selecting both `web-dev` and `node` installs Node once. Removing
+`web-dev` retains Node while `node` is selected. Each pack lists its own
 required runtime; there is no `requires` graph, profile inheritance, or pack
 dependency resolution.
+
+The proposed `prose` pack was withdrawn: Prettier and its editor formatting
+wiring have been retired from the public setup. No replacement prose formatter
+is planned. Node remains in today's `dev` component for the TypeScript language
+server. A future standalone `node` pack should use the same mise pin and restore
+path, without adding another version manager. Until packs exist, use the
+[single-tool restore recipe](../setup.md#install-one-pinned-tool).
 
 Keep one owner per Stow package for now. Shared tools solve a concrete
 overlap; shared configuration membership has no demonstrated need. Continue
@@ -97,8 +104,8 @@ implemented:
 ```sh
 make packs
 make pack NAME=python-dev
-make PROFILE=lite WITH="nvim python-dev prose" plan
-make profile-set PROFILE=lite WITH="nvim python-dev prose"
+make PROFILE=lite WITH="nvim python-dev node" plan
+make profile-set PROFILE=lite WITH="nvim python-dev node"
 make plan
 make setup-user
 ```

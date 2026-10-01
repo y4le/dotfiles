@@ -93,7 +93,7 @@ these are the main entry points.
 | `check` | Run repository validation | Offline |
 | `check-profiles` | Validate profile syntax, package paths, and mise tool keys | Offline |
 | `check-actions` | Run actionlint (separate from `check`) | Offline |
-| `check-nvim-first-open` | Open named files and exercise Markdown formatting with restored Neovim plugins | Offline; after `nvim-plugins` |
+| `check-nvim-first-open` | Open named files and check filetypes and plugin loading with restored Neovim plugins | Offline; after `nvim-plugins` |
 
 `mise-tools` installs mise and only the selected tool names; `nvim-lazy`
 restores only lazy.nvim.
@@ -272,7 +272,12 @@ uses its stock TypeScript and Markdown runtime and explicit `:mkview` /
 
 In Neovim, plain `j`/`k` follow wrapped display lines; counted jumps use buffer
 lines. `<leader>lf` formats with conform and falls back to LSP formatting, and
-`<leader>e` shows diagnostics. `.wiki` and `.book` use Markdown formatting.
+`<leader>e` shows diagnostics. `.wiki` and `.book` use the Markdown filetype;
+the public setup no longer supplies Prettier formatting for prose or web files.
+JavaScript and TypeScript still format on save through LSP fallback when their
+language server is available, using TypeScript's style rather than project
+Prettier settings. Markdown/wiki/book, JSON, YAML, CSS, and HTML have no
+configured formatter or LSP formatting provider in this setup.
 `SessionSave`, `SessionLoad`, and `SessionDelete` complete saved session names.
 `SessionSaveMin` and `SessionSaveMax` accept an optional name and save with
 temporary session settings; they preserve the settings used by ordinary saves.

@@ -86,27 +86,10 @@ return {
         }
       end,
       formatters_by_ft = {
-        css = { "prettier" },
-        html = { "prettier" },
-        javascript = { "prettier" },
-        javascriptreact = { "prettier" },
-        json = { "prettier" },
         lua = { "stylua" },
-        markdown = { "prettier" },
         python = { "ruff_format" },
         rust = { "rustfmt" },
         toml = { "taplo" },
-        typescript = { "prettier" },
-        typescriptreact = { "prettier" },
-        yaml = { "prettier" },
-      },
-      formatters = {
-        prettier = {
-          prepend_args = function(_, ctx)
-            local extension = vim.fn.fnamemodify(ctx.filename, ":e")
-            return (extension == "wiki" or extension == "book") and { "--parser", "markdown" } or {}
-          end,
-        },
       },
     },
   },

@@ -136,7 +136,7 @@ The orgmode grammar tag and commit are pinned in `mk/restore-nvim-org.lua`;
 review and update both when changing the orgmode lock revision or grammar version.
 After restoring plugins, run `make check-nvim-first-open` to check named-file
 startup and confirm that Lua, shell, Org, and Markdown files open without another
-download. The check also exercises `.wiki`/`.book` Markdown formatter arguments.
+download. The check also verifies the Markdown filetype for `.wiki`/`.book` files.
 
 ## Recover a rejected Zsh plugin restore
 
@@ -250,6 +250,31 @@ using `make profile-set` as described above.
 The unused `profiler#start()` and `profiler#end()` helper is retired.
 `make link` removes `~/.vim/autoload/profiler.vim` only when its symlink points
 into this checkout. Machine-local files and links to other locations remain.
+
+### Retired Prettier formatting
+
+The Prettier pin, profile membership, and Neovim formatter entries were removed.
+Markdown, wiki, book, JSON, YAML, and web files no longer use the public Prettier
+integration. Their filetype and note-editing support remain, as do the other
+configured language formatters and LSP formatting fallback. JavaScript and
+TypeScript can still format on save through their language server, using
+TypeScript's style rather than project Prettier settings. Markdown/wiki/book,
+JSON, YAML, CSS, and HTML have no configured formatting provider. Restart Neovim
+to load the updated configuration. Node remains pinned for the TypeScript
+language server and can be [installed separately](setup.md#install-one-pinned-tool).
+
+Existing Prettier versions remain installed. An old mise shim may report
+"No version is set for shim" after the global pin is removed. Inspect and
+preview cleanup before removing versions that no project still needs:
+
+```sh
+mise ls --installed npm:prettier
+mise uninstall --dry-run --all npm:prettier
+```
+
+If none are needed, run `mise uninstall --all npm:prettier` followed by
+`mise reshim --force`. To keep using an installed version, select it in project
+or machine-local mise configuration instead. Public setup does not uninstall it.
 
 ### Shell helpers
 

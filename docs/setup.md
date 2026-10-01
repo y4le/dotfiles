@@ -111,6 +111,27 @@ prerequisites are already available. `DESKTOP=1` independently selects the
 platform's desktop links; it is not saved by `profile-set`, so pass it each
 time you link desktop files. `local/` and private agent links remain separate.
 
+## Install one pinned tool
+
+To install Node without selecting the whole `dev` component, run from the
+checkout:
+
+```sh
+make mise
+MISE_CEILING_PATHS="$(pwd -P)" \
+  MISE_GLOBAL_CONFIG_FILE="$PWD/mise/.config/mise/config.toml" \
+  "$HOME/.local/bin/mise" install node
+```
+
+This restores the verified mise binary and installs the checked-in Node version.
+It does not change the saved profile or install the other dev tools. The current
+global mise configuration exposes all catalog pins once `make link` has linked
+the `mise` package, so Node is available in new managed shells even on lite.
+Project-specific mise configuration can still select a different version.
+Avoid `mise use -g` to change this pin: the global config is a symlink into the
+checkout. Put machine-specific overrides in `~/.config/mise/config.local.toml`
+instead.
+
 ## Preview the configuration
 
 ```sh
