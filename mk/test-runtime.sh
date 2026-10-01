@@ -109,20 +109,11 @@ run_zsh() {
     zsh "$@"
 }
 
-echo "check-runtime: default editor follows available Neovim"
-expected_editor=$(run_zsh -c 'if command -v nvim >/dev/null 2>&1; then print nvim; else print vim; fi') || \
-  fail "could not detect the available editor"
+echo "check-runtime: default editor defers selection until use"
 editor_state=$(run_zsh -c 'print -r -- "$EDITOR|$VISUAL|${GIT_EDITOR-unset}"') || \
-  fail "could not read editor defaults"
-[ "$editor_state" = "$expected_editor|$expected_editor|unset" ] || \
-  fail "editor defaults do not match available Neovim"
-printf '#!/bin/sh\nexit 0\n' > "$test_home/bin/nvim"
-chmod +x "$test_home/bin/nvim"
-editor_state=$(run_zsh -c 'print -r -- "$EDITOR|$VISUAL|${GIT_EDITOR-unset}"') || \
-  fail "could not read editor defaults with Neovim available"
-[ "$editor_state" = 'nvim|nvim|unset' ] || \
-  fail "Neovim was not selected as the default editor"
-mv "$test_home/bin/nvim" "$test_root/nvim-stub"
+  fail "editor defaults failed"
+[ "$editor_state" = 'dotfiles-vim|dotfiles-vim|unset' ] || \
+  fail "editor defaults did not select the use-time launcher"
 
 echo "check-runtime: zsh without restored plugins"
 if ! run_zsh -i -c \

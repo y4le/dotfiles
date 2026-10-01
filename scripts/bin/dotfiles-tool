@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Find a usable command without letting an unconfigured mise shim hide a system copy.
+set -eu
+[ "$#" -eq 1 ] || { echo 'usage: dotfiles-tool COMMAND' >&2; exit 2; }
+name=$1
+case $name in ''|-*|*[!A-Za-z0-9._+-]*) echo 'dotfiles-tool: expected a command name' >&2; exit 2 ;; esac
+shims=${MISE_SHIMS_DIR:-${MISE_DATA_DIR:-${XDG_DATA_HOME:-${HOME:-}/.local/share}/mise}/shims}
+shims=$(CDPATH='' cd -P -- "$shims" 2>/dev/null && pwd -P) || shims=${MISE_SHIMS_DIR:-${MISE_DATA_DIR:-${XDG_DATA_HOME:-${HOME:-}/.local/share}/mise}/shims}
+try_directory() {
+  directory=${1:-.}
+  candidate=$directory/$name
+  if [ ! -f "$candidate" ] || [ ! -x "$candidate" ]; then return 1; fi
+  physical=$(CDPATH='' cd -P -- "$directory" 2>/dev/null && pwd -P) || return 1
+  candidate=$physical/$name
+  if [ "$physical" = "$shims" ]; then
+    mise_bin=${MISE_BIN:-${HOME:-}/.local/bin/mise}
+    [ -x "$mise_bin" ] || mise_bin=$(command -v mise 2>/dev/null || true)
+    if [ -z "$mise_bin" ] || [ ! -x "$mise_bin" ]; then return 1; fi
+    resolved=$(MISE_OFFLINE=1 MISE_AUTO_INSTALL=false MISE_EXEC_AUTO_INSTALL=false \
+      MISE_NOT_FOUND_AUTO_INSTALL=false "$mise_bin" which "$name" </dev/null 2>/dev/null) || return 1
+    if [ -z "$resolved" ] || [ ! -f "$resolved" ] || [ ! -x "$resolved" ]; then return 1; fi
+    resolved_dir=$(CDPATH='' cd -P -- "${resolved%/*}" 2>/dev/null && pwd -P) || return 1
+    [ "$resolved_dir" != "$shims" ] || return 1
+    # Keep an active shim: mise supplies backend-specific environment at execution.
+  fi
+  printf '%s\n' "$candidate"
+}
+search_path=${PATH-}
+while :; do
+  if try_directory "${search_path%%:*}"; then exit 0; fi
+  case $search_path in
+    *:*) search_path=${search_path#*:} ;;
+    *) break ;;
+  esac
+done
+exit 127

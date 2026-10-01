@@ -49,6 +49,11 @@ all pins and overrides the fragment. The catalog and settings-only cutover will
 follow separately. Run `make link` on existing machines before that cutover to
 prepare the fragment without changing their current tool activation.
 
+After linking new helper files, restart Zsh and Neovim. `EDITOR`/`VISUAL` use a
+launcher that resolves Neovim or Vim when invoked, so a retained unconfigured
+Neovim shim cannot select a failing editor. Neovim also checks effective tool
+availability before enabling language servers, linters, and formatters.
+
 ## Restore tools and plugins
 
 On Intel Macs, follow the [Sheldon workaround](setup.md#intel-macs) instead of

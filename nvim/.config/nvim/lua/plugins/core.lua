@@ -85,6 +85,12 @@ return {
           timeout_ms = 1000,
         }
       end,
+      formatters = {
+        stylua = require("config.lsp").formatter("stylua"),
+        ruff_format = require("config.lsp").formatter("ruff"),
+        rustfmt = require("config.lsp").formatter("rustfmt"),
+        taplo = require("config.lsp").formatter("taplo"),
+      },
       formatters_by_ft = {
         lua = { "stylua" },
         python = { "ruff_format" },
@@ -109,7 +115,12 @@ return {
         group = group,
         callback = function()
           local available = vim.tbl_filter(function(name)
-            return vim.fn.executable(name) == 1
+            local command = require("config.lsp").resolve(name)
+            if command then
+              lint.linters[name].cmd = command
+              return true
+            end
+            return false
           end, lint.linters_by_ft[vim.bo.filetype] or {})
           if #available > 0 then
             lint.try_lint(available)

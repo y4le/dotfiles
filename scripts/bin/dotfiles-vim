@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Resolve at use time so shell startup never probes mise and projects stay eligible.
+set -eu
+resolver=${0%/*}/dotfiles-tool
+editor=$("$resolver" nvim) || editor=$("$resolver" vim) || {
+  echo 'dotfiles-vim: no usable Neovim or Vim found' >&2
+  exit 127
+}
+exec "$editor" "$@"

@@ -62,8 +62,8 @@ if [[ -o login && $OSTYPE == darwin* ]]; then
   typeset -ga _dotfiles_login_path=($path)
 fi
 
-if command -v nvim >/dev/null 2>&1; then
-  export EDITOR=nvim
+if [[ -x $HOME/bin/dotfiles-vim ]]; then
+  export EDITOR=dotfiles-vim
 else
   export EDITOR=vim
 fi

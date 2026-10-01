@@ -40,18 +40,23 @@ end
 function M.setup_servers()
   local capabilities = M.capabilities()
   local servers = {}
+  local tools = M
   for server, command in pairs({
-    basedpyright = "basedpyright-langserver",
-    rust_analyzer = "rust-analyzer",
-    ts_ls = "typescript-language-server",
+    basedpyright = { "basedpyright-langserver", "--stdio" },
+    rust_analyzer = { "rust-analyzer" },
+    ts_ls = { "typescript-language-server", "--stdio" },
   }) do
-    if vim.fn.executable(command) == 1 then
-      servers[server] = {}
+    local resolved = tools.resolve(command[1])
+    if resolved then
+      command[1] = resolved
+      servers[server] = { cmd = command }
     end
   end
 
-  if vim.fn.executable("lua-language-server") == 1 then
+  local lua_server = tools.resolve("lua-language-server")
+  if lua_server then
     servers.lua_ls = {
+      cmd = { lua_server },
       settings = {
         Lua = {
           diagnostics = {
@@ -75,5 +80,46 @@ function M.setup_servers()
     vim.lsp.enable(server_name)
   end
 end
+
+-- Ordinary commands stay cheap; only mise shims require an offline lookup.
+function M.resolve(name)
+  local command = vim.fn.exepath(name)
+  if command == "" then
+    return nil
+  end
+  local shims = vim.env.MISE_SHIMS_DIR
+    or ((vim.env.MISE_DATA_DIR or ((vim.env.XDG_DATA_HOME or (vim.env.HOME .. "/.local/share")) .. "/mise")) .. "/shims")
+  local parent = vim.uv.fs_realpath(vim.fn.fnamemodify(command, ":h"))
+  if parent ~= (vim.uv.fs_realpath(shims) or shims) then
+    return command
+  end
+  local resolver = vim.fn.exepath("dotfiles-tool")
+  if resolver == "" then
+    -- Existing Stow links update on pull before new command links are installed.
+    local source = vim.uv.fs_realpath(debug.getinfo(1, "S").source:sub(2))
+    local repo = source and source:match("^(.*)/nvim/%.config/nvim/lua/config/lsp%.lua$")
+    resolver = repo and (repo .. "/scripts/bin/dotfiles-tool") or ""
+    if vim.fn.executable(resolver) ~= 1 then
+      return nil
+    end
+  end
+  local result = vim.system({ resolver, name }, { text = true }):wait(1000)
+  if result.code ~= 0 then
+    return nil
+  end
+  return (result.stdout:gsub("\n$", ""))
+end
+
+function M.formatter(name)
+  return {
+    condition = function()
+      return M.resolve(name) ~= nil
+    end,
+    command = function()
+      return M.resolve(name) or name
+    end,
+  }
+end
+
 
 return M

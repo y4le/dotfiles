@@ -43,6 +43,7 @@ end
 assert(lint_spec, "nvim-lint configuration is missing")
 local lint_calls = {}
 package.loaded.lint = {
+  linters = { shellcheck = {}, ruff = {} },
   linters_by_ft = {},
   try_lint = function(names)
     lint_calls[#lint_calls + 1] = names

@@ -120,6 +120,15 @@ The tracked mise config still lists all pins, so running bare `mise install`
 can install the full set; use Make for profile-aware installs. A one-command
 `PROFILE` or `WITH` override does not persist; repeat it for each command or
 use `profile-set` before running `plan` and `setup-user`.
+Zsh exports `EDITOR=dotfiles-vim` and `VISUAL=dotfiles-vim`. The launcher chooses
+usable Neovim at invocation time, falling back to Vim. Ordinary commands use
+presence checks; mise shims require an offline `mise which` lookup, with system
+copies later on PATH eligible if that fails. Active shims are retained so mise
+can supply each backend's environment. Shell startup does not probe mise.
+Neovim uses the same availability rule for language servers, linters, and
+formatters, and executes a usable system copy when a stale shim would hide it.
+Project and machine-local mise versions remain eligible without a pack selection.
+
 `HERDR_INTEGRATIONS` defaults to `claude codex antigravity-cli` and can be
 overridden when invoking `herdr-integrations`.
 
