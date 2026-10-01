@@ -83,9 +83,9 @@ and corporate network constraints.
 
 ## Choose a profile
 
-The default `full` profile preserves the original package and tool set. For a
-smaller setup, save `lite` (core shell, Git, Vim, tmux, scripts, agents, mise,
-and six everyday CLI tools), optionally adding components:
+The default `full` profile installs the standard workstation package and tool
+set. For a smaller setup, save `lite` (core shell, Git, Vim, tmux, scripts,
+agents, mise, and five everyday CLI tools), optionally adding components:
 
 ```sh
 make profile-set PROFILE=lite WITH="yazi nvim"
@@ -93,7 +93,7 @@ make profile
 ```
 
 `make profile-set` writes an ignored `profile.mk` in this checkout. `WITH` can
-contain `atuin`, `yazi`, `nvim`, `herdr`, `dev`, and `rclone`; see
+contain `atuin`, `yazi`, `nvim`, `herdr`, and `dev`; see
 [`setup/profiles.yaml`](../setup/profiles.yaml) for their exact packages and
 tools. Pass `PROFILE` and `WITH` as Make arguments, such as
 `make PROFILE=lite WITH=yazi plan`; setting them in the shell environment is
@@ -101,7 +101,7 @@ ignored. A command-line choice applies only to that command. Repeat it for
 each command if you do not save a choice: a plain `make setup-user` after that
 preview would use the saved or default profile instead. Saving a profile
 without `WITH` clears saved add-ons; pass `WITH=` to drop saved add-ons for
-one command. To return to the original setup, run
+one command. To return to the default full setup, run
 `make profile-set PROFILE=full`, then `make plan` and `make setup-user`.
 
 The `dev` add-on provides the language servers used by Neovim. Profiles select

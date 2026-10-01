@@ -397,6 +397,27 @@ run_make "$folded_helper_home" link >/dev/null 2>&1 || \
   fail "link left a folded legacy helper directory"
 [ -x "$folded_helper_home/bin/cpy" ] || fail "link did not install standalone clipboard command"
 
+echo "check-link: retired Vim profiler links preserve local replacements"
+profiler_home=$test_root/profiler-home
+mkdir -p "$profiler_home/.vim/autoload"
+ln -s "$repo/vim/.vim/autoload/profiler.vim" "$profiler_home/.vim/autoload/profiler.vim"
+run_make "$profiler_home" link >/dev/null 2>&1 || fail "retired profiler migration failed"
+[ ! -L "$profiler_home/.vim/autoload/profiler.vim" ] || fail "owned profiler link survived"
+# Reuse a sibling's relative Stow target to exercise the actual link format.
+vim_link=$(readlink "$profiler_home/.vim/autoload/util.vim") || exit 1
+ln -s "${vim_link%util.vim}profiler.vim" "$profiler_home/.vim/autoload/profiler.vim"
+run_make "$profiler_home" link >/dev/null 2>&1 || fail "relative profiler migration failed"
+[ ! -L "$profiler_home/.vim/autoload/profiler.vim" ] || fail "relative profiler link survived"
+printf 'local profiler\n' > "$profiler_home/.vim/autoload/profiler.vim"
+run_make "$profiler_home" link >/dev/null 2>&1 || fail "local profiler blocked linking"
+[ "$(cat "$profiler_home/.vim/autoload/profiler.vim")" = 'local profiler' ] || \
+  fail "local profiler was removed"
+rm "$profiler_home/.vim/autoload/profiler.vim"
+ln -s "$test_root/external-profiler.vim" "$profiler_home/.vim/autoload/profiler.vim"
+run_make "$profiler_home" link >/dev/null 2>&1 || fail "external profiler blocked linking"
+[ "$(readlink "$profiler_home/.vim/autoload/profiler.vim")" = "$test_root/external-profiler.vim" ] || \
+  fail "external profiler link was removed"
+
 echo "check-link: retired file-listing helper migration"
 retired_helper_home=$test_root/retired-helper-home
 mkdir -p "$retired_helper_home/.config/shell/functions"

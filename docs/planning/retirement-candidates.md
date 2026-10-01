@@ -2,7 +2,8 @@
 
 This inventory prepares a later dependency and helper cleanup. It records what
 the public configuration currently uses, what would change if a candidate were
-removed, and what to check first. It does not authorize or implement removals.
+removed, and what to check first. Remaining candidates need a usage decision
+before removal.
 The inventory was checked against the repository on 2026-10-01.
 
 Repository references establish configured behavior, not how often a person
@@ -10,14 +11,15 @@ uses it. A plugin can provide commands or automatic behavior without an explicit
 caller in these dotfiles. Machine-local configuration and private agent files
 are outside this inventory.
 
-## Candidates with limited repository use
+## Completed retirements
 
-| Candidate | Current use | Decision and checks before retirement |
-| --- | --- | --- |
-| [`profiler.vim`](../../vim/.vim/autoload/profiler.vim) | Exposes `profiler#start()` and `profiler#end()` for manual Vim profiling; writes `/tmp/vim_profile.log`. No in-repo callers or mappings were found. | Check whether these functions are called manually or from local config. If unused, remove the helper. If retained, use a temporary or state path rather than a shared fixed file. |
-| `wget` in the [native package lists](../../setup/packages/) | Installed on Debian/Ubuntu, Arch, and macOS. The verified downloader uses `curl`; repository mentions of `wget` otherwise concern downloader detection and test stubs. | Check personal scripts and direct CLI use before removing it from all three lists. Keep the checks that recognize forbidden downloaders. |
-| `fd` in [mise](../../mise/.config/mise/config.toml) and [core](../../setup/profiles.yaml) | Installed in both profiles as a general CLI tool. No direct public-config invocation was found; Neovim explicitly prefers `rg` for its file picker. | Check interactive use and plugin fallback behavior. Removal changes lite/full tool membership, so update profile expectations and docs together. |
-| `rclone` in [mise](../../mise/.config/mise/config.toml) and its [component](../../setup/profiles.yaml) | Installed by full, or by `WITH=rclone`. No public rclone config or invocation was found. | Check personal backup/sync commands and machine-local config. Keeping it as an add-on while changing full membership would require revisiting the rule that full contains every component. |
+On 2026-10-01, `profiler.vim`, `fd`, `wget`, and `rclone` were retired from the
+public setup. The profiler had no public callers; the three utilities are
+occasional commands to install locally when needed. Their pins, profile
+membership, and native package entries were removed. Existing binaries and
+user data remain; linking cleans up only owned profiler symlinks. See the
+[migration notes](../maintenance.md#retired-utilities-and-vim-profiler), including
+recovery from a saved `WITH=rclone` selection.
 
 ## Editor candidates with active behavior
 

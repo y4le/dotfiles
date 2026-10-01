@@ -221,6 +221,36 @@ If a saved add-on was removed from `setup/profiles.yaml`,
 `make profile-set PROFILE=full` clears the stale choice so Make commands work
 again. Pass a valid `WITH=` value when saving a different selection.
 
+### Retired utilities and Vim profiler
+
+`fd`, `wget`, and `rclone` are no longer installed by public setup. Existing
+binaries and user data remain. Old mise shims for `fd` and `rclone` can report
+"No version is set for shim" and hide a system-installed copy after these pins
+are removed. `mise reshim` still creates shims for installed, inactive tools.
+
+If those mise versions are no longer needed by any project, inspect the
+installed providers and preview their removal:
+
+```sh
+mise ls --installed aqua:sharkdp/fd aqua:rclone/rclone fd rclone
+mise uninstall --dry-run --all aqua:sharkdp/fd aqua:rclone/rclone fd rclone
+```
+
+Include only the installed tool names you intend to retire; older installs can
+also use the short `fd` or `rclone` names. Then remove those versions with
+`mise uninstall --all <tool names>` and run `mise reshim --force` to remove old
+shims and regenerate the remaining ones. This is an explicit local cleanup;
+public setup does not uninstall tool versions. Alternatively, keep the versions
+and select them through machine-local mise configuration. Install these
+utilities locally when needed.
+
+A saved `WITH=rclone` is now stale; resave the desired profile with valid add-ons
+using `make profile-set` as described above.
+
+The unused `profiler#start()` and `profiler#end()` helper is retired.
+`make link` removes `~/.vim/autoload/profiler.vim` only when its symlink points
+into this checkout. Machine-local files and links to other locations remain.
+
 ### Shell helpers
 
 `make link` removes the old `~/.funcs/` links only when they point into this

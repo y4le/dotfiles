@@ -3,7 +3,7 @@
 components:
   core:
     packages: [agents, bash, git, mise, scripts, tmux, vim, zsh]
-    tools: [aqua:junegunn/fzf, aqua:BurntSushi/ripgrep, aqua:sharkdp/fd, aqua:sharkdp/bat, aqua:dandavison/delta, aqua:ajeetdsouza/zoxide]
+    tools: [aqua:junegunn/fzf, aqua:BurntSushi/ripgrep, aqua:sharkdp/bat, aqua:dandavison/delta, aqua:ajeetdsouza/zoxide]
   atuin:
     packages: [atuin]
     tools: [aqua:atuinsh/atuin]
@@ -16,8 +16,6 @@ components:
     packages: [herdr]
   dev:
     tools: [go, node, python, rust, aqua:astral-sh/uv, npm:prettier, npm:typescript-language-server, pipx:basedpyright, pipx:ruff, aqua:LuaLS/lua-language-server]
-  rclone:
-    tools: [aqua:rclone/rclone]
 profiles:
   lite: [core]
-  full: [core, atuin, yazi, nvim, herdr, dev, rclone]
+  full: [core, atuin, yazi, nvim, herdr, dev]

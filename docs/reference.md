@@ -10,7 +10,7 @@ and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 | --- | --- |
 | Full (default) | `agents`, `atuin`, `bash`, `git`, `herdr`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
 | Lite | `agents`, `bash`, `git`, `mise`, `scripts`, `tmux`, `vim`, `zsh` |
-| Add-on components | `atuin`, `yazi`, `nvim`, `herdr`, `dev`, `rclone`; each adds its declared packages and/or mise tools |
+| Add-on components | `atuin`, `yazi`, `nvim`, `herdr`, `dev`; each adds its declared packages and/or mise tools |
 | Machine-local | `local`, included when present |
 | Linux core | Selected profile and machine-local packages |
 | macOS core | Selected profile and machine-local packages, plus `osx` |
@@ -26,6 +26,11 @@ Neovim uses `stylua` for Lua formatting and `taplo` for TOML formatting when
 those commands are installed. `shellcheck` enables Bash and POSIX shell linting
 in Neovim and local `make check` runs; CI installs it explicitly. These three
 tools are optional and are not installed by `make tools`.
+
+Occasional utilities such as `fd`, `wget`, and `rclone` are installed locally
+when needed; the public setup does not install or pin them. Use the machine's
+package manager or machine-local tool configuration rather than adding them
+to the tracked mise config.
 
 ## Vim files, buffers, and recursive search
 

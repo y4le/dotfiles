@@ -15,7 +15,7 @@ lite_packages=$(sh mk/profile.sh packages lite) || fail "lite packages did not r
   fail "lite package set changed: $lite_packages"
 
 lite_tools=$(sh mk/profile.sh tools lite) || fail "lite tools did not resolve"
-[ "$lite_tools" = "aqua:junegunn/fzf aqua:BurntSushi/ripgrep aqua:sharkdp/fd aqua:sharkdp/bat aqua:dandavison/delta aqua:ajeetdsouza/zoxide" ] || \
+[ "$lite_tools" = "aqua:junegunn/fzf aqua:BurntSushi/ripgrep aqua:sharkdp/bat aqua:dandavison/delta aqua:ajeetdsouza/zoxide" ] || \
   fail "lite tool set changed: $lite_tools"
 
 full_packages=$(sh mk/profile.sh packages full) || fail "full packages did not resolve"
@@ -47,9 +47,11 @@ printf '%s\n' "$empty_profile" | grep -F 'unknown profile:' >/dev/null || \
 if sh mk/profile.sh components unknown > /dev/null 2>&1; then
   fail "unknown profile was accepted"
 fi
-if sh mk/profile.sh components lite unknown > /dev/null 2>&1; then
-  fail "unknown add-on was accepted"
-fi
+for addon in unknown rclone; do
+  if sh mk/profile.sh components lite "$addon" > /dev/null 2>&1; then
+    fail "unknown or retired add-on was accepted: $addon"
+  fi
+done
 
 echo "check-profiles: desktop selection requires a Make argument"
 ambient_packages=$(MAKEFLAGS='' MFLAGS='' MAKEOVERRIDES='' DESKTOP=1 \

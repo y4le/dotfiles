@@ -1,4 +1,4 @@
-.PHONY: setup setup-user tools plugins system-packages plan link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
+.PHONY: setup setup-user tools plugins system-packages plan link link-plan link-linux link-macos _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -119,7 +119,7 @@ _link: _link-plan
 		$(MAKE) _remove-legacy-functions; \
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' vim '; then \
-		$(MAKE) _remove-legacy-ideavimrc; \
+		$(MAKE) _remove-legacy-ideavimrc _remove-legacy-vim-profiler; \
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' tmux '; then \
 		$(MAKE) _remove-legacy-tmux-config; \
@@ -146,6 +146,9 @@ _remove-legacy-functions:
 
 _remove-legacy-ideavimrc:
 	@sh mk/remove-legacy-link.sh "$(HOME)/.ideavimrc" "$(CURDIR)" "vim/.ideavimrc"
+
+_remove-legacy-vim-profiler:
+	@sh mk/remove-legacy-link.sh "$(HOME)/.vim/autoload/profiler.vim" "$(CURDIR)" "vim/.vim/autoload/profiler.vim"
 
 _remove-legacy-zsh-hooks:
 	@for entry in 'env.zsh .zshenv.local' 'pre.zsh .pre_profile' 'post.zsh .post_profile'; do \
