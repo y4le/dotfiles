@@ -178,8 +178,8 @@ rm -f "$test_home/.zshenv.local" "$test_home/.pre_profile" \
 helper_state=$(run_zsh -i -c \
   'print -r -- "$+functions[nav]|$+functions[y]|$+functions[cpy]|$+functions[fzf_src]"' \
   2> "$test_root/helpers.err") || fail "interactive zsh could not load shell helpers"
-[ "$helper_state" = '1|1|1|0' ] || \
-  fail "interactive zsh skipped shell helpers"
+[ "$helper_state" = '0|0|1|0' ] || \
+  fail "interactive zsh loaded retired shell helpers"
 echo 'check-runtime: successful-history widget'
 cat > "$test_home/bin/atuin" <<'EOF'
 #!/bin/sh

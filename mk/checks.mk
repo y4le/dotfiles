@@ -129,9 +129,7 @@ check-nvim-bin: ## [offline] verify Neovim binary selection
 
 check-runtime: ## [offline] verify shell startup stays usable and offline
 	@sh mk/test-runtime.sh
-	@sh mk/test-nav.sh
 	@bash mk/test-filez.sh
-	@sh mk/test-utilities.sh
 	@sh mk/test-cpst.sh
 	@sh mk/test-i3blocks.sh
 	@sh mk/test-xsession.sh

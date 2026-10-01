@@ -102,18 +102,6 @@ setopt share_history          # share history data
 
 # SHORTCUTS
 
-# quick re-source this file
-alias src="source ~/.zshrc"
-
-# ctrl-g yazi: file system navigator
-function yazinav() {
-  zle -I
-  y < $TTY
-  zle reset-prompt; zle redisplay
-}
-zle -N yazinav
-bindkey '^g' yazinav
-
 # ctrl-R history search
 if (( atuin_managed )) && command -v atuin &>/dev/null; then
   export ATUIN_NOBIND="true"

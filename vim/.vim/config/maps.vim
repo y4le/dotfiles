@@ -47,7 +47,7 @@ nnoremap <leader>qm :FzfMru<cr>|" recent files; ctrl-q sends selections to quick
 
 " other
 noremap <leader>/ :<C-u>nohlsearch<cr>|" clear highlight for last search
-noremap <C-g> :<C-u>Yazi<cr>|" start yazi file system navigator, zsh keymap
+noremap <C-g> :<C-u>Yazi<cr>|" start yazi file system navigator
 
 " expand `%%/` to full path of current file on command line
 cnoreabbr <expr> %% expand('%:p:h')

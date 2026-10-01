@@ -201,18 +201,13 @@ newline-containing filenames are not supported through Ctrl-T insertion.
 A separate machine pipeline must preserve NUL delimiters through selection
 and consumption; other text pickers keep their own delimiter settings.
 
-`nav` opens an fzf picker and changes directory or opens the selected file.
-It is a Zsh helper loaded by `.zshrc`. `EDITOR` accepts an executable followed
-by arguments with shell quoting, such as `nvim -c 'set number'` or
-`emacsclient -a ""`. Empty or whitespace-only settings fall back to Vim.
-Quotes group arguments; variables, `~`, globs, command substitutions, and
-shell operators remain literal words. Use an executable wrapper for a more
-complex launch command. The selected filename stays one argument, including
-spaces and newlines.
-
-Cancelling the picker or choosing no match returns success. Missing tools,
-picker errors, editor errors, and failed directory changes return nonzero
-immediately, with command diagnostics preserved.
+For directory jumps, use `z` or interactive `zi`; fzf supplies Alt-C for
+choosing a directory and Ctrl-T for inserting a file path. Yazi remains
+available through its optional component and editor integrations. The unused
+`nav`, `y`/Ctrl-G, `compair.sh`, and `benchmark.sh` helpers are retired.
+Use `vim -d first second` for ordinary file comparisons and shell `time` for
+occasional measurements. After changing shell config, open a fresh shell;
+re-sourcing `.zshrc` does not clear deleted definitions or bindings.
 
 ## Local hooks
 
