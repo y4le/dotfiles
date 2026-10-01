@@ -399,14 +399,42 @@ run_make "$folded_helper_home" link >/dev/null 2>&1 || \
 [ -L "$folded_helper_home/.config/shell/functions/cpst" ] || \
   fail "link did not replace folded legacy helpers"
 
+echo "check-link: retired file-listing helper migration"
+retired_helper_home=$test_root/retired-helper-home
+mkdir -p "$retired_helper_home/.config/shell/functions"
+ln -s "$repo/scripts/.config/shell/functions/fzf_sources" \
+  "$retired_helper_home/.config/shell/functions/fzf_sources"
+run_make "$retired_helper_home" link >/dev/null 2>&1 || \
+  fail "link rejected the retired file-listing helper"
+[ ! -L "$retired_helper_home/.config/shell/functions/fzf_sources" ] || \
+  fail "link left the retired file-listing helper"
+[ -L "$retired_helper_home/bin/filez" ] || fail "link did not install filez"
+# Match Stow's relative-link format as well as the absolute fixture above.
+helper_link=$(readlink "$retired_helper_home/.config/shell/functions/cpst")
+ln -s "${helper_link%cpst}fzf_sources" \
+  "$retired_helper_home/.config/shell/functions/fzf_sources"
+run_make "$retired_helper_home" link >/dev/null 2>&1 || \
+  fail "link rejected the relative retired-helper link"
+[ ! -L "$retired_helper_home/.config/shell/functions/fzf_sources" ] || \
+  fail "link left the relative retired-helper link"
+
 echo "check-link: unrelated shell helpers are preserved"
 external_helper_home=$test_root/external-helper-home
-mkdir -p "$external_helper_home/.funcs"
+mkdir -p "$external_helper_home/.funcs" "$external_helper_home/.config/shell/functions"
+ln -s "$test_root/external-helper" "$external_helper_home/.config/shell/functions/fzf_sources"
 ln -s "$test_root/external-helper" "$external_helper_home/.funcs/cpst"
 run_make "$external_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected an unrelated helper"
 [ "$(readlink "$external_helper_home/.funcs/cpst")" = "$test_root/external-helper" ] || \
   fail "link removed an unrelated helper"
+[ "$(readlink "$external_helper_home/.config/shell/functions/fzf_sources")" = "$test_root/external-helper" ] || \
+  fail "link removed an unrelated file-listing helper"
+rm "$external_helper_home/.config/shell/functions/fzf_sources"
+printf 'user helper\n' > "$external_helper_home/.config/shell/functions/fzf_sources"
+run_make "$external_helper_home" _remove-legacy-functions >/dev/null 2>&1 || \
+  fail "retired helper cleanup failed with a user-owned file"
+[ "$(cat "$external_helper_home/.config/shell/functions/fzf_sources")" = 'user helper' ] || \
+  fail "retired helper cleanup removed a user-owned file"
 
 echo "check-link: unrelated IdeaVim config is preserved"
 external_ideavim_home=$test_root/external-ideavim-home

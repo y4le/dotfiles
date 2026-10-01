@@ -149,6 +149,7 @@ _remove-legacy-functions:
 	done
 	@sh mk/remove-legacy-link.sh "$(HOME)/.funcs" "$(CURDIR)" "scripts/.funcs"
 	@rmdir "$(HOME)/.funcs" 2>/dev/null || true
+	@sh mk/remove-legacy-link.sh "$(HOME)/.config/shell/functions/fzf_sources" "$(CURDIR)" "scripts/.config/shell/functions/fzf_sources"
 
 _remove-legacy-ideavimrc:
 	@sh mk/remove-legacy-link.sh "$(HOME)/.ideavimrc" "$(CURDIR)" "vim/.ideavimrc"

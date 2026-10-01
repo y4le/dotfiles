@@ -7,9 +7,7 @@ test_root=$(mktemp -d)
 test_root=$(CDPATH='' cd -P "$test_root" && pwd -P)
 trap 'rm -rf "$test_root"' EXIT
 trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
-mkdir -p "$test_root/home/.config/shell/functions" "$test_root/project" "$test_root/empty"
-ln -s "$repo/scripts/.config/shell/functions/fzf_sources" \
-  "$test_root/home/.config/shell/functions/fzf_sources"
+mkdir -p "$test_root/home" "$test_root/project" "$test_root/empty"
 
 cd "$test_root/project"
 git init -q

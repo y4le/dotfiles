@@ -67,7 +67,7 @@ source_dirs=(
 for source_dir in $source_dirs; do
   if [[ -d "$source_dir" ]]; then
     for src in $source_dir/**/*(N-.); do
-      [[ $src == */fzf_sources ]] || source $src
+      source $src
     done
   fi
 done

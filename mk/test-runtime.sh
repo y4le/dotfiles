@@ -233,9 +233,9 @@ esac
 env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" TERM=xterm \
   bash -c '. "$HOME/.config/shell/functions/cpst"; declare -F cpy pst >/dev/null' || \
   fail "Bash could not load clipboard helpers"
-env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" TERM=xterm \
-  bash -c 'root_file=.; hidden=false; color=false; debug=false; . "$HOME/.config/shell/functions/fzf_sources"; declare -F fzf_src >/dev/null' || \
-  fail "Bash could not load file-search helpers"
+[ ! -e "$test_home/.config/shell/functions/fzf_sources" ] && \
+  [ ! -L "$test_home/.config/shell/functions/fzf_sources" ] || \
+  fail "retired file-search helper was linked"
 [ -d "$test_home/.local/state/zsh" ] || \
   fail "interactive zsh did not create its state directory"
 [ "$(grep -Fc "dotfiles: zsh plugins not restored; run 'make plugins'" \

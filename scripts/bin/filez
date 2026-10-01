@@ -1,20 +1,66 @@
 #!/bin/bash
 
-# grab the actual fzf_src function
-# This resolves to the stowed file in ~/.config/shell/functions at runtime.
-# shellcheck source=/dev/null
-. "$HOME/.config/shell/functions/fzf_sources"
+# Sources emit NUL-delimited paths; filez chooses the delimiter for its caller.
+git_source() {
+  command -v git >/dev/null 2>&1 || return 1
+  git -C "$root_file" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
 
+  local path
+  while IFS= read -r -d '' path; do
+    [[ -f $root_file/$path ]] && printf '%s/%s\0' "$root_file" "$path"
+  done < <(git -C "$root_file" ls-files --cached --others --exclude-standard -z)
+  return 0
+}
 
-# Set the parameters consumed by fzf_src.
-# fzf_sources reads this from the caller's shell after being sourced.
-# shellcheck disable=SC2034
+rg_source() {
+  command -v rg >/dev/null 2>&1 || return 1
+  local -a args=(--files -0)
+  [[ $hidden = true ]] && args+=(--hidden)
+  rg "${args[@]}" "$root_file"
+  local source_rc=$?
+  # No matches (1) and partial I/O failures (2) need no second file listing.
+  (( source_rc <= 2 )) && return 0
+  return "$source_rc"
+}
+
+fd_source() {
+  command -v fd >/dev/null 2>&1 || return 1
+  local -a args=(--type f -0)
+  [[ $hidden = true ]] && args+=(--hidden)
+  fd "${args[@]}" . "$root_file" 2>/dev/null
+}
+
+find_source() {
+  command -v find >/dev/null 2>&1 || return 1
+  if [[ $hidden = true ]]; then
+    find "$root_file" -type f -print0
+  else
+    find "$root_file" -mindepth 1 -name '.*' -prune -o -type f -print0
+  fi
+}
+
+fzf_src() {
+  local source source_rc
+  if git_source; then
+    source=git_source
+    source_rc=0
+  else
+    if command -v rg >/dev/null 2>&1; then
+      source=rg_source
+    elif command -v fd >/dev/null 2>&1; then
+      source=fd_source
+    else
+      source=find_source
+    fi
+    "$source"
+    source_rc=$?
+  fi
+  [[ $debug = true ]] && printf 'filez source: %s (root: %s)\n' "$source" "$root_file" >&2
+  return "$source_rc"
+}
+
 root_file=.
-# fzf_sources reads this from the caller's shell after being sourced.
-# shellcheck disable=SC2034
 hidden=false
-# fzf_sources reads this from the caller's shell after being sourced.
-# shellcheck disable=SC2034
 debug=false
 print0=false
 
@@ -22,18 +68,12 @@ while [ "$1" != "" ]; do
   case $1 in
     -r | --root )
       shift
-      # This reassignment is consumed by the sourced helper, not locally here.
-      # shellcheck disable=SC2034
       root_file=$1
       ;;
     -h | --hidden )
-      # This reassignment is consumed by the sourced helper, not locally here.
-      # shellcheck disable=SC2034
       hidden=true
       ;;
     -d | --debug )
-      # This reassignment is consumed by the sourced helper, not locally here.
-      # shellcheck disable=SC2034
       debug=true
       ;;
     -0 | --print0 )

@@ -228,6 +228,11 @@ checkout. Move any machine-local helpers from `~/.funcs/` to
 `~/.config/shell/functions/` before starting a new shell; the new directory is
 sourced at the same point in Zsh startup.
 
+`filez` is a self-contained executable. Its former
+`~/.config/shell/functions/fzf_sources` helper is no longer installed;
+`make link` removes that symlink only when it points into this checkout.
+User-owned files and links to other locations are preserved.
+
 ### Zsh local hooks
 
 Move existing local hooks to their new paths while preserving their contents:
