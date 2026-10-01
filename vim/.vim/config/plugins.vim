@@ -45,15 +45,6 @@ Plug 'junegunn/fzf.vim' " fuzzy finder integration
 " VCS plugins
 Plug 'tpope/vim-fugitive' " git integration
 
-" system plugins
-Plug 'gioele/vim-autoswap' " auto deal with swap in common situations
-Plug 'vim-scripts/restore_view.vim' " save/restore folds/cursor position
-
-" language specific plugins
-" Plug 'psf/black', { 'for': 'python' }
-Plug 'leafgarland/typescript-vim', { 'for': 'typescript' }
-Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
-
 " source local overrides if present; inside init block so you can Plug 'eg.vim'
 call util#SourceIfExists($VIMHOME . "/config/plugins.local.vim")
 

@@ -21,18 +21,21 @@ user data remain; linking cleans up only owned profiler symlinks. See the
 [migration notes](../maintenance.md#retired-utilities-and-vim-profiler), including
 recovery from a saved `WITH=rclone` selection.
 
-## Editor candidates with active behavior
+Vim's `typescript-vim`, `vim-markdown`, `restore_view.vim`, and `vim-autoswap`
+were also retired. TypeScript and Markdown now use Vim's stock runtime; the
+local Markdown and `.book` settings remain. Views are saved and loaded only
+with explicit native commands. Vim and Neovim disable swap files while retaining
+persistent undo and backups. NERDTree is retained in both editors for the
+frequently used `<Space>sn` sidebar and `<Space>sN` reveal commands.
+
+## Editor decisions and remaining candidates
 
 Vim declarations are in [`plugins.vim`](../../vim/.vim/config/plugins.vim).
 Neovim declarations are in [`editing.lua`](../../nvim/.config/nvim/lua/plugins/editing.lua).
 
 | Candidate | Current use | Decision and checks before retirement |
 | --- | --- | --- |
-| `leafgarland/typescript-vim` | Loads for TypeScript buffers to supply language runtime support. No plugin-specific mappings or settings were found. | Compare representative TypeScript syntax and indentation with the supported Vim runtime before removing it. A built-in TypeScript syntax file exists on the reviewed host; that alone does not establish equivalent behavior on every supported host. |
-| `plasticboy/vim-markdown` | Loads for Markdown buffers. The Markdown ftplugin sets concealment, and `.book` files reuse Markdown runtime settings. | Compare concealment, links, folding, indentation, and commands with stock Vim. Check `.md` and `.book` separately. Do not assume the built-in syntax replaces every plugin feature. |
-| `vim-scripts/restore_view.vim` | Automatically saves/restores views, including folds and cursor position. `settings.vim` configures the view directory, view options, and excluded Vim files. | Decide whether persistent folds are wanted. If only cursor restoration matters, compare Vim's persisted marks; otherwise keep the plugin or explicitly replace its view behavior. |
-| `gioele/vim-autoswap` | Automatically handles swap-file situations when buffers are opened. No custom settings were found. | Exercise opening the same file in two editors and recovery after an interrupted editor. Removal restores Vim's ordinary swap prompts. |
-| NERDTree in Vim and Neovim | `<Space>sn` toggles the sidebar; `<Space>sN` reveals the current file. Neovim also maps `<Space>sR` to refresh. Both editors additionally have file pickers and Yazi. | Check whether the persistent sidebar and reveal action are used. Yazi and fuzzy pickers overlap in file opening, but do not reproduce the sidebar experience. Neovim currently loads NERDTree eagerly; lazy loading is a smaller option than retirement. |
+| NERDTree in Vim and Neovim | `<Space>sn` toggles the sidebar; `<Space>sN` reveals the current file. Neovim also maps `<Space>sR` to refresh. Both editors additionally have file pickers and Yazi. | Keep: the sidebar and reveal commands are frequently used and provide value beyond netrw, Yazi, and fuzzy pickers. |
 | The complete `mini.nvim` repository | Neovim config initializes `mini.misc` and uses `mini.misc.zoom()` for `<Space>z`. No other mini modules are configured. | Consider using the standalone module if it offers the same supported behavior. Preserve zoom; verify the replacement's pin and restore behavior before changing the dependency. |
 
 ## Shell candidates with plugin provided commands

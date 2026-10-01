@@ -255,6 +255,10 @@ Neovim loads `lua/config/`, the local hook, then lazy.nvim with specs from
 `lua/plugins/`. `lazy-lock.json` pins plugin commits; startup does not install
 missing plugins or check for updates.
 
+Both editors disable swap files and retain persistent undo and backups. Vim
+uses its stock TypeScript and Markdown runtime and explicit `:mkview` /
+`:loadview` commands for saved views.
+
 In Neovim, plain `j`/`k` follow wrapped display lines; counted jumps use buffer
 lines. `<leader>lf` formats with conform and falls back to LSP formatting, and
 `<leader>e` shows diagnostics. `.wiki` and `.book` use Markdown formatting.
@@ -295,7 +299,7 @@ does not relocate them.
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |
 | IdeaVim | `~/.config/ideavim/ideavimrc` | IDE-managed state |
-| Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, swap, backups, sessions, and views under `~/.local/state/nvim/` |
+| Neovim | `~/.config/nvim/` | Plugins under `~/.local/share/nvim/`; undo, backups, sessions, and views under `~/.local/state/nvim/` |
 | tmux | `~/.config/tmux/tmux.conf` and supporting files | No repo-managed persistent state |
 | Atuin | `~/.config/atuin/config.toml` | Local history; automatic sync and update checks disabled |
 | Agents | `~/.agents/` | Public and optional private files share the directory |

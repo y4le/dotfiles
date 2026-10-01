@@ -15,13 +15,11 @@ set lazyredraw " don't redraw e.g. in the middle of macros
 
 " save these things when we save a vim session (:mks ~/foo) (:source ~/foo)
 set sessionoptions=blank,buffers,curdir,folds,globals,help,options,tabpages,winsize
-" save these parts of view when exiting a file (:mkview ~/foo) (:loadview)
+" save these parts of view on explicit :mkview / :loadview
 set viewoptions=cursor,folds,slash,unix
-" don't save view for these files
-let g:skipview_files = ['*\.vim']
 
 " keep generated editor state out of the configuration directory
-for dir in ["/backup", "/sessions", "/swap", "/undo", "/view"]
+for dir in ["/backup", "/sessions", "/undo", "/view"]
   if !isdirectory($VIMSTATE . dir)
     call mkdir($VIMSTATE . dir, "p", 0700)
   endif
@@ -30,7 +28,7 @@ endfor
 let &undodir = $VIMSTATE . "/undo//"
 set undofile " keep undo history
 
-let &directory = $VIMSTATE . "/swap//"
+set noswapfile
 let &backupdir = $VIMSTATE . "/backup//"
 let &viewdir = $VIMSTATE . "/view"
 let &viminfofile = $VIMSTATE . "/viminfo"

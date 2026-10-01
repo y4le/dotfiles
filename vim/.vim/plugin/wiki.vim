@@ -12,7 +12,6 @@ else
 endif
 let s:root = substitute(fnamemodify(s:root, ':p'), '[/\\]\+$', '', '')
 
-let g:vim_markdown_folding_disabled = 1
 let g:vimwiki_folding = ''
 
 let s:defaults = { 'syntax': 'markdown', 'ext': '.md' }

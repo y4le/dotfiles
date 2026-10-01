@@ -1,10 +1,9 @@
 local state_dir = vim.fn.stdpath("state")
-local swap_dir = state_dir .. "/swap"
 local backup_dir = state_dir .. "/backup"
 local undo_dir = state_dir .. "/undo"
 local view_dir = state_dir .. "/view"
 
-for _, dir in ipairs({ swap_dir, backup_dir, undo_dir, view_dir }) do
+for _, dir in ipairs({ backup_dir, undo_dir, view_dir }) do
   vim.fn.mkdir(dir, "p", 448)
 end
 
@@ -27,7 +26,7 @@ vim.opt.viewoptions = { "cursor", "folds", "slash", "unix" }
 
 vim.opt.undofile = true
 vim.opt.undodir = undo_dir .. "//"
-vim.opt.directory = swap_dir .. "//"
+vim.opt.swapfile = false
 vim.opt.backupdir = backup_dir .. "//"
 vim.opt.backup = true
 

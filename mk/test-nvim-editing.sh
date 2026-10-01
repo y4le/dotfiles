@@ -11,5 +11,5 @@ env -i HOME="$test_root" PATH="$PATH" \
   XDG_CONFIG_HOME="$test_root/.config" XDG_DATA_HOME="$test_root/.local/share" \
   XDG_STATE_HOME="$test_root/.local/state" XDG_CACHE_HOME="$test_root/.cache" \
   DOTFILES_REPO="$repo" DOTFILES_TEST_SCRIPT="$repo/mk/test-nvim-editing.lua" \
-  "$nvim_bin" --headless -u NONE -i NONE -n \
+  "$nvim_bin" --headless -u NONE -i NONE \
   '+lua dofile(vim.env.DOTFILES_TEST_SCRIPT)' +qa

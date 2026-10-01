@@ -148,9 +148,9 @@ run_startup() {
     LC_ALL=C HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
     ALL_PROXY=http://127.0.0.1:9 DOTFILES_NETWORK_LOG="$network_log" \
     DOTFILES_VIM_MESSAGES="$messages" DOTFILES_VIM_STATE="$state" \
-    vim -Nu "$runtime_home/.vimrc" -n -es \
+    vim -Nu "$runtime_home/.vimrc" -es \
       -c 'call writefile(split(execute("messages"), "\n"), $DOTFILES_VIM_MESSAGES)' \
-      -c 'call writefile([exists("g:airline#extensions#tabline#formatter"), exists(":FzfMru"), maparg("\<Space>Fm", "n"), maparg("\<Space>Fpm", "n"), get(g:, "colors_name", ""), $VIMSTATE, &viminfofile, &undodir, &directory, &backupdir, &viewdir, get(g:, "MRU_File", ""), string(get(g:, "signify_skip", {}))], $DOTFILES_VIM_STATE)' \
+      -c 'call writefile([exists("g:airline#extensions#tabline#formatter"), exists(":FzfMru"), maparg("\<Space>Fm", "n"), maparg("\<Space>Fpm", "n"), get(g:, "colors_name", ""), $VIMSTATE, &viminfofile, &undodir, &swapfile, &backupdir, &viewdir, get(g:, "MRU_File", ""), string(get(g:, "signify_skip", {}))], $DOTFILES_VIM_STATE)' \
       -c 'qa!' > /dev/null 2> "$runtime_stderr"
 }
 
@@ -181,13 +181,13 @@ vim_state=$runtime_home/xdg-state/vim
   fail "Vim used the wrong viminfo path"
 [ "$(sed -n '8p' "$state")" = "$vim_state/undo//" ] || \
   fail "Vim used the wrong undo path"
-[ "$(sed -n '9p' "$state")" = "$vim_state/swap//" ] || \
-  fail "Vim used the wrong swap path"
+[ "$(sed -n '9p' "$state")" = 0 ] || fail "Vim enabled swap files"
+[ ! -d "$vim_state/swap" ] || fail "Vim created unused swap state"
 [ "$(sed -n '10p' "$state")" = "$vim_state/backup//" ] || \
   fail "Vim used the wrong backup path"
 [ "$(sed -n '11p' "$state")" = "$vim_state/view" ] || \
   fail "Vim used the wrong view path"
-for state_dir in backup sessions swap undo view; do
+for state_dir in backup sessions undo view; do
   [ -d "$vim_state/$state_dir" ] || fail "Vim did not create $state_dir state"
 done
 [ -f "$vim_state/viminfo" ] || fail "Vim did not write viminfo state"

@@ -327,7 +327,9 @@ done
 
 The old `~/.vim/tmp/` mixed disposable swap files with backup files. After all
 Vim processes have stopped and any needed recovery is complete, remove it; Vim
-now creates separate `swap/` and `backup/` directories under its state root.
+now disables swap files and keeps backups under `backup/` in its state root.
+Existing Vim and Neovim state `swap/` directories can also be removed after
+any needed recovery is complete.
 After confirming the migrated state, remove the other legacy sources copied by
 the commands above.
 
