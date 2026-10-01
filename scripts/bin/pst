@@ -1,7 +1,1 @@
-#!/bin/bash
-
-# This resolves to the stowed file in ~/.config/shell/functions at runtime.
-# shellcheck source=/dev/null
-. "$HOME/.config/shell/functions/cpst"
-
-pst
+cpy

@@ -18,7 +18,8 @@ and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 | macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner); see [GUI save recovery](maintenance.md#recover-a-karabiner-configuration-replaced-by-the-gui) |
 
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
-`scripts` supplies `~/bin` commands and `~/.config/shell/functions/` helpers.
+`scripts` supplies standalone `~/bin` commands. Local shell functions can
+still live in `~/.config/shell/functions/` for Zsh to source.
 
 Neovim uses `stylua` for Lua formatting and `taplo` for TOML formatting when
 those commands are installed. `shellcheck` enables Bash and POSIX shell linting
@@ -281,7 +282,7 @@ does not relocate them.
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
 | npm | Environment in `~/.zshenv` | Global packages under `~/.local/share/npm/` |
-| Scripts | `~/bin/`, `~/.config/shell/functions/` | No shared state directory |
+| Scripts | `~/bin/` | No shared state directory |
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 
@@ -316,5 +317,23 @@ session or `xclip` for X11 (for example, `sudo apt-get install wl-clipboard`
 or `sudo apt-get install xclip`). These are session dependencies rather than
 base setup packages. macOS uses its built-in `pbcopy`/`pbpaste`.
 
-Copy over SSH uses OSC 52. Without a display backend, paste reports that no
-clipboard command is available; it does not invent or export a display.
+`cpy` and `pst` are standalone commands sharing one executable via a sibling
+symlink; they work from the checkout and do not source shell configuration.
+Wayland paste uses `wl-paste --no-newline` to preserve the clipboard's bytes.
+Backend failures propagate without retrying a different clipboard.
+
+Copy over SSH uses the terminal clipboard. Inside tmux it uses
+`tmux load-buffer -w -`, which also works in copy-pipe jobs without a
+controlling terminal. Otherwise it emits OSC 52 to `/dev/tty`; failed
+encoding emits no sequence, and a missing terminal fails explicitly.
+Terminal copying is best effort: the terminal must support and permit OSC 52;
+tmux also needs an attached client whose terminal advertises the `Ms`
+capability or `clipboard` feature. Remote terminfo can affect this detection. Successful submission does not
+confirm clipboard receipt, including when no client is attached. In tmux
+copy mode, native copy and the copy-pipe command can create identical buffers;
+ordinary `cpy` output remains available to tmux's default paste-buffer action.
+
+Paste reads the graphical clipboard available on the current host. Over SSH,
+this can differ from the local terminal clipboard used by copy; use the
+terminal's paste for that clipboard. Without a display backend, `pst` reports
+an error; it does not invent or export a display.

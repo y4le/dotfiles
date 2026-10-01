@@ -178,7 +178,7 @@ rm -f "$test_home/.zshenv.local" "$test_home/.pre_profile" \
 helper_state=$(run_zsh -i -c \
   'print -r -- "$+functions[nav]|$+functions[y]|$+functions[cpy]|$+functions[fzf_src]"' \
   2> "$test_root/helpers.err") || fail "interactive zsh could not load shell helpers"
-[ "$helper_state" = '0|0|1|0' ] || \
+[ "$helper_state" = '0|0|0|0' ] || \
   fail "interactive zsh loaded retired shell helpers"
 echo 'check-runtime: successful-history widget'
 cat > "$test_home/bin/atuin" <<'EOF'
@@ -234,9 +234,8 @@ case $fzf_opts in
   *--read0*ctrl-l:*ctrl-f:*) : ;;
   *) fail "Ctrl-T lost NUL mode or file preview bindings" ;;
 esac
-env -i HOME="$test_home" PATH="/usr/local/bin:/usr/bin:/bin" TERM=xterm \
-  bash -c '. "$HOME/.config/shell/functions/cpst"; declare -F cpy pst >/dev/null' || \
-  fail "Bash could not load clipboard helpers"
+[ -x "$test_home/bin/cpy" ] && [ -x "$test_home/bin/pst" ] || \
+  fail "standalone clipboard commands were not installed"
 [ ! -e "$test_home/.config/shell/functions/fzf_sources" ] && \
   [ ! -L "$test_home/.config/shell/functions/fzf_sources" ] || \
   fail "retired file-search helper was linked"

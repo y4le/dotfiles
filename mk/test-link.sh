@@ -108,8 +108,8 @@ fi
   fail "fresh link did not create the Herdr config"
 [ ! -e "$fresh_home/.local/state/herdr" ] || \
   fail "fresh link created Herdr runtime state"
-[ -L "$fresh_home/.config/shell/functions/cpst" ] || \
-  fail "fresh link did not create shell helpers under XDG config"
+[ -x "$fresh_home/bin/cpy" ] && [ -x "$fresh_home/bin/pst" ] || \
+  fail "fresh link did not install clipboard commands"
 [ ! -e "$fresh_home/.funcs" ] || \
   fail "fresh link created the legacy shell helper directory"
 [ -L "$fresh_home/.config/ideavim/ideavimrc" ] || \
@@ -381,8 +381,7 @@ fi
   fail "legacy tmux config link was not replaced"
 [ ! -e "$legacy_home/.funcs" ] || \
   fail "legacy shell helper links were not removed"
-[ -L "$legacy_home/.config/shell/functions/cpst" ] || \
-  fail "legacy shell helpers were not replaced"
+[ -x "$legacy_home/bin/pst" ] || fail "legacy clipboard commands were not installed"
 [ ! -e "$legacy_home/.ideavimrc" ] && [ ! -L "$legacy_home/.ideavimrc" ] || \
   fail "legacy IdeaVim config link was not removed"
 [ -L "$legacy_home/.config/ideavim/ideavimrc" ] || \
@@ -396,8 +395,7 @@ run_make "$folded_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected a folded legacy helper directory"
 [ ! -L "$folded_helper_home/.funcs" ] || \
   fail "link left a folded legacy helper directory"
-[ -L "$folded_helper_home/.config/shell/functions/cpst" ] || \
-  fail "link did not replace folded legacy helpers"
+[ -x "$folded_helper_home/bin/cpy" ] || fail "link did not install standalone clipboard command"
 
 echo "check-link: retired file-listing helper migration"
 retired_helper_home=$test_root/retired-helper-home
@@ -410,8 +408,8 @@ run_make "$retired_helper_home" link >/dev/null 2>&1 || \
   fail "link left the retired file-listing helper"
 [ -L "$retired_helper_home/bin/filez" ] || fail "link did not install filez"
 # Match Stow's relative-link format as well as the absolute fixture above.
-helper_link=$(readlink "$retired_helper_home/.config/shell/functions/cpst")
-ln -s "${helper_link%cpst}fzf_sources" \
+helper_link=$(readlink "$retired_helper_home/bin/cpy")
+ln -s "../../${helper_link%bin/cpy}.config/shell/functions/fzf_sources" \
   "$retired_helper_home/.config/shell/functions/fzf_sources"
 run_make "$retired_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected the relative retired-helper link"
@@ -419,17 +417,17 @@ run_make "$retired_helper_home" link >/dev/null 2>&1 || \
   fail "link left the relative retired-helper link"
 
 echo "check-link: unused helper links are retired without deleting user files"
-for retired in .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
+for retired in .config/shell/functions/cpst .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
   mkdir -p "$retired_helper_home/$(dirname "$retired")"
   ln -s "$repo/scripts/$retired" "$retired_helper_home/$retired"
 done
 run_make "$retired_helper_home" link >/dev/null 2>&1 || fail "unused helper migration failed"
-for retired in .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
+for retired in .config/shell/functions/cpst .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
   [ ! -L "$retired_helper_home/$retired" ] || fail "retired helper link survived: $retired"
   printf 'user helper\n' > "$retired_helper_home/$retired"
 done
 run_make "$retired_helper_home" link >/dev/null 2>&1 || fail "user-owned retired helper blocked link"
-for retired in .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
+for retired in .config/shell/functions/cpst .config/shell/functions/nav .config/shell/functions/y bin/compair.sh bin/benchmark.sh; do
   [ "$(cat "$retired_helper_home/$retired")" = 'user helper' ] || fail "user helper removed: $retired"
 done
 

@@ -1,7 +1,59 @@
 #!/bin/bash
 
-# This resolves to the stowed file in ~/.config/shell/functions at runtime.
-# shellcheck source=/dev/null
-. "$HOME/.config/shell/functions/cpst"
+# One implementation, exposed as cpy and the sibling pst symlink.
+# This process owns pipeline options; no clipboard code is sourced into Zsh.
+set -o pipefail
 
-cpy
+name=${0##*/}
+case $name in
+  cpy | pst) ;;
+  *) printf 'clipboard: invoke as cpy or pst\n' >&2; exit 2 ;;
+esac
+if [[ $# != 0 ]]; then
+  printf 'Usage: %s (no arguments; copy reads stdin, paste writes stdout)\n' "$name" >&2
+  exit 2
+fi
+
+copy_terminal() {
+  local data
+  if [[ -n ${TMUX:-} ]]; then
+    if ! command -v tmux >/dev/null 2>&1; then
+      printf 'cpy: tmux is required inside a tmux session\n' >&2
+      return 127
+    fi
+    # copy-pipe jobs have no controlling terminal. Let tmux choose its client.
+    tmux load-buffer -w -
+    return
+  fi
+  if ! { exec 3>/dev/tty; } 2>/dev/null; then
+    printf 'cpy: no controlling terminal for OSC 52 copy\n' >&2
+    return 1
+  fi
+  data=$(base64 | tr -d '\n') || return
+  printf '\e]52;c;%s\a' "$data" >&3
+}
+
+if [[ $name = cpy ]]; then
+  if [[ -n ${SSH_TTY:-} || -n ${SSH_CONNECTION:-} ]]; then
+    copy_terminal
+  elif command -v pbcopy >/dev/null 2>&1; then
+    pbcopy
+  elif [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v wl-copy >/dev/null 2>&1; then
+    wl-copy
+  elif [[ -n ${DISPLAY:-} ]] && command -v xclip >/dev/null 2>&1; then
+    xclip -i -sel c -f | xclip -i -sel p
+  else
+    copy_terminal
+  fi
+else
+  if command -v pbpaste >/dev/null 2>&1; then
+    pbpaste
+  elif [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v wl-paste >/dev/null 2>&1; then
+    wl-paste --no-newline
+  elif [[ -n ${DISPLAY:-} ]] && command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard -o
+  else
+    printf 'pst: no clipboard command found (pbpaste, wl-paste, xclip); over SSH, paste from your terminal\n' >&2
+    exit 1
+  fi
+fi

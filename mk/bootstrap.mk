@@ -149,7 +149,7 @@ _remove-legacy-functions:
 	done
 	@sh mk/remove-legacy-link.sh "$(HOME)/.funcs" "$(CURDIR)" "scripts/.funcs"
 	@rmdir "$(HOME)/.funcs" 2>/dev/null || true
-	@for name in fzf_sources nav y; do \
+	@for name in cpst fzf_sources nav y; do \
 		sh mk/remove-legacy-link.sh "$(HOME)/.config/shell/functions/$$name" "$(CURDIR)" "scripts/.config/shell/functions/$$name" || exit $$?; \
 	done
 	@for name in compair.sh benchmark.sh; do \

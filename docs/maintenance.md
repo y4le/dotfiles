@@ -233,6 +233,13 @@ sourced at the same point in Zsh startup.
 `make link` removes that symlink only when it points into this checkout.
 User-owned files and links to other locations are preserved.
 
+`cpy` and `pst` now share a standalone executable through a sibling symlink.
+Remove local rc/script references that source `functions/cpst`; invoke the
+commands from PATH instead. The unused `nav`, `y`/Ctrl-G, `compair.sh`, and
+`benchmark.sh` wrappers are retired. `make link` removes only this checkout's
+old links and preserves machine-local replacements. Start a fresh shell to
+apply removed functions, aliases, and bindings.
+
 ### Zsh local hooks
 
 Move existing local hooks to their new paths while preserving their contents:
