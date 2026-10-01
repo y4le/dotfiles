@@ -18,6 +18,9 @@ The [local/private configuration guide](../local-config.md) and
 - prefer small, reviewable changes
 - smoke-test bootstrap-affecting changes on a clean machine, container, or VM
 
+The [retirement inventory](retirement-candidates.md) records potential future
+removals, their configured use, and checks needed before making a decision.
+
 ## Optional follow-ups
 
 Only do these if they prove valuable in practice:
