@@ -56,6 +56,10 @@ candidate; no Haskell component or installer is provided today. Occasional
 standalone commands (`fd`, `wget`, `rclone`) remain local installations as
 previously decided.
 
+The [optional packs proposal](optional-packs.md) explores shared tool membership,
+selected mise configuration, and how other tools and OS setup could fit without
+changing the current defaults.
+
 The unused `link-linux` / `link-macos` shortcuts and the theme's redundant
 `autoload colors` were retired. Explicit `PLATFORM` arguments select linking;
 the prompt uses its own ANSI escapes. Successful-history search keeps popup
