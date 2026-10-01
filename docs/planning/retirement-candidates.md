@@ -41,15 +41,20 @@ Neovim declarations are in [`editing.lua`](../../nvim/.config/nvim/lua/plugins/e
 | --- | --- | --- |
 | NERDTree in Vim and Neovim | `<Space>sn` toggles the sidebar; `<Space>sN` reveals the current file. Neovim also maps `<Space>sR` to refresh. Both editors additionally have file pickers and Yazi. | Keep: the sidebar and reveal commands are frequently used and provide value beyond netrw, Yazi, and fuzzy pickers. |
 
-## Shell candidates with plugin provided commands
+## Shell decisions
 
-These declarations are in [`plugins.toml`](../../zsh/.config/sheldon/plugins.toml).
+`wfxr/forgit` is retained: its interactive shell Git helpers are actively used.
+`b4b4r07/zsh-vimode-visual` was retired; native Zsh vi mode remains enabled.
+The implicit `~/.ghcup/env` startup import and its PATH adjustment code were
+also retired. Machines that need Haskell can activate their local toolchain
+through `~/.config/zsh/hooks/env.zsh`.
 
-| Candidate | Current use | Decision and checks before retirement |
-| --- | --- | --- |
-| `wfxr/forgit` | Deferred shell plugin supplying interactive Git helpers. No public-config invocation or custom setting was found. | Check use of its plugin-provided aliases/functions and local overrides. Fugitive operates inside editors and is not an equivalent shell replacement. |
-| `b4b4r07/zsh-vimode-visual` | Deferred plugin extending Zsh's vi editing behavior. `.zshrc` explicitly enables vi mode, and the prompt responds to keymap changes. | Check visual selection/editing habits and interaction with vi mode, autosuggestions, and syntax highlighting before removing it. |
-| Optional ghcup startup integration | `.zshenv` sources `~/.ghcup/env` when present and preserves inherited PATH precedence. The public mise manifest does not install Haskell tools. | Check Haskell use on supported machines. Moving this to a machine-local environment hook is an alternative to dropping support; preserve noninteractive PATH behavior if still needed. |
+A potential future optional dependency pack is Haskell development: ghcup and
+its selected compiler/build tools, plus explicit environment activation.
+Most machines do not need that toolchain. This remains a future opt-in pack
+candidate; no Haskell component or installer is provided today. Occasional
+standalone commands (`fd`, `wget`, `rclone`) remain local installations as
+previously decided.
 
 ## Compatibility and convenience candidates
 

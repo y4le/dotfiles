@@ -43,33 +43,12 @@ for (( _dotfiles_i=${#_dotfiles_defaults}; _dotfiles_i >= 1; _dotfiles_i-- )); d
   fi
   _dotfiles_next=$path[(Ie)$_dotfiles_dir]
 done
-unset _dotfiles_defaults _dotfiles_dir _dotfiles_next _dotfiles_i
+unset _dotfiles_defaults _dotfiles_dir _dotfiles_next _dotfiles_i _dotfiles_shims
 
 # user-level npm packages
 export NPM_GLOBALS="${XDG_DATA_HOME:-$HOME/.local/share}/npm"
 export NPM_CONFIG_PREFIX="$NPM_GLOBALS"
 path+=("$NPM_GLOBALS/bin")
-
-# Import Haskell settings without letting its env file reorder inherited paths.
-if [[ -f $HOME/.ghcup/env ]]; then
-  typeset -a _dotfiles_ghcup_before _dotfiles_ghcup_added
-  _dotfiles_ghcup_before=($path)
-  source $HOME/.ghcup/env
-  _dotfiles_ghcup_added=(${path:|_dotfiles_ghcup_before})
-  path=($_dotfiles_ghcup_before)
-  # New ghcup directories follow user bins/shims and precede default system bins.
-  _dotfiles_ghcup_after=0
-  for _dotfiles_dir in "$HOME/bin" "$HOME/.local/bin" "$_dotfiles_shims"; do
-    _dotfiles_ghcup_index=$path[(Ie)$_dotfiles_dir]
-    (( _dotfiles_ghcup_index > _dotfiles_ghcup_after )) &&
-      _dotfiles_ghcup_after=$_dotfiles_ghcup_index
-  done
-  path=(${path[1,_dotfiles_ghcup_after]} $_dotfiles_ghcup_added
-    ${path[_dotfiles_ghcup_after+1,-1]})
-  unset _dotfiles_ghcup_before _dotfiles_ghcup_added _dotfiles_ghcup_after
-  unset _dotfiles_ghcup_index _dotfiles_dir
-fi
-unset _dotfiles_shims
 
 # Keep cargo-installed utilities available after mise's pinned Rust shims.
 if [[ -d $HOME/.cargo/bin ]]; then

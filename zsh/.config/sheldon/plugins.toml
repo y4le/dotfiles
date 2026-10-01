@@ -39,8 +39,3 @@ apply = ["defer"]
 github = "zsh-users/zsh-autosuggestions"
 rev = "85919cd1ffa7d2d5412f6d3fe437ebdbeeec4fc5"
 apply = ["defer"]
-
-[plugins.zsh-vimode-visual]
-github = "b4b4r07/zsh-vimode-visual"
-rev = "1e39cf896d87e367f76d84f8db4a79506fc556c1"
-apply = ["defer"]

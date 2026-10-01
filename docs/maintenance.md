@@ -272,6 +272,20 @@ apply removed functions, aliases, and bindings. The sourced `y` wrapper
 remains installed for shell Ctrl-G navigation; `make link` restores its link
 if a previous cleanup removed it.
 
+### Retired shell integrations
+
+`zsh-vimode-visual` was removed from Sheldon; native Zsh vi mode remains.
+Run `make sheldon-plugins` to rebuild an existing startup cache, then start a
+new shell. The generated cache can still load the retired plugin until rebuilt.
+Forgit's interactive Git helpers remain enabled.
+
+Machines using a locally installed Haskell toolchain can explicitly source
+`~/.ghcup/env` from `~/.config/zsh/hooks/env.zsh`. That hook runs in all shells
+before portable PATH defaults, so paths prepended by the env file take
+precedence over managed bins and mise shims. The retired automatic import
+placed new Haskell paths after those bins. Existing Haskell installations
+are retained; a future optional development pack remains a planning candidate.
+
 ### Zsh local hooks
 
 Move existing local hooks to their new paths while preserving their contents:
