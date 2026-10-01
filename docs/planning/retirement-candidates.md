@@ -28,7 +28,11 @@ with explicit native commands. Vim and Neovim disable swap files while retaining
 persistent undo and backups. NERDTree is retained in both editors for the
 frequently used `<Space>sn` sidebar and `<Space>sN` reveal commands.
 
-## Editor decisions and remaining candidates
+Neovim also retires `mini.nvim`, whose only configured module was `mini.misc`
+for zoom. `<Space>z` and `:Zoom` now use a native temporary tab, preserving the
+original split layout and returning the zoomed buffer and cursor.
+
+## Retained editor behavior
 
 Vim declarations are in [`plugins.vim`](../../vim/.vim/config/plugins.vim).
 Neovim declarations are in [`editing.lua`](../../nvim/.config/nvim/lua/plugins/editing.lua).
@@ -36,7 +40,6 @@ Neovim declarations are in [`editing.lua`](../../nvim/.config/nvim/lua/plugins/e
 | Candidate | Current use | Decision and checks before retirement |
 | --- | --- | --- |
 | NERDTree in Vim and Neovim | `<Space>sn` toggles the sidebar; `<Space>sN` reveals the current file. Neovim also maps `<Space>sR` to refresh. Both editors additionally have file pickers and Yazi. | Keep: the sidebar and reveal commands are frequently used and provide value beyond netrw, Yazi, and fuzzy pickers. |
-| The complete `mini.nvim` repository | Neovim config initializes `mini.misc` and uses `mini.misc.zoom()` for `<Space>z`. No other mini modules are configured. | Consider using the standalone module if it offers the same supported behavior. Preserve zoom; verify the replacement's pin and restore behavior before changing the dependency. |
 
 ## Shell candidates with plugin provided commands
 

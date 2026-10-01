@@ -1,5 +1,9 @@
 local sessions = require("config.sessions")
 
+vim.api.nvim_create_user_command("Zoom", function()
+  require("config.zoom").toggle()
+end, { desc = "Toggle window zoom" })
+
 local function command(name, action, description)
   vim.api.nvim_create_user_command(name, function(opts)
     action(opts.args ~= "" and opts.args or sessions.default_name())

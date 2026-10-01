@@ -24,23 +24,6 @@ return {
     },
   },
   {
-    "nvim-mini/mini.nvim",
-    event = "VeryLazy",
-    keys = {
-      {
-        "<leader>z",
-        function()
-          require("mini.misc").zoom()
-        end,
-        desc = "Zoom window",
-      },
-    },
-    version = false,
-    config = function()
-      require("mini.misc").setup()
-    end,
-  },
-  {
     "nvim-orgmode/orgmode",
     ft = { "org" },
     cmd = { "Org", "OrgAgenda", "OrgCapture", "OrgTodo" },

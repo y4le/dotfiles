@@ -255,6 +255,15 @@ Neovim loads `lua/config/`, the local hook, then lazy.nvim with specs from
 `lua/plugins/`. `lazy-lock.json` pins plugin commits; startup does not install
 missing plugins or check for updates.
 
+Neovim's `<Space>z` / `:Zoom` opens the current split in a temporary tab. Toggle
+again from either tab to return its buffer and cursor and focus the original
+split. Other tabs can be zoomed independently. Sidebar and split commands work in the temporary
+tab; toggling back closes it with ordinary buffer safeguards. Closing
+it manually also leaves the original layout intact. If the original split or
+zoom window was closed, toggling releases zoom state and keeps the remaining
+work as an ordinary tab. Saved sessions keep the temporary tab as an ordinary
+tab. A single window is already full size.
+
 Both editors disable swap files and retain persistent undo and backups. Vim
 uses its stock TypeScript and Markdown runtime and explicit `:mkview` /
 `:loadview` commands for saved views.

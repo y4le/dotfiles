@@ -44,6 +44,7 @@ map("n", "#", "#zz", { desc = "Search word under cursor backward" })
 
 map("n", "<leader>%", "<Cmd>vsplit<CR>", { desc = "Vertical split" })
 map("n", '<leader>"', "<Cmd>split<CR>", { desc = "Horizontal split" })
+map("n", "<leader>z", "<Cmd>Zoom<CR>", { desc = "Toggle window zoom" })
 
 map("n", "H", "<Cmd>tabprevious<CR>", { desc = "Previous tab" })
 map("n", "L", "<Cmd>tabnext<CR>", { desc = "Next tab" })
