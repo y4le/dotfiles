@@ -53,6 +53,7 @@ endif
 
 plan: ## [offline] preview selected tools, plugins, and link changes
 	@$(MAKE) --no-print-directory profile
+	@sh mk/plan-mise-tools.sh "$(CURDIR)" "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" "$(PROFILE_TOOLS)"
 	@$(MAKE) --no-print-directory link-plan
 
 link: ## [offline] link selected dotfiles and remove unselected add-on links

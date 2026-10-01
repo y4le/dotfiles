@@ -96,7 +96,7 @@ if grep -n 'mise\.run' Makefile mk/config.mk mk/tools.mk mk/vim-plugins.sh mk/sh
   fail "mise.run remains in bootstrap code"
 fi
 if grep -Eiq '^[[:space:]]*("[^"]*herdr[^"]*"|herdr)[[:space:]]*=' \
-  mise/.config/mise/config.toml 2>/dev/null; then
+  setup/tools.toml 2>/dev/null; then
   fail "Herdr remains configured through mise instead of verified download pins"
 fi
 if grep -nE 'crate\.sh|SHELDON_URL|SHELDON_REPO|VIM_PLUG_URL|vim-plug/master|bash -s' \

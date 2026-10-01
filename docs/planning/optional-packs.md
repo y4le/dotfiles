@@ -3,10 +3,9 @@
 Design pass with Claude Fable, 2026-10-01. This is a proposal; the current
 profile behavior documented in [setup](../setup.md) and [design](../design.md)
 still applies. Catalog discovery, shared tool references, and explicit complete
-selection saving are now implemented. Owned mise fragment rendering is in the
-preparatory stage; the global catalog pins still apply. Effective editor and
-Neovim tool detection are implemented. The settings-only cutover and development
-pack defaults are the next slices. No additional installers
+selection saving are now implemented. Owned mise fragment rendering, effective editor/Neovim tool detection, and the
+settings-only catalog cutover are implemented. Development pack defaults are
+the next slice. No additional installers
 are provided by this document.
 
 ## Recommendation

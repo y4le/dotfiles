@@ -79,7 +79,7 @@ for mode in fail empty syntax delimiter; do
 done
 
 echo "check-fzf: real bundled widgets, completion, and Atuin precedence"
-real_fzf=${DOTFILES_TEST_FZF:-$(sh mk/find-fzf.sh "${HOME}/.local/bin/mise" "$repo/mise/.config/mise/config.toml" 2>/dev/null || true)}
+real_fzf=${DOTFILES_TEST_FZF:-$(sh mk/find-fzf.sh "${HOME}/.local/bin/mise" "$repo/setup/tools.toml" 2>/dev/null || true)}
 if [ -n "$real_fzf" ] && "$real_fzf" --zsh >/dev/null 2>&1; then
   restore real >/dev/null
   : > "$fzf_log"

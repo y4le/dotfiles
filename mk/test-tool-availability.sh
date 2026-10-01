@@ -82,7 +82,7 @@ if [ -n "$nvim_bin" ] && DOTFILES_PINS_FILE="$repo/setup/pins/downloads.txt" \
   printf '[settings]\nauto_install = false\nexec_auto_install = false\n' > "$home/.config/mise/config.toml"
   rm "$shims/nvim"
   ln -s "$real_mise" "$shims/nvim"
-  nvim_version=$(sed -n 's/^"aqua:neovim\/neovim" = "\([^"]*\)"/\1/p' "$repo/mise/.config/mise/config.toml")
+  nvim_version=$(sed -n 's/^"aqua:neovim\/neovim" = "\([^"]*\)"/\1/p' "$repo/setup/tools.toml")
   real_resolve() (
     cd "$1"
     env -i HOME="$home" PATH="$shims:$system:/usr/bin:/bin" \

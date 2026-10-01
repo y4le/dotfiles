@@ -75,9 +75,9 @@ jobs:
         run: |
           make mise
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          MISE_GLOBAL_CONFIG_FILE="$PWD/mise/.config/mise/config.toml" \
+          MISE_GLOBAL_CONFIG_FILE="$PWD/setup/tools.toml" \
             "$HOME/.local/bin/mise" install "aqua:neovim/neovim" "aqua:junegunn/fzf"
-          nvim_bin="$(MISE_GLOBAL_CONFIG_FILE="$PWD/mise/.config/mise/config.toml" \
+          nvim_bin="$(MISE_GLOBAL_CONFIG_FILE="$PWD/setup/tools.toml" \
             "$HOME/.local/bin/mise" which nvim)"
           "$nvim_bin" --version | head -1
           make nvim-lazy
@@ -155,7 +155,7 @@ jobs:
           test -x "$SMOKE_HOME/.local/bin/mise"
           HOME="$SMOKE_HOME" sh mk/pinned.sh status sheldon "$SMOKE_HOME/.local/bin/sheldon"
           test -x "$SMOKE_HOME/.local/bin/sheldon"
-          HOME="$SMOKE_HOME" MISE_GLOBAL_CONFIG_FILE="$GITHUB_WORKSPACE/mise/.config/mise/config.toml" \
+          HOME="$SMOKE_HOME" MISE_GLOBAL_CONFIG_FILE="$GITHUB_WORKSPACE/setup/tools.toml" \
             "$SMOKE_HOME/.local/bin/mise" which nvim >/dev/null
           HOME="$SMOKE_HOME" make check-nvim-first-open
 

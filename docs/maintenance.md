@@ -44,10 +44,16 @@ in `~/.config/mise/config.local.toml` instead. Foreign files, symlinks, and a
 fragment owned by another checkout are rejected before tools are downloaded.
 `make clean` removes only this checkout's marked fragment and preserves others.
 
-This is the preparatory migration stage: the linked global config still holds
-all pins and overrides the fragment. The catalog and settings-only cutover will
-follow separately. Run `make link` on existing machines before that cutover to
-prepare the fragment without changing their current tool activation.
+The linked global config now contains settings only. Pins come from the
+selected fragment; the full version catalog lives in `setup/tools.toml`.
+Machines that applied the preparatory release already have a fragment. If you
+skipped it, run offline `make link` immediately after pulling, before using
+managed tools, then `make setup-user` for missing installations. Make, Git, and
+Stow must be available independently of mise shims.
+
+If you move the checkout, the old marker will prevent replacement. Back up
+`~/.config/mise/conf.d/dotfiles.toml` outside `conf.d`, then rerun `make link`
+from the new checkout. Preserve any local overrides in `config.local.toml`.
 
 After linking new helper files, restart Zsh and Neovim. `EDITOR`/`VISUAL` use a
 launcher that resolves Neovim or Vim when invoked, so a retained unconfigured
@@ -124,7 +130,7 @@ Stow package has one owner. Several packs may reference the same tool key; each
 pack includes its runtime prerequisites directly (Node for npm, Python and uv
 for pipx). `full` is a curated preset, while validation checks the whole catalog.
 Put tool versions in
-[`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml), not the
+[`setup/tools.toml`](../setup/tools.toml), not the
 profile file. Update the expected full or lite sets in `mk/test-profiles.sh`
 when membership changes. Run `make check-profiles` to check package paths and
 the exact mise key set, then `make check` to exercise linking and profile
@@ -133,7 +139,7 @@ are managed separately.
 
 ## Update pins
 
-Edit tool versions in [`mise/.config/mise/config.toml`](../mise/.config/mise/config.toml)
+Edit tool versions in [`setup/tools.toml`](../setup/tools.toml)
 and follow the [pin review procedures](../setup/pins/README.md) for bootstrap
 artifacts and Zsh plugins. After changing the fzf binary pin, rebuild its
 bundled shell integration with `make tools sheldon-plugins`.

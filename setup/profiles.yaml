@@ -1,4 +1,4 @@
-# Profiles select shallow components. Tool versions stay in mise/config.toml.
+# Profiles select shallow components. Tool versions stay in setup/tools.toml.
 # Native packages, the machine-local package, and DESKTOP remain separate.
 components:
   core:

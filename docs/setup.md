@@ -125,14 +125,16 @@ checkout:
 ```sh
 make mise
 MISE_CEILING_PATHS="$(pwd -P)" \
-  MISE_GLOBAL_CONFIG_FILE="$PWD/mise/.config/mise/config.toml" \
+  MISE_GLOBAL_CONFIG_FILE="$PWD/setup/tools.toml" \
   "$HOME/.local/bin/mise" install node
 ```
 
 This restores the verified mise binary and installs the checked-in Node version.
-It does not change the saved profile or install the other dev tools. The current
-global mise configuration exposes all catalog pins once `make link` has linked
-the `mise` package, so Node is available in new managed shells even on lite.
+It does not change the saved profile, install other dev tools, or activate Node
+when omitted from the selection. Use `WITH=dev` to manage development tools,
+or select Node in project configuration or `~/.config/mise/config.local.toml`.
+The global config contains settings only; `make link` writes the selected pins
+to `~/.config/mise/conf.d/dotfiles.toml` from `setup/tools.toml`.
 Project-specific mise configuration can still select a different version.
 Avoid `mise use -g` to change this pin: the global config is a symlink into the
 checkout. Put machine-specific overrides in `~/.config/mise/config.local.toml`
@@ -145,14 +147,16 @@ make plan
 ```
 
 The plan changes nothing. It prints the selected tools, plugin steps, packages,
-links, and conflicts; [resolve conflicts](maintenance.md#resolve-link-conflicts)
+links, conflicts, missing selected installations, and installed tools outside
+the selection; [resolve conflicts](maintenance.md#resolve-link-conflicts)
 before applying the configuration. When changing from full to lite, it also
 previews removal of managed add-on links. Run `make PLAN_VERBOSE=1 plan` for the
 full Stow trace. Use `make link-plan` for a link-only preview.
 
 To apply only the links without installing tools or plugins, run `make link`.
 It removes unselected managed add-on links, but leaves installed tools, plugins,
-runtime data, and user-owned files alone. `make setup-user` in the next section
+runtime data, and user-owned files alone. A retained mise shim needs a selected,
+project, or local pin to work. `make setup-user` in the next section
 also links the configuration, so there is no need to run `make link` first.
 After linking, `~/.zshrc` and `~/.vimrc` point into the checkout, and directories
 such as `~/.config/zsh/` remain real directories.

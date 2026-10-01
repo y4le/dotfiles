@@ -30,7 +30,7 @@ tools are optional and are not installed by `make tools`.
 Occasional utilities such as `fd`, `wget`, and `rclone` are installed locally
 when needed; the public setup does not install or pin them. Use the machine's
 package manager or machine-local tool configuration rather than adding them
-to the tracked mise config.
+to `setup/tools.toml`.
 
 ## Vim files, buffers, and recursive search
 
@@ -75,7 +75,7 @@ these are the main entry points.
 | `packs`, `pack NAME=...` | Discover packs or inspect one payload and restore steps | Offline |
 | `profile` | Show selected components, Stow packages, tools, and restore steps | Offline |
 | `profile-set` | Save `PROFILE` and `WITH` to ignored `profile.mk` | Offline |
-| `plan` | Show profile and preview link changes | Offline |
+| `plan` | Show selection, installation inventory, and link/configuration changes | Offline |
 | `link-plan` | Preview selected links and detect conflicts | Offline |
 | `link` | Restow selected packages, prepare the owned mise fragment, remove unselected links, ensure a local Git config | Offline |
 | `setup-user` | Preflight mise file ownership, then run `tools`, `link`, and `plugins` | Network; no sudo |
@@ -112,14 +112,16 @@ arguments (`make PROFILE=lite WITH=yazi plan`); environment variables with
 those names are ignored. `profile-set` requires explicit `PROFILE` and `WITH` and saves the complete
 choice for this checkout;
 absent a saved choice, `PROFILE=full`. Shrinking a profile does not prune
-installed binaries. An old installation cannot satisfy a newer pin. If an
-unselected tool's pin changes, its leftover shim uses a same-named system
-executable under mise's default system fallback, or reports the missing pin.
-Select the component and run `make tools` to install the new version.
-The tracked mise config still lists all pins, so running bare `mise install`
-can install the full set; use Make for profile-aware installs. A one-command
-`PROFILE` or `WITH` override does not persist; repeat it for each command or
-use `profile-set` before running `plan` and `setup-user`.
+installed binaries. An old installation cannot satisfy a newer pin. A retained
+shim needs a selected, project, or local pin; otherwise it may fall back to a
+system copy or fail. Select the pack and run `make mise-tools link` to install
+and activate its pinned versions. `setup/tools.toml` holds the full catalog;
+the linked global config holds settings only. `make link` writes selected pins
+to `~/.config/mise/conf.d/dotfiles.toml`. Bare `mise install` follows effective
+configuration, including project and local overrides, while Make installs the
+explicit selection against the catalog. A one-command `PROFILE` or `WITH`
+override does not persist; repeat it for each command or use `profile-set`
+before running `plan` and `setup-user`.
 Zsh exports `EDITOR=dotfiles-vim` and `VISUAL=dotfiles-vim`. The launcher chooses
 usable Neovim at invocation time, falling back to Vim. Ordinary commands use
 presence checks; mise shims require an offline `mise which` lookup, with system
@@ -321,7 +323,7 @@ does not relocate them.
 | --- | --- | --- |
 | Zsh | `~/.zshenv`, `~/.zshrc`, `~/.config/zsh/` | History under `~/.local/state/zsh/`; fallback at `~/.history` |
 | Sheldon | `~/.config/sheldon/plugins.toml` | `~/.local/share/sheldon/`; startup cache under `~/.cache/dotfiles/` |
-| mise | `~/.config/mise/config.toml` | `~/.local/share/mise/`; bootstrap binary in `~/.local/bin/` |
+| mise | Settings in `~/.config/mise/config.toml`, selected pins in `~/.config/mise/conf.d/dotfiles.toml`, overrides in `config.local.toml` | `~/.local/share/mise/`; bootstrap binary in `~/.local/bin/` |
 | Herdr | `~/.config/herdr/config.toml` | Pinned binary in `~/.local/bin/`; sockets, logs, session snapshots, and `.plugins.lock` stay local under `~/.config/herdr/`; downloaded agent manifests and client state use `~/.local/state/herdr/` |
 | Git | `~/.config/git/config`, local `~/.gitconfig` | Per-repository state |
 | Vim | `~/.vimrc`, `~/.vim/` | Plugins under `~/.local/share/vim/plugged/`; generated state under `~/.local/state/vim/` |

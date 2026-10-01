@@ -5,7 +5,7 @@ repo=$(CDPATH='' cd -P -- "${0%/*}/.." && pwd -P)
 # shellcheck source=mk/test-lib.sh
 . "$repo/mk/test-lib.sh"
 test_init check-mise-selection
-catalog=$repo/mise/.config/mise/config.toml
+catalog=$repo/setup/tools.toml
 home=$test_root/home
 mkdir -p "$home"
 lite=$(sh "$repo/mk/profile.sh" tools lite '')

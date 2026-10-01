@@ -56,7 +56,7 @@ SHELDON_CONFIG_FILE ?= $(HOME)/.config/sheldon/plugins.toml
 SHELDON_DATA_DIR    ?= $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/share)/sheldon
 
 MISE_BIN            := $(HOME)/.local/bin/mise
-MISE_CONFIG_FILE    := $(CURDIR)/mise/.config/mise/config.toml
+MISE_CONFIG_FILE    := $(CURDIR)/setup/tools.toml
 DOWNLOAD_PINS_FILE  := setup/pins/downloads.txt
 HERDR_BIN           := $(HOME)/.local/bin/herdr
 HERDR_CONFIG_FILE   := $(CURDIR)/herdr/.config/herdr/config.toml

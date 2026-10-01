@@ -7,7 +7,7 @@ data=${DOTFILES_PROFILE_DATA_FILE:-$repo/setup/profiles.yaml}
 action=${1:-}
 profile=${2-full}
 addons=${3:-}
-catalog=${DOTFILES_TOOL_CATALOG:-$repo/mise/.config/mise/config.toml}
+catalog=${DOTFILES_TOOL_CATALOG:-$repo/setup/tools.toml}
 catalog_tools=$(awk -v action=keys -f "$repo/mk/catalog.awk" "$catalog") || exit 1
 
 case "$action" in

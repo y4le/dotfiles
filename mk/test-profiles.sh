@@ -145,7 +145,7 @@ if make -n WITH= profile-set >/dev/null 2>&1; then
 fi
 
 echo "check-profiles: unsupported tool subtables fail instead of disappearing"
-cp mise/.config/mise/config.toml "$test_root/subtable.toml"
+cp setup/tools.toml "$test_root/subtable.toml"
 printf '\n[tools.extra]\nversion = "1.0.0"\n' >> "$test_root/subtable.toml"
 if DOTFILES_TOOL_CATALOG="$test_root/subtable.toml" sh mk/profile.sh validate >"$test_root/subtable.log" 2>&1; then
   fail "catalog silently ignored a tool subtable"

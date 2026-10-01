@@ -28,7 +28,7 @@ test_root=$(mktemp -d) || exit 1
 original_home=$HOME
 tmux_bin=$(command -v tmux 2>/dev/null || true)
 nvim_bin=$(sh mk/find-nvim.sh "$(command -v mise 2>/dev/null || true)" \
-  "$(pwd -P)/mise/.config/mise/config.toml" 2>/dev/null || true)
+  "$(pwd -P)/setup/tools.toml" 2>/dev/null || true)
 tmux_test_socket=/tmp/dotfiles-tmux-test.$$
 cleanup() {
   if [ -n "$tmux_bin" ]; then

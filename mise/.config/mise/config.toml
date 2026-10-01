@@ -2,23 +2,3 @@
 auto_install = false
 exec_auto_install = false
 not_found_auto_install = false
-
-[tools]
-# Catalog order is installation order; keep runtimes before their consumers.
-"aqua:junegunn/fzf" = "0.70.0"
-"aqua:BurntSushi/ripgrep" = "15.1.0"
-"aqua:sharkdp/bat" = "0.26.1"
-"aqua:dandavison/delta" = "0.19.2"
-"aqua:ajeetdsouza/zoxide" = "0.9.9"
-"aqua:atuinsh/atuin" = "18.19.0"
-"aqua:sxyazi/yazi" = "26.1.22"
-"aqua:neovim/neovim" = "0.11.6"
-go = "1.26.1"
-node = "24.14.1"
-python = "3.14.3"
-rust = { version = "1.94.0", components = "rust-analyzer" }
-"aqua:astral-sh/uv" = "0.12.17"
-"npm:typescript-language-server" = "5.1.3"
-"pipx:basedpyright" = "1.34.0"
-"pipx:ruff" = "0.13.0"
-"aqua:LuaLS/lua-language-server" = "3.15.0"

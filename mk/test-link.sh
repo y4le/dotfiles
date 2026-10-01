@@ -97,6 +97,11 @@ fi
   fail "fresh link did not prepare the owned mise selection"
 [ "$(head -n 1 "$fresh_home/.config/mise/conf.d/dotfiles.toml")" = "# dotfiles mise selection: $repo" ] || \
   fail "link used the wrong checkout ownership marker"
+[ "$(awk -v action=keys -f "$repo/mk/catalog.awk" "$fresh_home/.config/mise/conf.d/dotfiles.toml")" = "$(sh "$repo/mk/profile.sh" tools full '')" ] || \
+  fail "fresh link did not activate exactly the selected pins"
+if grep -q '^\[tools\]' "$fresh_home/.config/mise/config.toml"; then
+  fail "global config still exposes the full catalog"
+fi
 [ -L "$fresh_home/.zshrc" ] || fail "fresh link did not create .zshrc"
 [ "$(readlink "$fresh_home/.zshrc")" = "../home/dev/dotfiles/zsh/.zshrc" ] || \
   fail "fresh .zshrc points to the wrong source"
