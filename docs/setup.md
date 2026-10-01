@@ -204,7 +204,7 @@ not install the complete desktop stack.
 | `dex` | XDG application autostart | dex |
 | `pkill` | Caps/Num Lock indicator updates | Debian/Ubuntu `procps`; Arch `procps-ng` |
 | `xsetroot` | Optional background colour in `.xsessionrc` | Debian/Ubuntu `x11-xserver-utils`; Arch `xorg-xsetroot` |
-| Bash, Perl, `tr`, `grep`, `sed`, `sort`, `seq` | Workspace and media helper scripts | Shell/interpreter packages and standard text/core utilities |
+| Bash, POSIX shell, `tr`, `grep`, `sed`, `sort`, `seq` | Workspace and media helper scripts | Shell/interpreter packages and standard text/core utilities |
 
 Some distributions do not package `rofimoji`, including
 [Ubuntu 24.04](https://packages.ubuntu.com/search?keywords=rofimoji&searchon=names&suite=noble&section=all).
@@ -229,10 +229,13 @@ these configurations, then check the indicator with the actual keyboard
 mapping. See the [locking instructions](reference.md#linux-desktop-locking)
 for changes that require logging out and back in.
 
-If the media block's `instance` changes from `spotify` to `mpd`, `cmus`, or
-`rhythmbox`, its corresponding helper also needs `mpc`, `cmus-remote`, or
-`rhythmbox-client`. The workspace script is supplied at
-`~/bin/i3_switch_workspaces.sh`; `i3-msg` comes with the window manager.
+The media block uses playerctl for the MPRIS player named by `instance`
+(default `spotify`). Buttons 1/2/3 select previous/play-pause/next; scrolling
+adjusts volume. No player running produces no text; missing playerctl is
+visible in the bar. Separate mpc/cmus/rhythmbox adapters are retired.
+
+The workspace script is supplied at `~/bin/i3_switch_workspaces.sh`;
+`i3-msg` comes with the window manager.
 
 ### Linux status-bar scripts
 
