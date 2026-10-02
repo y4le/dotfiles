@@ -19,7 +19,8 @@ function! fzf#run(options) abort
   " omitting it lets fzf use the environment at invocation time.
   let g:picker_options = copy(a:options)
   if has_key(a:options, 'source')
-    let command = '(' . a:options.source . ')'
+    " system() adds an outer group; keep Bash from reading it as (( arithmetic.
+    let command = ' ( ' . a:options.source . ' ) '
     if has_key(a:options, 'dir')
       let command = 'cd ' . shellescape(a:options.dir) . ' && ' . command
     endif
@@ -147,13 +148,15 @@ printf 'tracked\n' > "$test_root/tracked/tracked.txt"
 printf 'untracked\n' > "$test_root/tracked/untracked.txt"
 git -C "$test_root/tracked" add tracked.txt
 
-echo "check-vim-pickers: file and buffer pickers work without MRU or Buffergator"
-env -i HOME="$test_root/home" PATH="$PATH" LC_ALL=C \
-  DOTFILES_REPO="$repo" DOTFILES_TEST_ROOT="$test_root" DOTFILES_RESULT="$test_root/result" \
-  "$vim_bin" -Nu NONE -i NONE -n -es -S "$test_root/fzf-test.vim" || {
-    [ ! -f "$test_root/result" ] || cat "$test_root/result" >&2
-    fail "fzf source selection failed";
-  }
+for picker_shell in sh bash; do
+  echo "check-vim-pickers: file and buffer pickers with $picker_shell, without MRU or Buffergator"
+  env -i HOME="$test_root/home" PATH="$PATH" LC_ALL=C \
+    DOTFILES_REPO="$repo" DOTFILES_TEST_ROOT="$test_root" DOTFILES_RESULT="$test_root/result" \
+    "$vim_bin" --cmd "set shell=$picker_shell" -Nu NONE -i NONE -n -es -S "$test_root/fzf-test.vim" || {
+      [ ! -f "$test_root/result" ] || cat "$test_root/result" >&2
+      fail "fzf source selection failed with $picker_shell";
+    }
+done
 
 cat > "$test_root/bin/yazi" <<'EOF'
 #!/bin/sh
