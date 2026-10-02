@@ -47,7 +47,7 @@ awk 'BEGIN { changed = 0 } !changed && /https:\/\// { sub("https://", "http://")
 expect_lint_failure "a non-HTTPS URL" "$bad"
 
 awk 'BEGIN { changed = 0 } !changed && $5 ~ /\/releases\/download\// {
-  sub(/\/releases\/download\/[^/]+\//, "/releases/download/master/", $5); changed = 1
+  sub(/\/releases\/download\/[^\/]+\//, "/releases/download/master/", $5); changed = 1
 } { print }' "$real_pins" > "$bad"
 expect_lint_failure "a mutable URL" "$bad"
 

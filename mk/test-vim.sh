@@ -17,6 +17,8 @@ if ! command -v vim >/dev/null 2>&1; then
 fi
 
 test_root=$(mktemp -d) || exit 1
+# macOS temp paths can be aliases; compare the physical paths tools return.
+test_root=$(CDPATH='' cd -P -- "$test_root" && pwd -P) || exit 1
 trap 'rm -rf "$test_root"' EXIT
 trap 'rm -rf "$test_root"; exit 1' HUP INT TERM
 

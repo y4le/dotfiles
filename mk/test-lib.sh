@@ -5,6 +5,8 @@
 test_init() {
   test_label=$1
   test_root=$(mktemp -d) || exit 1
+  # macOS temp paths can be aliases; compare the physical paths tools return.
+  test_root=$(CDPATH='' cd -P -- "$test_root" && pwd -P) || exit 1
   trap test_cleanup EXIT
   trap 'exit 1' HUP INT TERM
 }
