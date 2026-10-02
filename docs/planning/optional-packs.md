@@ -6,6 +6,8 @@ projection and settings-only cutover, effective tool detection, and optional
 language packs. Current behavior and recipes live in [setup](../setup.md) and
 [design](../design.md). Native/OS providers and Haskell remain future design
 work; this document preserves the decisions behind that boundary.
+Qualification results and remaining platform checks are recorded in the
+[setup qualification](qualification-2026-10-01.md).
 
 The agreed `full` preset is core, Atuin, Yazi, Neovim with LuaLS, Herdr, and
 `node`. Node supports everyday CLI runtimes such as npm-installed Codex and
