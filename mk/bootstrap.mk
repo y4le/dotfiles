@@ -27,6 +27,7 @@ plugins: ## [network] restore shell, Vim, Neovim, and Herdr plugins
 system-packages: ## [sudo, network] install native packages
 ifeq ($(PACKAGE_MANAGER),brew)
 	@brew_bin="$$(BREW_SEARCH_PATHS='$(BREW_SEARCH_PATHS)' sh mk/find-brew.sh)" || exit $$?; \
+	sh mk/check-brew-writable.sh "$$brew_bin" || exit $$?; \
 	packages="$$(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$$/d' $(BREW_PACKAGES_FILE))"; \
 	if [ -n "$$packages" ]; then \
 		HOMEBREW_NO_AUTO_UPDATE=1 "$$brew_bin" install $$packages; \

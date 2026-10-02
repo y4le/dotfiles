@@ -8,6 +8,11 @@ if [ -n "$stow_bin" ]; then
   exit 0
 fi
 
+if [ -x "${HOME:-}/.local/bin/stow" ]; then
+  printf '%s\n' "$HOME/.local/bin/stow"
+  exit 0
+fi
+
 if [ "${1:-}" = macos ]; then
   case $0 in
     */*) script_dir=${0%/*} ;;

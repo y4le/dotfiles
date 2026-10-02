@@ -25,7 +25,7 @@ candidate_bin=$test_root/candidate/bin
 danger_bin=$test_root/danger-bin
 brew_log=$test_root/brew.log
 danger_log=$test_root/danger.log
-mkdir -p "$live_bin" "$dead_bin" "$candidate_bin" "$danger_bin"
+mkdir -p "$live_bin" "$dead_bin" "$candidate_bin" "$danger_bin" "$test_root/live-prefix" "$test_root/candidate-prefix"
 
 write_live_brew() {
   destination=$1
@@ -34,6 +34,10 @@ write_live_brew() {
     '#!/bin/sh' \
     'if [ "${1:-}" = --prefix ]; then' \
     "  printf '%s\\n' '$prefix'" \
+    '  exit 0' \
+    'fi' \
+    'if [ "${1:-}" = --cellar ]; then' \
+    "  printf '%s\\n' '$prefix/Cellar'" \
     '  exit 0' \
     'fi' \
     'printf "no-auto=%s %s\n" "${HOMEBREW_NO_AUTO_UPDATE:-}" "$*" >> "$DOTFILES_BREW_LOG"' \
@@ -126,6 +130,59 @@ expected_packages=$(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' \
 [ "$(wc -l < "$brew_log" | tr -d ' ')" -eq 1 ] || \
   fail "system-packages called brew more than once"
 [ ! -s "$danger_log" ] || fail "system-packages ran a forbidden command"
+
+echo "check-brew: managed read-only installations fail before brew install"
+# A file is never a writable install directory, including when tests run as root.
+printf 'managed\n' > "$test_root/managed-prefix"
+write_live_brew "$live_bin/brew" "$test_root/managed-prefix"
+: > "$brew_log"
+if env -i HOME="$test_root/home" PATH="$live_bin:$base_path" BREW_SEARCH_PATHS= \
+  DOTFILES_BREW_LOG="$brew_log" DOTFILES_DANGER_LOG="$danger_log" \
+  make -s -C "$repo" PLATFORM=macos PACKAGE_MANAGER=brew system-packages \
+  > "$test_root/managed.out" 2>&1; then
+  fail "system-packages accepted a nonwritable managed prefix"
+fi
+grep -Fq 'user space' "$test_root/managed.out" || fail "managed failure omitted user-space guidance"
+grep -Fq 'make setup-user' "$test_root/managed.out" || fail "managed failure omitted setup-user"
+[ ! -s "$brew_log" ] || fail "read-only Homebrew was asked to install packages"
+[ ! -s "$danger_log" ] || fail "managed Homebrew failure attempted privileged installation"
+
+# Check both Cellar and locks when the prefix itself is writable.
+for directory in Cellar var/homebrew/locks; do
+  mkdir -p "$test_root/managed-directory/$(dirname "$directory")"
+  printf 'managed\n' > "$test_root/managed-directory/$directory"
+  write_live_brew "$live_bin/brew" "$test_root/managed-directory"
+  if DOTFILES_BREW_LOG="$brew_log" sh "$repo/mk/check-brew-writable.sh" "$live_bin/brew" \
+    > "$test_root/managed-directory.out" 2>&1; then
+    fail "guard accepted a blocked $directory"
+  fi
+  rm "$test_root/managed-directory/$directory"
+done
+
+# Exercise actual permissions when the current user is subject to them.
+mkdir -p "$test_root/readonly-prefix"
+chmod 555 "$test_root/readonly-prefix"
+if [ ! -w "$test_root/readonly-prefix" ]; then
+  write_live_brew "$live_bin/brew" "$test_root/readonly-prefix"
+  if sh "$repo/mk/check-brew-writable.sh" "$live_bin/brew" > "$test_root/readonly.out" 2>&1; then
+    fail "guard accepted a read-only prefix"
+  fi
+fi
+chmod 755 "$test_root/readonly-prefix"
+
+echo "check-brew: Intel prefix can be read-only while install directories are writable"
+mkdir -p "$test_root/intel-prefix/bin" "$test_root/intel-prefix/Cellar" "$test_root/intel-prefix/var/homebrew"
+chmod 555 "$test_root/intel-prefix"
+write_live_brew "$live_bin/brew" "$test_root/intel-prefix"
+sh "$repo/mk/check-brew-writable.sh" "$live_bin/brew" || fail "rejected a standard Intel-style prefix"
+chmod 755 "$test_root/intel-prefix"
+
+mkdir -p "$test_root/home/.local/bin"
+printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_root/home/.local/bin/stow"
+chmod +x "$test_root/home/.local/bin/stow"
+actual=$(env -i HOME="$test_root/home" PATH="$test_root/only-sh" \
+  sh "$repo/mk/find-stow.sh" macos)
+[ "$actual" = "$test_root/home/.local/bin/stow" ] || fail "did not find user-space Stow before Homebrew"
 
 : > "$brew_log"
 : > "$danger_log"

@@ -6,6 +6,7 @@ _require-stow:
 		echo "  apt install stow      # Debian/Ubuntu"; \
 		echo "  brew install stow     # macOS/Homebrew"; \
 		echo "  pacman -S stow        # Arch"; \
+		echo "  managed Mac: see user-space Stow in docs/setup.md"; \
 		exit 1; \
 	fi
 	@stow_version="$$($(STOW) --version 2>/dev/null | awk 'NR == 1 { print $$NF }')"; \

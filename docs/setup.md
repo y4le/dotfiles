@@ -72,6 +72,52 @@ Installer signature:
 sudo installer -pkg Homebrew.pkg -target /
 ```
 
+### Managed Macs with read-only Homebrew
+
+`make system-packages` checks the selected Homebrew binary directory, Cellar,
+and lock location before calling `brew install`. If any are not writable, use
+`make setup-user` with IT-supplied prerequisites. Keep the managed Homebrew;
+do not change `/opt/homebrew` ownership or install a second Homebrew.
+
+GNU Stow can be built with Perl and Make into `~/.local` without sudo. These
+commands use the [GNU Stow 2.4.1 source release](https://ftp.gnu.org/gnu/stow/)
+and verify its SHA-256 before extraction. Run them in a temporary build directory:
+
+```sh
+curl -fL -o stow-2.4.1.tar.gz https://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
+printf '%s  %s\n' \
+  2a671e75fc207303bfe86a9a7223169c7669df0a8108ebdf1a7fe8cd2b88780b \
+  stow-2.4.1.tar.gz | shasum -a 256 -c - &&
+  tar -xzf stow-2.4.1.tar.gz &&
+  (cd stow-2.4.1 && ./configure --prefix="$HOME/.local" && make && make install)
+export PATH="$HOME/.local/bin:$PATH"
+stow --version
+```
+
+ShellCheck supplies standalone macOS binaries in its
+[0.11.0 release](https://github.com/koalaman/shellcheck/releases/tag/v0.11.0).
+In a temporary download directory, select the archive for this Mac and verify
+its release asset checksum before installing:
+
+```sh
+case "$(uname -m)" in
+  arm64) arch=aarch64; checksum=339b930feb1ea764467013cc1f72d09cd6b869ebf1013296ba9055ab2ffbd26f ;;
+  x86_64) arch=x86_64; checksum=c2c15e08df0e8fbc374c335b230a7ee958c313fa5714817a59aa59f1aa594f51 ;;
+  *) echo "unsupported Mac architecture" >&2; exit 1 ;;
+esac
+archive="shellcheck-v0.11.0.darwin.$arch.tar.gz"
+curl -fL -o "$archive" "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/$archive" &&
+  printf '%s  %s\n' "$checksum" "$archive" | shasum -a 256 -c - &&
+  tar -xzf "$archive" &&
+  mkdir -p "$HOME/.local/bin" &&
+  cp shellcheck-v0.11.0/shellcheck "$HOME/.local/bin/shellcheck"
+shellcheck --version
+```
+
+`make link-plan` also finds `~/.local/bin/stow` before consulting Homebrew when
+Stow is absent from PATH. The other prerequisites listed above still apply;
+ask IT for missing native tools such as Zsh, tmux, or a compiler.
+
 ### Intel Macs
 
 The package installer supports Apple Silicon only. Keep a working
