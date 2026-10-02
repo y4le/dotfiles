@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 fail() { echo "check-yazi: $*" >&2; exit 1; }
 if ! command -v zsh >/dev/null 2>&1; then

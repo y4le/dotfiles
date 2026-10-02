@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 
 nvim_bin=$1

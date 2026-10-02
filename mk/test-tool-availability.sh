@@ -1,9 +1,11 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 repo=$(CDPATH='' cd -P -- "${0%/*}/.." && pwd -P)
-# shellcheck source=mk/test-lib.sh
-. "$repo/mk/test-lib.sh"
 test_init check-tool-availability
 original_home=$HOME
 original_data=${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}

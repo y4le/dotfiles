@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 fail() { echo "check-filez: $*" >&2; exit 1; }
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P)

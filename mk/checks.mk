@@ -33,7 +33,8 @@ check-system-packages: ## [offline] verify native package command failure handli
 
 check-vim: ## [offline] validate portable Vim configuration behavior
 	@sh mk/test-vim.sh
-	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" 2>/dev/null || true)"; \
+	@. ./mk/test-lib.sh; test_prepare_path "$(CURDIR)"; \
+	nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" 2>/dev/null || true)"; \
 		DOTFILES_TEST_NVIM="$$nvim_bin" sh mk/test-clipboard.sh || exit $$?; \
 		if [ -n "$$nvim_bin" ]; then \
 		DOTFILES_REPO="$(CURDIR)" "$$nvim_bin" --headless -u NONE -i NONE -n -l mk/test-nvim-config.lua || exit $$?; \
@@ -45,17 +46,20 @@ check-vim: ## [offline] validate portable Vim configuration behavior
 	fi
 
 check-nvim-first-open: ## [offline] verify named files after Neovim plugins are restored
-	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
+	@. ./mk/test-lib.sh; test_prepare_path "$(CURDIR)"; \
+	nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)")" || exit $$?; \
 		sh mk/test-nvim-first-open.sh "$$nvim_bin"
 
 check-nvim-bin: ## [offline] verify Neovim binary selection
 	@sh mk/test-nvim-bin.sh
 	@sh mk/test-mise-config.sh
 	@sh mk/test-mise-selection.sh
-	@nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" 2>/dev/null || true)"; \
+	@. ./mk/test-lib.sh; test_prepare_path "$(CURDIR)"; \
+	nvim_bin="$$(sh mk/find-nvim.sh "$(MISE_BIN)" "$(MISE_CONFIG_FILE)" 2>/dev/null || true)"; \
 		DOTFILES_TEST_NVIM="$$nvim_bin" sh mk/test-tool-availability.sh
 
 check-runtime: ## [offline] verify shell startup stays usable and offline
+	@sh mk/test-path.sh
 	@sh mk/test-runtime.sh
 	@sh mk/test-yazi.sh
 	@bash mk/test-filez.sh

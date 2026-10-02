@@ -476,3 +476,9 @@ home.
 physical checkout root. A parent directory's `mise.toml` or `.tool-versions`
 cannot replace the repo's tool versions. Interactive mise use outside these
 repo operations retains its normal project config behavior.
+
+Tests sanitize their inherited PATH before replacing HOME: real mise shim
+directories (including aliases) are removed, standalone test tools are resolved
+to physical binaries while the original configuration is available, and exported
+`MISE_*`/`__MISE_*` session settings are cleared. User-space binary directories
+remain available. Tests can still introduce their own fixture shims afterward.

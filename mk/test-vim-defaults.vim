@@ -1,9 +1,10 @@
+let initial_regexpengine = &regexpengine
 execute 'set runtimepath^=' . fnameescape($DOTFILES_REPO . '/vim/.vim')
 let $VIMHOME = $DOTFILES_REPO . '/vim/.vim'
 let $VIMSTATE = $DOTFILES_TEST_ROOT . '/defaults-state'
 execute 'source ' . fnameescape($VIMHOME . '/config/settings.vim')
 execute 'source ' . fnameescape($VIMHOME . '/config/maps.vim')
-call assert_equal(0, &regexpengine, 'automatic regex selection was overridden')
+call assert_equal(initial_regexpengine, &regexpengine, 'regex engine selection was overridden')
 set wrap columns=40
 call setline(1, [repeat('x', 160), 'two', 'three', 'four', 'five'])
 normal! gg0

@@ -1,9 +1,11 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 repo=$(CDPATH='' cd -P -- "${0%/*}/.." && pwd -P)
-# shellcheck source=mk/test-lib.sh
-. "$repo/mk/test-lib.sh"
 test_init check-mise-selection
 catalog=$repo/setup/tools.toml
 home=$test_root/home

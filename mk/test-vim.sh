@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -u
 
 fail() {
@@ -67,11 +71,14 @@ env DOTFILES_REPO="$repo" vim -Nu NONE -i NONE -n -es \
   -S "$repo/mk/test-vim-abbrev.vim" || fail "Vim abbreviations changed commands or word motions"
 
 echo "check-vim: movement and regex defaults"
+for engine in 0 1 2; do
 env DOTFILES_REPO="$repo" DOTFILES_TEST_ROOT="$test_root" \
-  vim -Nu NONE -i NONE -n -es -S "$repo/mk/test-vim-defaults.vim" || {
+  vim -Nu NONE -i NONE -n -es --cmd "set regexpengine=$engine" \
+  -S "$repo/mk/test-vim-defaults.vim" || {
     [ ! -f "$test_root/errors" ] || cat "$test_root/errors" >&2
     fail "Vim movement or regex defaults failed"
   }
+done
 
 echo "check-vim: persistent recent-file history"
 env DOTFILES_REPO="$repo" DOTFILES_TEST_ROOT="$test_root" \

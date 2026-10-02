@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 fail() { echo "check-vim-paths: $*" >&2; exit 1; }
 command -v rg >/dev/null 2>&1 || fail "ripgrep is required"

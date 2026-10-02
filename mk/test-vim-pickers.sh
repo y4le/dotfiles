@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 fail() { echo "check-vim-pickers: $*" >&2; exit 1; }
 vim_bin=$(command -v vim)

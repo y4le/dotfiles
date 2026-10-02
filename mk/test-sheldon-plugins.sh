@@ -1,12 +1,14 @@
 #!/bin/sh
 
+# shellcheck source=mk/test-lib.sh
+. "${0%/*}/test-lib.sh"
+test_prepare_path
+
 set -eu
 
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P) || exit 1
 cd "$repo"
 
-# shellcheck source=mk/test-lib.sh
-. "$repo/mk/test-lib.sh"
 test_init check-sheldon
 
 verify_script=$repo/mk/verify-sheldon-plugins.sh
