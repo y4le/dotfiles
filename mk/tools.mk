@@ -1,4 +1,4 @@
-.PHONY: mise mise-tools herdr herdr-integrations herdr-plugins sheldon sheldon-plugins brew
+.PHONY: mise mise-tools herdr herdr-integrations _herdr-integrations herdr-plugins sheldon sheldon-plugins brew
 
 mise: ## [network] install the pinned, verified mise binary
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install mise "$(MISE_BIN)" 0755
@@ -15,19 +15,15 @@ herdr: ## [network] install the pinned Herdr binary and validate its config
 	@DOTFILES_PINS_FILE="$(DOWNLOAD_PINS_FILE)" sh mk/pinned.sh install herdr "$(HERDR_BIN)" 0755
 	@HERDR_CONFIG_PATH="$(HERDR_CONFIG_FILE)" "$(HERDR_BIN)" config check
 
-herdr-integrations: ## [network] install selected Herdr agent integrations
-ifeq ($(strip $(HERDR_INTEGRATIONS)),)
-herdr-integrations:
-	@echo "HERDR_INTEGRATIONS must name at least one integration"; \
-	exit 1
-else
-herdr-integrations: herdr
-	@set -eu; \
-	for integration in $(HERDR_INTEGRATIONS); do \
-		echo "installing Herdr integration: $$integration"; \
-		"$(HERDR_BIN)" integration install "$$integration"; \
-	done
-endif
+herdr-integrations: ## [network] preflight and install integrations for installed agents
+	@selected="$$(sh mk/herdr-integrations.sh --select "$(CURDIR)" $(call profile_shell_quote,$(HERDR_INTEGRATIONS)))" || exit $$?; \
+	if [ -z "$$selected" ]; then exit 0; fi; \
+	$(MAKE) _herdr-integrations HERDR_SELECTED="$$selected"
+
+# Keep mutations out of the recursive recipe above: Make runs recursive lines
+# even under -n. This ordinary recipe is only printed during a dry run.
+_herdr-integrations: herdr
+	@sh mk/herdr-integrations.sh --install "$(CURDIR)" "$(HERDR_BIN)" "$(HERDR_SELECTED)"
 
 herdr-plugins: ## [network] install pinned Herdr plugins
 	@if [ ! -x "$(HERDR_BIN)" ]; then \

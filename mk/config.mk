@@ -60,7 +60,7 @@ MISE_CONFIG_FILE    := $(CURDIR)/setup/tools.toml
 DOWNLOAD_PINS_FILE  := setup/pins/downloads.txt
 HERDR_BIN           := $(HOME)/.local/bin/herdr
 HERDR_CONFIG_FILE   := $(CURDIR)/herdr/.config/herdr/config.toml
-HERDR_INTEGRATIONS  := claude codex antigravity-cli
+HERDR_INTEGRATIONS  := auto
 # owner/repo@commit; keep vim-herdr-navigation in sync with the Vim and Neovim pins
 HERDR_PLUGINS       := paulbkim-dev/vim-herdr-navigation@79679dacc791f70fc34de8b29a3cf9706c0f5b2f \
                        y4le/herdr-mark@bcd6458895f00b275a3429dd3b57a4e8124bdfac

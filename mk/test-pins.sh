@@ -383,7 +383,7 @@ printf '%s\n' \
   '  config) [ "${2:-}" = check ] && [ -f "$HERDR_CONFIG_PATH" ] && echo "config: ok" ;;' \
   '  integration)' \
   '    [ "${2:-}" = install ] && [ -n "${3:-}" ] || exit 1' \
-  '    printf "%s\n" "$3" >> "$DOTFILES_TEST_HERDR_LOG" ;;' \
+  '    [ "$HOME" != "$DOTFILES_TEST_HERDR_HOME" ] || printf "%s\n" "$3" >> "$DOTFILES_TEST_HERDR_LOG" ;;' \
   '  *) exit 1 ;;' \
   'esac' > "$herdr_fixture"
 chmod +x "$herdr_fixture"
@@ -601,13 +601,18 @@ grep -F "replacing $herdr_destination" "$test_root/herdr-replace.out" >/dev/null
   fail "drifted Herdr install was not repaired"
 [ -x "$herdr_destination" ] || fail "drifted Herdr repair did not restore executable mode"
 
+mkdir -p "$test_root/home/.claude" "$test_root/home/.codex"
+for agent in claude codex; do
+  printf '%s\n' '#!/bin/sh' 'exit 0' > "$stub_bin/$agent"
+  chmod +x "$stub_bin/$agent"
+done
 herdr_integration_log=$test_root/herdr-integrations.log
 : > "$herdr_integration_log"
 : > "$curl_log"
 env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
   DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
   DOTFILES_TEST_FIXTURES="$fixtures" \
-  DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" \
+  DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" DOTFILES_TEST_HERDR_HOME="$test_root/home" \
   make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
     HERDR_BIN="$herdr_destination" HERDR_INTEGRATIONS="claude codex" \
     herdr-integrations >/dev/null
@@ -617,7 +622,7 @@ env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
 if env -i HOME="$test_root/home" PATH="$stub_bin:/usr/local/bin:/usr/bin:/bin" \
   DOTFILES_PLATFORM=linux-amd64 DOTFILES_TEST_CURL_LOG="$curl_log" \
   DOTFILES_TEST_FIXTURES="$fixtures" \
-  DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" \
+  DOTFILES_TEST_HERDR_LOG="$herdr_integration_log" DOTFILES_TEST_HERDR_HOME="$test_root/home" \
   make -s -C "$repo" DOWNLOAD_PINS_FILE="$fixture_pins" \
     HERDR_BIN="$test_root/missing-herdr" HERDR_INTEGRATIONS= \
     herdr-integrations >/dev/null 2>&1; then

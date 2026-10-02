@@ -92,6 +92,7 @@ check-link: ## [offline] test safe linking in isolated temporary homes
 
 check-herdr: ## [offline] test herdr-prefix switching against a stand-in Herdr
 	@sh mk/test-herdr-prefix.sh
+	@sh mk/test-herdr-integrations.sh
 
 CHECK_MAKE = $(MAKE) PROFILE=full WITH=
 
@@ -121,8 +122,8 @@ check-make: ## [offline] dry-run make target graph and help output
 	@$(CHECK_MAKE) -n tools >/dev/null
 	@echo "check-make: make -n herdr"
 	@$(CHECK_MAKE) -n herdr >/dev/null
-	@echo "check-make: make -n herdr-integrations"
-	@$(CHECK_MAKE) -n herdr-integrations >/dev/null
+	@echo "check-make: make -n Herdr integration apply"
+	@$(CHECK_MAKE) -n _herdr-integrations HERDR_SELECTED=claude >/dev/null
 	@echo "check-make: make -n plugins"
 	@$(CHECK_MAKE) -n plugins >/dev/null
 	@echo "check-make: tool and plugin phase order"
