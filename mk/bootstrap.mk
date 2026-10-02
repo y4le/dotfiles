@@ -6,6 +6,7 @@ setup: ## [sudo, network] full bootstrap including system packages
 
 setup-user: ## [network] user-space tools, links, and plugins; no sudo
 	@$(MAKE) _mise-preflight
+	@$(MAKE) link-plan
 	@$(MAKE) tools
 	@$(MAKE) link
 	@$(MAKE) plugins
@@ -71,7 +72,7 @@ _link-plan: _require-stow
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' mise '; then \
 		sh mk/select-mise.sh --plan "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)" "$(PROFILE_TOOLS)" || exit $$?; \
 	fi
-	@sh mk/report-dangling-links.sh "$(CURDIR)" "$(HOME)"
+	@sh mk/report-dangling-links.sh "$(CURDIR)" "$(HOME)" $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES) $(MACOS_CORE) $(LINUX_DESKTOP) $(MACOS_DESKTOP)
 	@if git -C "$(CURDIR)" rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
 		artifacts="$$(git -C "$(CURDIR)" ls-files --others --directory --no-empty-directory -- $(GUARDED_LINK_PACKAGES))" || exit 1; \
 		if [ -n "$$artifacts" ]; then \

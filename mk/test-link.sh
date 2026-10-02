@@ -238,16 +238,44 @@ run_make "$stray_profile_home" PLATFORM=linux clean >/dev/null 2>&1 || fail "cle
 [ ! -e "$stray_profile_home/.zprofile" ] || fail "clean promoted an unrelated local profile"
 grep -Fxq keep-local "$stray_profile_home/.zprofile.local" || fail "clean modified an unrelated local profile"
 
+echo "check-link: setup-user rejects link conflicts before downloads"
+conflict_home=$test_root/setup-conflict-home
+mkdir -p "$conflict_home/.config/herdr"
+printf 'work-machine config\n' > "$conflict_home/.config/herdr/config.toml"
+real_make=$(command -v make)
+cat > "$test_root/setup-make" <<'EOF'
+#!/bin/sh
+for argument do
+  case $argument in
+    tools|link|plugins) printf '%s\n' "$*" >> "$DOTFILES_INSTALL_LOG"; exit 91 ;;
+  esac
+done
+exec "$DOTFILES_REAL_MAKE" -s -C "$DOTFILES_TEST_REPO" "$@"
+EOF
+chmod +x "$test_root/setup-make"
+snapshot_home "$conflict_home" > "$test_root/setup-conflict.before"
+if env -i HOME="$conflict_home" PATH="$PATH" DOTFILES_REAL_MAKE="$real_make" \
+  DOTFILES_TEST_REPO="$repo" DOTFILES_INSTALL_LOG="$test_root/setup-install.log" \
+  make -s -C "$repo" MAKE="$test_root/setup-make" setup-user \
+  > "$test_root/setup-conflict.log" 2>&1; then
+  fail "setup-user accepted a link conflict"
+fi
+grep -Fq 'config/herdr/config.toml' "$test_root/setup-conflict.log" || \
+  fail "setup-user did not report the Herdr conflict"
+[ ! -e "$test_root/setup-install.log" ] || fail "setup-user downloaded tools before detecting the link conflict"
+snapshot_home "$conflict_home" > "$test_root/setup-conflict.after"
+cmp -s "$test_root/setup-conflict.before" "$test_root/setup-conflict.after" || fail "setup-user changed HOME before rejecting a link conflict"
+
 echo "check-link: dangling checkout links are reported without removal"
 dangling_home=$test_root/dangling-home
 mkdir -p "$dangling_home/.config/zsh/sources"
-ln -s ../home/dev/dotfiles/deleted-package/.retired "$dangling_home/.retired"
+ln -s ../home/dev/dotfiles/deleted-package/.ideavimrc "$dangling_home/.ideavimrc"
 ln -s "$repo/deleted-package/.config/zsh/sources/missing file.zsh" \
   "$dangling_home/.config/zsh/sources/missing file.zsh"
 ln -s "$test_root/external-missing" "$dangling_home/.unrelated"
 snapshot_home "$dangling_home" > "$test_root/dangling.before"
 run_make "$dangling_home" link-plan > "$test_root/dangling.plan" 2>&1 || fail "dangling link plan failed"
-grep -Fq 'DANGLING: .retired => ' "$test_root/dangling.plan" || fail "plan missed a relative dangling link"
+grep -Fq 'DANGLING: .ideavimrc => ' "$test_root/dangling.plan" || fail "plan missed a relative dangling link"
 grep -Fq 'DANGLING: .config/zsh/sources/missing file.zsh => ' "$test_root/dangling.plan" || \
   fail "plan missed an absolute dangling link with spaces"
 if grep -Fq 'DANGLING: .unrelated' "$test_root/dangling.plan"; then fail "plan claimed an unrelated link"; fi
@@ -259,6 +287,31 @@ plan_failed=no
 run_make "$dangling_home" link-plan > "$test_root/unreadable.plan" 2>&1 || plan_failed=yes
 chmod 700 "$dangling_home/.config/unreadable"
 [ "$plan_failed" = no ] || fail "an unreadable unrelated directory blocked link-plan"
+
+echo "check-link: dangling scan never visits unrelated HOME destinations"
+scan_bin=$test_root/scan-bin
+mkdir -p "$scan_bin" "$dangling_home/Documents" "$dangling_home/Downloads" "$dangling_home/Pictures"
+ln -s "$repo/deleted-package/private" "$dangling_home/Documents/private-link"
+ln -s "$repo/deleted-package/private" "$dangling_home/.config/unreadable/private-link"
+real_find=$(command -v find)
+cat > "$scan_bin/find" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$1" >> "$DOTFILES_FIND_LOG"
+case $1 in
+  "$HOME"|"$HOME/Documents"*|"$HOME/Downloads"*|"$HOME/Pictures"*|"$HOME/.config/unreadable"*) exit 99 ;;
+esac
+exec "$DOTFILES_REAL_FIND" "$@"
+EOF
+chmod +x "$scan_bin/find"
+HOME="$dangling_home" PATH="$scan_bin:$PATH" DOTFILES_FIND_LOG="$test_root/find.log" \
+  DOTFILES_REAL_FIND="$real_find" sh "$repo/mk/report-dangling-links.sh" "$repo" "$dangling_home" zsh vim \
+  > "$test_root/scan.out" 2>&1 || fail "bounded dangling scan failed"
+[ -s "$test_root/find.log" ] || fail "bounded dangling scan did not inspect managed destinations"
+if grep -Eq '^DANGLING: (Documents|\.config/unreadable)' "$test_root/scan.out" || \
+  grep -Fxq "$dangling_home" "$test_root/find.log" || \
+  grep -Eq '/(Documents|Downloads|Pictures|unreadable)(/|$)' "$test_root/find.log"; then
+  fail "dangling scan visited unrelated destinations"
+fi
 
 macos_profile_conflict_home=$test_root/macos-profile-conflict-home
 mkdir -p "$macos_profile_conflict_home"

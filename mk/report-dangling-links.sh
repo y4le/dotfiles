@@ -39,14 +39,37 @@ fi
 
 repo=$(CDPATH='' cd -- "$1" && pwd -P)
 home=$(CDPATH='' cd -- "$2" && pwd -P)
-# Scan dotfiles destinations and legacy helper directories, avoiding unrelated
-# source checkouts and runtime data elsewhere in HOME. Never follow symlinks.
-# Reporting is best-effort: unreadable destinations must not block Stow.
-find "$home" \( -type d ! -path "$home" \
-  ! -path "$home/.config" ! -path "$home/.config/*" \
-  ! -path "$home/.vim" ! -path "$home/.vim/*" \
-  ! -path "$home/.agents" ! -path "$home/.agents/*" \
-  ! -path "$home/.funcs" ! -path "$home/.funcs/*" \
-  ! -path "$home/.local" ! -path "$home/.local/bin" ! -path "$home/.local/bin/*" \
-  ! -path "$home/bin" ! -path "$home/bin/*" \) -prune \
-  -o -type l -exec sh "$0" --inspect "$repo" "$home" {} + || :
+shift 2
+# Enumerate source package roots, never HOME itself. For shared XDG containers,
+# inspect only the application's destination, not unrelated config or data.
+# Legacy roots remain explicit so retired links can still be reported.
+roots=$(
+  for package do
+    for source in "$repo/$package"/.[!.]* "$repo/$package"/..?* "$repo/$package"/*; do
+      [ -e "$source" ] || [ -L "$source" ] || continue
+      relative=${source#"$repo/$package/"}
+      case $relative in
+        .config|.local)
+          for child in "$source"/*; do
+            [ -e "$child" ] || [ -L "$child" ] || continue
+            if [ "$relative" = .local ] && [ "${child##*/}" != bin ]; then
+              continue
+            fi
+            printf '%s/%s\n' "$relative" "${child##*/}"
+          done
+          ;;
+        .stow-local-ignore|.gitignore) continue ;;
+        *) printf '%s\n' "$relative" ;;
+      esac
+    done
+  done
+  printf '%s\n' .funcs bin .ideavimrc .tmux.conf .gitconfig .pre_profile .post_profile .zshenv.local
+)
+printf '%s\n' "$roots" | LC_ALL=C sort -u | while IFS= read -r relative; do
+  [ -n "$relative" ] || continue
+  destination=$home/$relative
+  [ -e "$destination" ] || [ -L "$destination" ] || continue
+  # Reporting is best-effort: unreadable managed destinations must not block
+  # Stow. Never follow directory symlinks into unrelated trees.
+  find "$destination" -type l -exec sh "$0" --inspect "$repo" "$home" {} + || :
+done
