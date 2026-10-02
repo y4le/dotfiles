@@ -44,6 +44,13 @@ in `~/.config/mise/config.local.toml` instead. Foreign files, symlinks, and a
 fragment owned by another checkout are rejected before tools are downloaded.
 `make clean` removes only this checkout's marked fragment and preserves others.
 
+The new `full` preset omits Node, Python, Go, and Rust development tools.
+Before your next `make link` or `make setup-user`, save any optional packs you
+need. Node-based CLIs require `make profile-set PROFILE=full WITH=node`;
+`WITH="node python-dev"` keeps both packs, and `WITH=dev` keeps the old broad
+development bundle. `WITH` is the complete add-on list, so include existing
+add-ons you want to retain. Preview with `make plan` before applying.
+
 The linked global config now contains settings only. Pins come from the
 selected fragment; the full version catalog lives in `setup/tools.toml`.
 Machines that applied the preparatory release already have a fragment. If you
@@ -230,9 +237,11 @@ backups and other runtime files into the checkout.
 
 ### Setup profiles
 
-Existing checkouts without `profile.mk` continue using `full`, so no profile
-migration is needed. To switch, follow [Choose a profile](setup.md#choose-a-profile)
-and run `make plan` before linking. Moving to lite unlinks managed Atuin,
+Existing checkouts without `profile.mk` use the revised `full` preset. Save
+needed language packs first, as described under
+[Tool selection fragment](#tool-selection-fragment), then follow
+[Choose a profile](setup.md#choose-a-profile) and preview before linking.
+Moving to lite unlinks managed Atuin,
 Neovim, and Herdr configuration unless you select those add-ons; their
 binaries, plugins, and user data remain. New Zsh shells turn off Atuin's
 bindings when its managed config link is absent. Restart shells that already
@@ -290,8 +299,8 @@ configured language formatters and LSP formatting fallback. JavaScript and
 TypeScript can still format on save through their language server, using
 TypeScript's style rather than project Prettier settings. Markdown/wiki/book,
 JSON, YAML, CSS, and HTML have no configured formatting provider. Restart Neovim
-to load the updated configuration. Node remains pinned for the TypeScript
-language server and can be [installed separately](setup.md#install-one-pinned-tool).
+to load the updated configuration. Node is available through the optional
+`node` or `web-dev` pack; see [optional tools](setup.md#enable-optional-tools).
 
 Existing Prettier versions remain installed. An old mise shim may report
 "No version is set for shim" after the global pin is removed. Inspect and

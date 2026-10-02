@@ -732,6 +732,8 @@ cmp -s "$test_root/profile-before-plan" "$test_root/profile-after-plan" || \
   fail "lite plan modified HOME"
 run_make "$profile_home" PROFILE=lite WITH=yazi link >/dev/null 2>&1 || \
   fail "full to lite transition failed"
+[ "$(awk -v action=keys -f "$repo/mk/catalog.awk" "$profile_home/.config/mise/conf.d/dotfiles.toml")" = "$(sh "$repo/mk/profile.sh" tools lite yazi)" ] || \
+  fail "lite kept unselected global tool pins"
 [ ! -e "$profile_home/.config/atuin/config.toml" ] || fail "lite left Atuin config"
 [ ! -e "$profile_home/.config/nvim/init.lua" ] || fail "lite left Neovim config"
 [ ! -e "$profile_home/.config/herdr/config.toml" ] || fail "lite left Herdr config"
@@ -766,6 +768,17 @@ run_make "$profile_home" PROFILE=full link >/dev/null 2>&1 || \
 [ -L "$profile_home/.config/atuin/config.toml" ] || fail "full did not restore Atuin"
 [ -L "$profile_home/.config/nvim/init.lua" ] || fail "full did not restore Neovim"
 [ -L "$profile_home/.config/herdr/config.toml" ] || fail "full did not restore Herdr"
+
+echo "check-link: optional tools are activated only by an explicit selection"
+run_make "$profile_home" PROFILE=full WITH='node web-dev' link >/dev/null 2>&1 || fail 'Node/web activation failed'
+fragment=$profile_home/.config/mise/conf.d/dotfiles.toml
+[ "$(awk -v action=keys -f "$repo/mk/catalog.awk" "$fragment")" = "$(sh "$repo/mk/profile.sh" tools full 'node web-dev')" ] || \
+  fail 'shared tools were not projected exactly once'
+run_make "$profile_home" PROFILE=full WITH=node link >/dev/null 2>&1 || fail 'web deselection failed'
+grep -q '^node = ' "$fragment" || fail 'web deselection lost standalone Node'
+if grep -q '^"npm:typescript-language-server" = ' "$fragment"; then fail 'web server remained active'; fi
+run_make "$profile_home" PROFILE=full WITH= link >/dev/null 2>&1 || fail 'Node deselection failed'
+if grep -q '^node = ' "$fragment"; then fail 'Node remained globally active'; fi
 
 run_make "$profile_home" PROFILE=lite WITH='yazi herdr' profile-set \
   >/dev/null 2>&1 || fail "saving profile failed"

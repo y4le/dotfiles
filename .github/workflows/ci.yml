@@ -157,6 +157,11 @@ jobs:
           test -x "$SMOKE_HOME/.local/bin/sheldon"
           HOME="$SMOKE_HOME" MISE_GLOBAL_CONFIG_FILE="$GITHUB_WORKSPACE/setup/tools.toml" \
             "$SMOKE_HOME/.local/bin/mise" which nvim >/dev/null
+          test "$(HOME="$SMOKE_HOME" sh mk/profile.sh tools full '')" = \
+            "$(awk -v action=keys -f mk/catalog.awk "$SMOKE_HOME/.config/mise/conf.d/dotfiles.toml")"
+          test ! -d "$SMOKE_HOME/.local/share/mise/installs/node"
+          HOME="$SMOKE_HOME" "$SMOKE_HOME/.local/bin/mise" ls --current --json node | \
+            grep -Fx '[]'
           HOME="$SMOKE_HOME" make check-nvim-first-open
 
       - name: Ensure bootstrap does not modify the repo

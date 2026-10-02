@@ -1,12 +1,17 @@
 # Optional packs proposal
 
-Design pass with Claude Fable, 2026-10-01. This is a proposal; the current
-profile behavior documented in [setup](../setup.md) and [design](../design.md)
-still applies. Catalog discovery, shared tool references, and explicit complete
-selection saving are now implemented. Owned mise fragment rendering, effective editor/Neovim tool detection, and the
-settings-only catalog cutover are implemented. Development pack defaults are
-the next slice. No additional installers
-are provided by this document.
+Design pass with Claude Fable, 2026-10-01. The Stow/mise implementation is now
+complete: discovery, shared tools, explicit complete selections, the owned mise
+projection and settings-only cutover, effective tool detection, and optional
+language packs. Current behavior and recipes live in [setup](../setup.md) and
+[design](../design.md). Native/OS providers and Haskell remain future design
+work; this document preserves the decisions behind that boundary.
+
+The agreed `full` preset is core, Atuin, Yazi, Neovim with LuaLS, and Herdr.
+`node`, `web-dev`, `python-dev`, `go-dev`, and `rust-dev` are optional.
+`WITH=dev` preserves the previous development bundle. On existing machines,
+save needed optional packs before the next link; Node-based CLIs need `node`
+or `web-dev`. Selection applies to active defaults as well as installation.
 
 ## Recommendation
 
@@ -26,19 +31,19 @@ Occasional commands do not need public packs. The decision to install `fd`,
 a candidate because it represents a toolchain with setup and activation,
 rather than a single command to download.
 
-## What needs to change
+## Original problems
 
-Today, `setup/profiles.yaml` selects Stow packages and tools for installation.
-It requires `full` to include every component and each tool to belong to one
-component. That makes a genuinely optional component outside `full`
+Before this implementation, `setup/profiles.yaml` selects Stow packages and tools for installation.
+It required `full` to include every component and each tool to belong to one
+component. That made a genuinely optional component outside `full`
 impossible, and makes overlapping setups difficult to express.
 
-There is also a distinction between installation and activation. The entire
-mise catalog is linked as the global configuration, including tools omitted
-from the selected install list. A lite machine can therefore resolve the
-development pins, and a later unqualified `mise install` can install them.
-The current promise is selective installation, rather than a selective global
-tool configuration. Packs should provide both.
+There was also a distinction between installation and activation. The entire
+mise catalog was linked as the global configuration, including tools omitted
+from the selected install list. A lite machine could therefore resolve the
+development pins, and a later unqualified `mise install` could install them.
+The old promise was selective installation. Packs now also provide selected
+global tool configuration.
 
 The native package lists are currently independent of profiles. Desktop
 selection links configuration; it does not install the full desktop stack.
@@ -69,7 +74,8 @@ For example, prospective packs could be:
 | `python-dev` | Python, uv, basedpyright, Ruff | Python tooling |
 | `haskell-dev` | Provider and tool selection still to be designed | Haskell development on machines that need it |
 
-These names and the split of today's `dev` component are illustrative.
+The language packs above are implemented except Haskell; `go-dev` and
+`rust-dev` complete the split, while `dev` remains a compatibility bundle.
 Selecting both `web-dev` and `node` installs Node once. Removing
 `web-dev` retains Node while `node` is selected. Each pack lists its own
 required runtime; there is no `requires` graph, profile inheritance, or pack
@@ -77,10 +83,9 @@ dependency resolution.
 
 The proposed `prose` pack was withdrawn: Prettier and its editor formatting
 wiring have been retired from the public setup. No replacement prose formatter
-is planned. Node remains in today's `dev` component for the TypeScript language
-server. A future standalone `node` pack should use the same mise pin and restore
-path, without adding another version manager. Until packs exist, use the
-[single-tool restore recipe](../setup.md#install-one-pinned-tool).
+is planned. Node is optional through `node`, `web-dev`, or the compatibility `dev` bundle.
+All use the same mise pin and restore path; see the
+[optional-tool recipes](../setup.md#enable-optional-tools).
 
 Keep one owner per Stow package for now. Shared tools solve a concrete
 overlap; shared configuration membership has no demonstrated need. Continue
@@ -101,9 +106,7 @@ synthetic all-packs selection in checks. Keep explicit tests of the actual
 ## Selection UX
 
 Use the existing `PROFILE` and `WITH` Make arguments. Avoid a second selection
-file or a new CLI. The following commands describe the proposed interface;
-`packs` and `pack` are available today; the example language packs are not yet
-implemented:
+file or a new CLI. The following commands are available:
 
 ```sh
 make packs
@@ -205,7 +208,7 @@ Installed versions, native packages, plugins, and user data remain. However,
 an installed mise tool's shim remains after its pin is removed and may fail
 with "No version is set for shim". `command -v` and Neovim's `executable()`
 can still report it as present, and `mise reshim --force` alone retains it.
-Current deselection leaves the global pin working; selected configuration
+Before cutover, deselection left the global pin working; selected configuration
 deliberately changes that behavior. System copies may provide fallback, and
 project/local pins can make a retained installation usable again.
 
@@ -303,8 +306,8 @@ returns. Project environments and virtualenvs must retain PATH precedence.
    or desktop integration earns its extra schema and tests. No OS examples
    have yet been chosen for this proposal.
 
-Before implementation, settle the desired default development packs and the
-first additional use case. The current design is enough for tools using Stow,
+The default packs are settled and implemented. Choose a concrete additional
+use case before introducing a new provider. The current design is enough for tools using Stow,
 mise, or existing bootstrap steps; it intentionally leaves new providers and
 OS actions to their own concrete design pass.
 

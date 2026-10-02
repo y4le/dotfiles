@@ -13,15 +13,30 @@ components:
     summary: Terminal file manager and shell navigation
     tools: [aqua:sxyazi/yazi]
   nvim:
-    summary: Neovim editor and plugin configuration
+    summary: Neovim editor, plugin configuration and Lua language server
     packages: [nvim]
-    tools: [aqua:neovim/neovim]
+    tools: [aqua:neovim/neovim, aqua:LuaLS/lua-language-server]
   herdr:
     summary: Herdr terminal workspace and agent integration config
     packages: [herdr]
+  node:
+    summary: Node runtime for locally installed CLI tools
+    tools: [node]
+  web-dev:
+    summary: Node runtime and TypeScript language server
+    tools: [node, npm:typescript-language-server]
+  python-dev:
+    summary: Python runtime, uv, basedpyright and Ruff
+    tools: [python, aqua:astral-sh/uv, pipx:basedpyright, pipx:ruff]
+  go-dev:
+    summary: Go compiler and standard development tools
+    tools: [go]
+  rust-dev:
+    summary: Rust toolchain, rustfmt and rust-analyzer
+    tools: [rust]
   dev:
-    summary: Language runtimes, servers and development tools
+    summary: Compatibility bundle of all development tools
     tools: [go, node, python, rust, aqua:astral-sh/uv, npm:typescript-language-server, pipx:basedpyright, pipx:ruff, aqua:LuaLS/lua-language-server]
 profiles:
   lite: [core]
-  full: [core, atuin, yazi, nvim, herdr, dev]
+  full: [core, atuin, yazi, nvim, herdr]

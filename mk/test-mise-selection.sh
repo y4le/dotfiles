@@ -113,6 +113,14 @@ printf '[settings]\nauto_install = false\n' > "$legacy"
 [ "$(resolve_node)" = '[]' ] || fail 'unselected Node remained active after cutover'
 select_config --clean >/dev/null
 [ "$(resolve_node)" = '[]' ] || fail 'skipped preparation fixture retained a Node pin'
+full=$(sh "$repo/mk/profile.sh" tools full '')
+select_config --apply "$full" >/dev/null
+[ "$(resolve_node)" = '[]' ] || fail 'new full activated optional Node'
+[ "$(awk -v action=keys -f "$repo/mk/catalog.awk" "$target")" = "$full" ] || fail 'new full projection differs from membership'
+select_config --apply "$(sh "$repo/mk/profile.sh" tools full node)" >/dev/null
+resolve_node | grep -q '"requested_version":' || fail 'standalone Node opt-in did not activate'
+select_config --apply "$full" >/dev/null
+[ "$(resolve_node)" = '[]' ] || fail 'Node deselection left the pin active'
 select_config --apply 'node rust' >/dev/null
 resolve_node | grep -q 'requested_version' || fail 'offline application did not repair skipped preparation'
 printf '[tools]\nnode = "22.16.0"\n' > "$home/.config/mise/config.local.toml"

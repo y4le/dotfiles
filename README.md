@@ -19,9 +19,11 @@ git clone https://github.com/y4le/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
 ```
 
-The default `full` profile keeps the existing setup. `lite` links the core
-shell, Git, Vim, tmux, scripts, and agent configuration, and selects fzf,
-ripgrep, bat, delta, and zoxide for installation. To choose a smaller
+The default `full` profile includes core shell/Git/Vim/tmux/agent configuration,
+Atuin, Yazi, Neovim with LuaLS, and Herdr. Language development tools are optional
+packs: `node`, `web-dev`, `python-dev`, `go-dev`, and `rust-dev`. `dev` retains
+the previous broad development bundle. `lite` keeps core configuration and fzf,
+ripgrep, bat, delta, and zoxide. To choose a smaller
 setup, optionally save `lite` with any add-ons before linking:
 
 ```sh
@@ -36,7 +38,9 @@ make plan
 make setup-user
 ```
 
-Review the plan before setup. To apply only the links, run `make link` instead;
+On an existing machine, save needed optional packs before the next link or
+setup. For Node-based CLIs, use `make profile-set PROFILE=full WITH=node`;
+`WITH` is the complete add-on list. Review the plan before setup. To apply only the links, run `make link` instead;
 that step is offline, and shell and editor config remain usable before optional
 plugins are restored. Keep the checkout in place; the links point into it.
 

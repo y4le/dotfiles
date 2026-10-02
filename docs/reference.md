@@ -10,12 +10,19 @@ and desktop selection live in [`mk/config.mk`](../mk/config.mk).
 | --- | --- |
 | Full (default) | `agents`, `atuin`, `bash`, `git`, `herdr`, `mise`, `nvim`, `scripts`, `tmux`, `vim`, `zsh` |
 | Lite | `agents`, `bash`, `git`, `mise`, `scripts`, `tmux`, `vim`, `zsh` |
-| Add-on components | `atuin`, `yazi`, `nvim`, `herdr`, `dev`; each adds its declared packages and/or mise tools |
+| Add-on components | `atuin`, `yazi`, `nvim`, `herdr`, `node`, `web-dev`, `python-dev`, `go-dev`, `rust-dev`, `dev`; each adds its declared packages and/or mise tools |
 | Machine-local | `local`, included when present |
 | Linux core | Selected profile and machine-local packages |
 | macOS core | Selected profile and machine-local packages, plus `osx` |
 | Linux desktop (`DESKTOP=1`) | Linux core plus `linux-desktop` (X11/i3) |
 | macOS desktop (`DESKTOP=1`) | macOS core plus `osx-desktop` (Karabiner); see [GUI save recovery](maintenance.md#recover-a-karabiner-configuration-replaced-by-the-gui) |
+
+`full` selects everyday core CLIs, Atuin, Yazi, Neovim with LuaLS, and Herdr.
+Node and other language runtimes/servers are optional. See the
+[pack recipes](setup.md#enable-optional-tools) for payloads and activation;
+`WITH=dev` restores the previous broad development selection. Existing machines
+need to save optional packs before the next link, especially `node` for
+Node-based agent CLIs.
 
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
 `scripts` supplies standalone `~/bin` commands and the sourced Yazi wrapper

@@ -24,8 +24,19 @@ actual_full=$(printf '%s\n' $full_packages | sort)
 [ "$actual_full" = "$expected_full" ] || fail "full package set differs from the old default"
 
 full_tools=$(sh mk/profile.sh tools full) || fail "full tools did not resolve"
-[ "$full_tools" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim go node python rust aqua:astral-sh/uv npm:typescript-language-server pipx:basedpyright pipx:ruff aqua:LuaLS/lua-language-server" ] || \
+[ "$full_tools" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim aqua:LuaLS/lua-language-server" ] || \
   fail "full tool set changed: $full_tools"
+legacy_full="$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim go node python rust aqua:astral-sh/uv npm:typescript-language-server pipx:basedpyright pipx:ruff aqua:LuaLS/lua-language-server"
+[ "$(sh mk/profile.sh tools full dev)" = "$legacy_full" ] || fail 'dev compatibility lost old defaults'
+[ "$(sh mk/profile.sh tools full 'web-dev python-dev go-dev rust-dev')" = "$legacy_full" ] || \
+  fail 'individual development packs differ from the compatibility bundle'
+[ "$(sh mk/profile.sh tools lite node)" = "$lite_tools node" ] || fail 'Node pack pulls development tools'
+[ "$(sh mk/profile.sh tools lite python-dev)" = "$lite_tools python aqua:astral-sh/uv pipx:basedpyright pipx:ruff" ] || \
+  fail 'Python pack lost its runtime prerequisites or leaked other languages'
+[ "$(sh mk/profile.sh tools full node)" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim node aqua:LuaLS/lua-language-server" ] || \
+  fail 'Node opt-in changed unrelated default tools'
+sh mk/profile.sh tool-users full dev | grep -Fxq 'aqua:LuaLS/lua-language-server: nvim dev' || \
+  fail 'Lua server shared ownership is wrong'
 
 with_packages=$(sh mk/profile.sh packages lite 'nvim herdr') || fail "add-on packages did not resolve"
 [ "$with_packages" = "$lite_packages nvim herdr" ] || \
@@ -94,10 +105,10 @@ fi
 echo "check-profiles: shared runtimes, optional catalog entries and stable ordering"
 awk '
   /^profiles:/ {
-    print "  node:"
+    print "  test-node:"
     print "    summary: Standalone Node runtime"
     print "    tools: [node]"
-    print "  web-dev:"
+    print "  test-web:"
     print "    summary: Web development"
     print "    tools: [node, npm:typescript-language-server]"
   }
@@ -107,19 +118,19 @@ fixture_profile() {
   DOTFILES_PROFILE_DATA_FILE="$test_root/shared.yaml" sh mk/profile.sh "$@"
 }
 fixture_profile validate || fail "shared tools or optional packs were rejected"
-first=$(fixture_profile tools lite 'node web-dev') || fail "shared tools did not resolve"
-second=$(fixture_profile tools lite 'web-dev node') || fail "reverse selection failed"
+first=$(fixture_profile tools lite 'test-node test-web') || fail "shared tools did not resolve"
+second=$(fixture_profile tools lite 'test-web test-node') || fail "reverse selection failed"
 [ "$first" = "$second" ] || fail "tool order depends on WITH order"
 [ "$first" = "$lite_tools node npm:typescript-language-server" ] || \
   fail "shared runtime was duplicated or ordered incorrectly: $first"
-retained=$(fixture_profile tools lite node) || fail "runtime retention failed"
+retained=$(fixture_profile tools lite test-node) || fail "runtime retention failed"
 [ "$retained" = "$lite_tools node" ] || fail "deselecting web-dev lost the shared runtime"
 [ "$(fixture_profile tools lite '')" = "$lite_tools" ] || fail "optional tools leaked into lite"
-fixture_profile packs | grep -Eq '^node +optional +Standalone Node runtime$' || \
+fixture_profile packs | grep -Eq '^test-node +optional +Standalone Node runtime$' || \
   fail "optional pack discovery omitted preset status"
-fixture_profile pack web-dev | grep -Fq 'mise tools: node npm:typescript-language-server' || \
+fixture_profile pack test-web | grep -Fq 'mise tools: node npm:typescript-language-server' || \
   fail "pack description omitted its direct tools"
-fixture_profile tool-users lite 'node web-dev' | grep -Fxq 'node: node web-dev' || \
+fixture_profile tool-users lite 'test-node test-web' | grep -Fxq 'node: test-node test-web' || \
   fail "shared-tool attribution is wrong"
 sed 's/tools: \[node, npm:typescript-language-server\]/tools: [npm:typescript-language-server]/' \
   "$test_root/shared.yaml" > "$test_root/missing-node.yaml"
@@ -133,10 +144,12 @@ if DOTFILES_PROFILE_DATA_FILE="$test_root/duplicate-owner.yaml" sh mk/profile.sh
 fi
 grep -Fq "package nvim belongs to multiple components" "$test_root/duplicate-owner.log" || \
   fail "duplicate-owner fixture failed for an unrelated reason"
-sed 's/go, node/node/' setup/profiles.yaml > "$test_root/unowned.yaml"
-if DOTFILES_PROFILE_DATA_FILE="$test_root/unowned.yaml" sh mk/profile.sh validate >/dev/null 2>&1; then
+cp setup/tools.toml "$test_root/unowned.toml"
+printf 'unowned = "1.0.0"\n' >> "$test_root/unowned.toml"
+if DOTFILES_TOOL_CATALOG="$test_root/unowned.toml" sh mk/profile.sh validate >"$test_root/unowned.log" 2>&1; then
   fail "unreferenced catalog key was accepted"
 fi
+grep -Fq "catalog tool has no pack: unowned" "$test_root/unowned.log" || fail 'unowned fixture failed for an unrelated reason'
 if make -n PROFILE=full profile-set >/dev/null 2>&1; then
   fail "profile-set accepted missing WITH"
 fi

@@ -83,8 +83,7 @@ and corporate network constraints.
 
 ## Choose a profile
 
-The default `full` profile installs the standard workstation package and tool
-set. For a smaller setup, save `lite` (core shell, Git, Vim, tmux, scripts,
+The default `full` profile installs the everyday editor and terminal setup. For a smaller setup, save `lite` (core shell, Git, Vim, tmux, scripts,
 agents, mise, and five everyday CLI tools), optionally adding components:
 
 ```sh
@@ -97,7 +96,8 @@ make profile
 work even when a saved selection is stale.
 
 `make profile-set` writes an ignored `profile.mk` in this checkout. `WITH` can
-contain `atuin`, `yazi`, `nvim`, `herdr`, and `dev`; see
+contain `atuin`, `yazi`, `nvim`, `herdr`, `node`, `web-dev`, `python-dev`,
+`go-dev`, `rust-dev`, and `dev`; see
 [`setup/profiles.yaml`](../setup/profiles.yaml) for their exact packages and
 tools. Pass `PROFILE` and `WITH` as Make arguments, such as
 `make PROFILE=lite WITH=yazi plan`; setting them in the shell environment is
@@ -110,35 +110,52 @@ packs. Pass `WITH=` to drop saved add-ons for one command. To return to the
 default full setup, run
 `make profile-set PROFILE=full WITH=""`, then `make plan` and `make setup-user`.
 
-The `dev` add-on provides the language servers used by Neovim. Profiles select
+The default `full` profile contains core, Atuin, Yazi, Neovim with LuaLS, and
+Herdr. Other language runtimes and servers are optional; `dev` restores the
+previous broad development tool selection for compatibility. Profiles select
 Stow links, mise tools, and plugin steps; `make setup` still installs the same
 native package list for the platform. Use `make setup-user` when native
 prerequisites are already available. `DESKTOP=1` independently selects the
 platform's desktop links; it is not saved by `profile-set`, so pass it each
 time you link desktop files. `local/` and private agent links remain separate.
 
-## Install one pinned tool
+## Enable optional tools
 
-To install Node without selecting the whole `dev` component, run from the
-checkout:
+Save the packs you need before linking. On a machine running Node-based CLIs
+such as npm-installed Codex or Gemini, select `node` even without web development:
 
 ```sh
-make mise
-MISE_CEILING_PATHS="$(pwd -P)" \
-  MISE_GLOBAL_CONFIG_FILE="$PWD/setup/tools.toml" \
-  "$HOME/.local/bin/mise" install node
+make profile-set PROFILE=full WITH=node
+make plan
+make mise-tools
+make link
 ```
 
-This restores the verified mise binary and installs the checked-in Node version.
-It does not change the saved profile, install other dev tools, or activate Node
-when omitted from the selection. Use `WITH=dev` to manage development tools,
-or select Node in project configuration or `~/.config/mise/config.local.toml`.
-The global config contains settings only; `make link` writes the selected pins
-to `~/.config/mise/conf.d/dotfiles.toml` from `setup/tools.toml`.
-Project-specific mise configuration can still select a different version.
-Avoid `mise use -g` to change this pin: the global config is a symlink into the
-checkout. Put machine-specific overrides in `~/.config/mise/config.local.toml`
-instead.
+`WITH` replaces the complete saved add-on list. For example, use
+`WITH="node python-dev"` for both; use `WITH=dev` to retain all previous language
+tools. On a fresh machine, use `make setup-user` after saving and previewing.
+
+| Pack | Tools and behavior |
+| --- | --- |
+| `node` | Node runtime for locally installed CLIs; no language server |
+| `web-dev` | Node and TypeScript language server; the project supplies its TypeScript dependency |
+| `python-dev` | Python, uv, basedpyright, and Ruff; enables Python LSP, linting, and formatting |
+| `go-dev` | Go compiler and standard tools; no Go language server is configured |
+| `rust-dev` | Rust toolchain with rust-analyzer and rustfmt; enables Rust LSP and formatting |
+| `dev` | Compatibility bundle of all the above plus LuaLS |
+
+LuaLS belongs to `nvim` and is included in `full`. Shared tools install once:
+selecting both `node` and `web-dev` uses one Node pin, and removing `web-dev`
+retains Node while `node` remains selected. JavaScript/TypeScript LSP formatting
+requires `web-dev` or an independently configured usable language server.
+
+Versions and options live in `setup/tools.toml`. `make mise-tools` installs the
+selected catalog pins; `make link` activates them through
+`~/.config/mise/conf.d/dotfiles.toml`. Omitted tools remain installed and can be
+activated by project or machine-local configuration. Avoid `mise use -g`: the
+global settings file is a symlink into the checkout. Put machine overrides in
+`~/.config/mise/config.local.toml` instead. Occasional commands still use local
+setup; a Haskell pack waits for a concrete provider and machine need.
 
 ## Preview the configuration
 
