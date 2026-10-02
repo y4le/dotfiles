@@ -609,15 +609,36 @@ run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" \
   fail "private agent plan rejected an empty package directory"
 rmdir "$private_dir/agents/.agents/skills/empty-runtime"
 
-echo "check-link: clean removes managed links"
+echo "check-link: rejected clean preserves links and active tools"
+clean_conflict_home=$test_root/clean-conflict-home
+mkdir -p "$clean_conflict_home"
+run_make "$clean_conflict_home" PROFILE=lite WITH= link >/dev/null 2>&1 || \
+  fail "clean conflict setup link failed"
+mv "$clean_conflict_home/.config/tmux" "$clean_conflict_home/.config/tmux.saved"
+printf 'keep me\n' > "$clean_conflict_home/.config/tmux"
+snapshot_home "$clean_conflict_home" > "$test_root/clean-conflict-before"
+if run_make "$clean_conflict_home" clean > "$test_root/clean-conflict.log" 2>&1; then
+  fail "clean accepted a Stow conflict"
+fi
+grep -Fq 'existing target is neither a link nor a directory: .config/tmux' \
+  "$test_root/clean-conflict.log" || fail "clean did not report the Stow conflict"
+snapshot_home "$clean_conflict_home" > "$test_root/clean-conflict-after"
+cmp -s "$test_root/clean-conflict-before" "$test_root/clean-conflict-after" || \
+  fail "rejected clean changed HOME"
+
+echo "check-link: clean removes managed links and active tools"
 clean_home=$test_root/clean-home
 mkdir -p "$clean_home"
 run_make "$clean_home" link >/dev/null 2>&1 || fail "clean setup link failed"
+[ -f "$clean_home/.config/mise/conf.d/dotfiles.toml" ] || \
+  fail "clean setup did not activate tools"
 printf 'keep me\n' > "$clean_home/.config/user-owned"
 mkdir -p "$clean_home/.config/herdr/sessions/dev"
 printf 'runtime lock\n' > "$clean_home/.config/herdr/.plugins.lock"
 printf 'runtime session\n' > "$clean_home/.config/herdr/sessions/dev/session.json"
 run_make "$clean_home" clean >/dev/null 2>&1 || fail "clean failed"
+[ ! -e "$clean_home/.config/mise/conf.d/dotfiles.toml" ] || \
+  fail "clean left the managed tool selection"
 if find "$clean_home" -type l -print | grep -q .; then
   fail "clean left managed links"
 fi

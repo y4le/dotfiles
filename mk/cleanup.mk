@@ -3,7 +3,6 @@
 KNOWN_CLEAN_PACKAGES := $(KNOWN_PROFILE_PACKAGES) $(LOCAL_PACKAGES) osx linux-desktop osx-desktop
 
 clean: _require-stow ## [offline] unstow all known public packages
-	@sh mk/select-mise.sh --clean "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)"
 	@echo "planning removal of managed packages: $(KNOWN_CLEAN_PACKAGES)"
 	@sh mk/unstow.sh --plan "$(CURDIR)" "$(HOME)" "$(STOW)" $(KNOWN_CLEAN_PACKAGES)
 	@echo "unstowing managed packages: $(KNOWN_CLEAN_PACKAGES)"
@@ -13,6 +12,7 @@ clean: _require-stow ## [offline] unstow all known public packages
 	if [ "$$restore_profile" = yes ]; then \
 		sh mk/prepare-zprofile.sh --restore "$(HOME)" "$(CURDIR)"; \
 	fi
+	@sh mk/select-mise.sh --clean "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)"
 	@if [ -d "$(PRIVATE_AGENTS_DIR)/$(PRIVATE_AGENTS_PACKAGE)" ]; then \
 		echo "private agents are unchanged; run 'make agents-disable-private' separately"; \
 	fi
