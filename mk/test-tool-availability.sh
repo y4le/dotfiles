@@ -31,8 +31,8 @@ done
 chmod +x "$home/.local/bin/mise"
 export HOME="$home" MISE_SHIMS_DIR="$shims" DOTFILES_ACTIVE_BIN="$test_root/active"
 export DOTFILES_PROBE_LOG="$test_root/probes" DOTFILES_TOOL_ACTIVE=no
-resolver=$repo/scripts/bin/dotfiles-tool
-launcher=$repo/scripts/bin/dotfiles-vim
+resolver=$repo/scripts/.local/bin/dotfiles-tool
+launcher=$repo/scripts/.local/bin/dotfiles-vim
 
 echo 'check-tool-availability: ordinary commands do not probe mise'
 selected=$(PATH="$system:/usr/bin:/bin" "$resolver" nvim)
@@ -70,7 +70,7 @@ nvim_bin=${DOTFILES_TEST_NVIM:-}
 if [ -n "$nvim_bin" ]; then
   echo 'check-tool-availability: Neovim skips stale LSP, linter and formatter shims'
   DOTFILES_REPO="$repo" DOTFILES_TEST_SHIMS="$shims" DOTFILES_TEST_SYSTEM="$system" \
-    DOTFILES_TEST_RESOLVER="$resolver" PATH="$shims:$system:$repo/scripts/bin:/usr/bin:/bin" \
+    DOTFILES_TEST_RESOLVER="$resolver" PATH="$shims:$system:$repo/scripts/.local/bin:/usr/bin:/bin" \
     "$nvim_bin" --headless -u NONE -i NONE -n -l "$repo/mk/test-tool-availability.lua"
 fi
 

@@ -98,7 +98,7 @@ function M.resolve(name)
     -- Existing Stow links update on pull before new command links are installed.
     local source = vim.uv.fs_realpath(debug.getinfo(1, "S").source:sub(2))
     local repo = source and source:match("^(.*)/nvim/%.config/nvim/lua/config/lsp%.lua$")
-    resolver = repo and (repo .. "/scripts/bin/dotfiles-tool") or ""
+    resolver = repo and (repo .. "/scripts/.local/bin/dotfiles-tool") or ""
     if vim.fn.executable(resolver) ~= 1 then
       return nil
     end

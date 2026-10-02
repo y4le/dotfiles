@@ -119,8 +119,10 @@ fi
   fail "fresh link did not create the Herdr config"
 [ ! -e "$fresh_home/.local/state/herdr" ] || \
   fail "fresh link created Herdr runtime state"
-[ -x "$fresh_home/bin/cpy" ] && [ -x "$fresh_home/bin/pst" ] || \
+[ -x "$fresh_home/.local/bin/cpy" ] && [ -x "$fresh_home/.local/bin/pst" ] || \
   fail "fresh link did not install clipboard commands"
+[ ! -e "$fresh_home/bin" ] && [ ! -L "$fresh_home/bin" ] || \
+  fail "fresh link created the legacy bin directory"
 [ ! -e "$fresh_home/.funcs" ] || \
   fail "fresh link created the legacy shell helper directory"
 [ -L "$fresh_home/.config/ideavim/ideavimrc" ] || \
@@ -275,7 +277,7 @@ run_make "$linux_desktop_home" PLATFORM=linux DESKTOP=1 link \
   fail "Linux desktop link omitted .xsessionrc"
 [ -L "$linux_desktop_home/.config/i3/config" ] || \
   fail "Linux desktop link omitted i3"
-[ -x "$linux_desktop_home/bin/i3_switch_workspaces.sh" ] || \
+[ -x "$linux_desktop_home/.local/bin/i3_switch_workspaces.sh" ] || \
   fail "Linux desktop workspace switcher is not executable"
 [ -x "$linux_desktop_home/.config/i3/scripts/mediaplayer" ] || \
   fail "Linux desktop media player is not executable"
@@ -370,6 +372,62 @@ run_make "$artifact_home" link >/dev/null 2>&1 || \
   fail "link rejected an empty package directory"
 rmdir "$repo/vim/.vim/empty-runtime"
 
+echo "check-link: commands migrate from legacy bin without changing user files"
+bin_home=$test_root/bin-home
+mkdir -p "$bin_home/bin" "$bin_home/.local/bin"
+for name in cpy pst filez dotfiles-tool dotfiles-vim; do
+  ln -s "../../home/dev/dotfiles/scripts/bin/$name" "$bin_home/bin/$name"
+done
+printf 'keep local command\n' > "$bin_home/bin/local-command"
+ln -s "$test_root/foreign-command" "$bin_home/bin/foreign-command"
+printf 'keep installed binary\n' > "$bin_home/.local/bin/installed-tool"
+snapshot_home "$bin_home" > "$test_root/bin-before-plan"
+run_make "$bin_home" link-plan >/dev/null 2>&1 || fail "bin migration plan failed"
+snapshot_home "$bin_home" > "$test_root/bin-after-plan"
+cmp -s "$test_root/bin-before-plan" "$test_root/bin-after-plan" || \
+  fail "bin migration plan changed HOME"
+run_make "$bin_home" link >/dev/null 2>&1 || fail "bin migration failed"
+for name in cpy pst filez dotfiles-tool dotfiles-vim; do
+  [ ! -L "$bin_home/bin/$name" ] || fail "legacy command link survived: $name"
+  [ -x "$bin_home/.local/bin/$name" ] || fail "new command missing: $name"
+done
+grep -Fqx 'keep local command' "$bin_home/bin/local-command" || fail "local command changed"
+[ "$(readlink "$bin_home/bin/foreign-command")" = "$test_root/foreign-command" ] || \
+  fail "foreign command link changed"
+grep -Fqx 'keep installed binary' "$bin_home/.local/bin/installed-tool" || fail "installed binary changed"
+printf 'user cpy\n' > "$bin_home/bin/cpy"
+ln -s "$test_root/foreign-filez" "$bin_home/bin/filez"
+run_make "$bin_home" link >/dev/null 2>&1 || fail "user-owned legacy commands blocked linking"
+grep -Fqx 'user cpy' "$bin_home/bin/cpy" || fail "user-owned legacy command changed"
+[ "$(readlink "$bin_home/bin/filez")" = "$test_root/foreign-filez" ] || \
+  fail "foreign legacy command link changed"
+
+for package in scripts linux-desktop; do
+  folded_bin_home=$test_root/folded-bin-$package-home
+  mkdir -p "$folded_bin_home"
+  ln -s "$repo/$package/bin" "$folded_bin_home/bin"
+  run_make "$folded_bin_home" PLATFORM=linux DESKTOP=1 link >/dev/null 2>&1 || \
+    fail "folded $package bin migration failed"
+  [ ! -e "$folded_bin_home/bin" ] && [ ! -L "$folded_bin_home/bin" ] || \
+    fail "folded $package bin link survived"
+  [ -x "$folded_bin_home/.local/bin/cpy" ] && \
+    [ -x "$folded_bin_home/.local/bin/i3_switch_workspaces.sh" ] || \
+    fail "folded bin migration omitted commands"
+done
+
+bin_conflict_home=$test_root/bin-conflict-home
+mkdir -p "$bin_conflict_home/bin" "$bin_conflict_home/.local/bin"
+ln -s "$repo/scripts/bin/cpy" "$bin_conflict_home/bin/cpy"
+printf 'keep conflict\n' > "$bin_conflict_home/.local/bin/cpy"
+snapshot_home "$bin_conflict_home" > "$test_root/bin-conflict-before"
+if run_make "$bin_conflict_home" link > "$test_root/bin-conflict.log" 2>&1; then
+  fail "bin migration accepted a new-location conflict"
+fi
+grep -Fq '.local/bin/cpy' "$test_root/bin-conflict.log" || fail "bin conflict path absent"
+snapshot_home "$bin_conflict_home" > "$test_root/bin-conflict-after"
+cmp -s "$test_root/bin-conflict-before" "$test_root/bin-conflict-after" || \
+  fail "rejected bin migration changed HOME"
+
 echo "check-link: legacy folded layout migration"
 legacy_home=$test_root/legacy-home
 mkdir -p "$legacy_home"
@@ -406,7 +464,7 @@ fi
   fail "legacy tmux config link was not replaced"
 [ ! -e "$legacy_home/.funcs" ] || \
   fail "legacy shell helper links were not removed"
-[ -x "$legacy_home/bin/pst" ] || fail "legacy clipboard commands were not installed"
+[ -x "$legacy_home/.local/bin/pst" ] || fail "legacy clipboard commands were not installed"
 [ ! -e "$legacy_home/.ideavimrc" ] && [ ! -L "$legacy_home/.ideavimrc" ] || \
   fail "legacy IdeaVim config link was not removed"
 [ -L "$legacy_home/.config/ideavim/ideavimrc" ] || \
@@ -420,7 +478,7 @@ run_make "$folded_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected a folded legacy helper directory"
 [ ! -L "$folded_helper_home/.funcs" ] || \
   fail "link left a folded legacy helper directory"
-[ -x "$folded_helper_home/bin/cpy" ] || fail "link did not install standalone clipboard command"
+[ -x "$folded_helper_home/.local/bin/cpy" ] || fail "link did not install standalone clipboard command"
 
 echo "check-link: retired Vim profiler links preserve local replacements"
 profiler_home=$test_root/profiler-home
@@ -452,10 +510,10 @@ run_make "$retired_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected the retired file-listing helper"
 [ ! -L "$retired_helper_home/.config/shell/functions/fzf_sources" ] || \
   fail "link left the retired file-listing helper"
-[ -L "$retired_helper_home/bin/filez" ] || fail "link did not install filez"
+[ -L "$retired_helper_home/.local/bin/filez" ] || fail "link did not install filez"
 # Match Stow's relative-link format as well as the absolute fixture above.
-helper_link=$(readlink "$retired_helper_home/bin/cpy")
-ln -s "../../${helper_link%bin/cpy}.config/shell/functions/fzf_sources" \
+helper_link=$(readlink "$retired_helper_home/.local/bin/cpy")
+ln -s "../${helper_link%.local/bin/cpy}.config/shell/functions/fzf_sources" \
   "$retired_helper_home/.config/shell/functions/fzf_sources"
 run_make "$retired_helper_home" link >/dev/null 2>&1 || \
   fail "link rejected the relative retired-helper link"
@@ -470,6 +528,7 @@ done
 run_make "$retired_helper_home" link >/dev/null 2>&1 || fail "unused helper migration failed"
 for retired in .config/shell/functions/cpst .config/shell/functions/nav bin/compair.sh bin/benchmark.sh; do
   [ ! -L "$retired_helper_home/$retired" ] || fail "retired helper link survived: $retired"
+  mkdir -p "$retired_helper_home/$(dirname "$retired")"
   printf 'user helper\n' > "$retired_helper_home/$retired"
 done
 run_make "$retired_helper_home" link >/dev/null 2>&1 || fail "user-owned retired helper blocked link"

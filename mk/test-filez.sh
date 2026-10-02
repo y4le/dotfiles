@@ -3,7 +3,7 @@
 set -eu
 fail() { echo "check-filez: $*" >&2; exit 1; }
 repo=$(CDPATH='' cd -- "$(dirname "$0")/.." && pwd -P)
-filez=$repo/scripts/bin/filez
+filez=$repo/scripts/.local/bin/filez
 test_root=$(mktemp -d)
 test_root=$(CDPATH='' cd -P "$test_root" && pwd -P)
 trap 'rm -rf "$test_root"' EXIT

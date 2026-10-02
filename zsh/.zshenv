@@ -24,7 +24,7 @@ typeset -U path
 # Add missing defaults without moving entries inherited from the parent shell.
 _dotfiles_shims="${MISE_SHIMS_DIR:-${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}/shims}"
 typeset -a _dotfiles_defaults
-_dotfiles_defaults=("$HOME/bin" "$HOME/.local/bin" "$_dotfiles_shims")
+_dotfiles_defaults=("$HOME/.local/bin" "$_dotfiles_shims")
 [[ -d /opt/homebrew/bin ]] && _dotfiles_defaults+=(/opt/homebrew/bin)
 _dotfiles_defaults+=(/usr/local/bin /usr/bin /bin)
 # Insert each missing default before its next neighbor, leaving custom prefixes
@@ -62,7 +62,7 @@ if [[ -o login && $OSTYPE == darwin* ]]; then
   typeset -ga _dotfiles_login_path=($path)
 fi
 
-if [[ -x $HOME/bin/dotfiles-vim ]]; then
+if [[ -x $HOME/.local/bin/dotfiles-vim ]]; then
   export EDITOR=dotfiles-vim
 else
   export EDITOR=vim

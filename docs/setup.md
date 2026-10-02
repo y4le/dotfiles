@@ -24,6 +24,15 @@ Keep `XDG_CONFIG_HOME` unset or set to `~/.config`; linking always uses that
 directory. See the [path reference](reference.md#configuration-and-state-paths)
 for the current layout.
 
+Standalone commands are linked into `~/.local/bin`, alongside installed
+user-space tools. `make link` removes old `~/bin` links owned by this checkout
+after the new links succeed, preserving user files and links from other repos.
+The shell no longer adds `~/bin` by default; migrate any machine-local commands
+there or add it explicitly in your local environment hook.
+After updating this checkout, rerun `make link` (with `DESKTOP=1` on desktop
+hosts), then start a new shell or run `rehash`. Reload i3 if you use its
+workspace picker so it picks up the new command path.
+
 ## Set up macOS prerequisites
 
 The repo finds an existing Homebrew installation; it does not install Homebrew.
@@ -303,7 +312,7 @@ The media block uses playerctl for the MPRIS player named by `instance`
 adjusts volume. No player running produces no text; missing playerctl is
 visible in the bar. Separate mpc/cmus/rhythmbox adapters are retired.
 
-The workspace script is supplied at `~/bin/i3_switch_workspaces.sh`;
+The workspace script is supplied at `~/.local/bin/i3_switch_workspaces.sh`;
 `i3-msg` comes with the window manager. Its `empty (new workspace)` action
 creates the first unused number from 1 through 10 and reports exhaustion. Rofi metadata
 separates that action from a workspace actually named `empty`; typed text

@@ -49,7 +49,7 @@ stow -R --no-folding -d "$repo" -t "$test_home" zsh scripts tmux nvim atuin >/de
 runtime_log=$test_root/network.log
 : > "$runtime_log"
 for command_name in sheldon curl wget; do
-  stub=$test_home/bin/$command_name
+  stub=$test_home/.local/bin/$command_name
   printf '%s\n' \
     '#!/bin/sh' \
     'printf "%s\\n" "$0 $*" >> "$DOTFILES_RUNTIME_LOG"' \
@@ -178,21 +178,21 @@ case $yazi_binding in
   *) fail "Ctrl-G did not select the Yazi widget" ;;
 esac
 echo 'check-runtime: successful-history widget'
-cat > "$test_home/bin/atuin" <<'EOF'
+cat > "$test_home/.local/bin/atuin" <<'EOF'
 #!/bin/sh
 case $1 in
   init) exit 0 ;;
   search) printf '%s\n' "$@" > "$HOME/atuin-args"; printf 'chosen command\000' ;;
 esac
 EOF
-cat > "$test_home/bin/fzf" <<'EOF'
+cat > "$test_home/.local/bin/fzf" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$@" > "$HOME/fzf-args"
 cat > "$HOME/fzf-input"
 [ -z "${DOTFILES_TEST_CANCEL:-}" ] || exit "$DOTFILES_TEST_CANCEL"
 printf 'chosen command\n'
 EOF
-chmod +x "$test_home/bin/atuin" "$test_home/bin/fzf"
+chmod +x "$test_home/.local/bin/atuin" "$test_home/.local/bin/fzf"
 stow -D --no-folding -d "$repo" -t "$test_home" atuin >/dev/null 2>&1 || \
   fail "could not remove Atuin config for lite startup test"
 lite_atuin_state=$(run_zsh -i -c \
@@ -241,7 +241,7 @@ case $fzf_opts in
   *--read0*ctrl-l:*ctrl-f:*) : ;;
   *) fail "Ctrl-T lost NUL mode or file preview bindings" ;;
 esac
-[ -x "$test_home/bin/cpy" ] && [ -x "$test_home/bin/pst" ] || \
+[ -x "$test_home/.local/bin/cpy" ] && [ -x "$test_home/.local/bin/pst" ] || \
   fail "standalone clipboard commands were not installed"
 [ ! -e "$test_home/.config/shell/functions/fzf_sources" ] && \
   [ ! -L "$test_home/.config/shell/functions/fzf_sources" ] || \
@@ -335,14 +335,14 @@ cmp -s "$cache" "$test_root/cache.before" || \
 echo "check-runtime: non-interactive zshenv"
 : > "$runtime_log"
 for command_name in bat delta mise tmux; do
-  stub=$test_home/bin/$command_name
+  stub=$test_home/.local/bin/$command_name
   printf '%s\n' \
     '#!/bin/sh' \
     'printf "%s\\n" "$0 $*" >> "$DOTFILES_RUNTIME_LOG"' \
     'exit 97' > "$stub"
   chmod +x "$stub"
 done
-DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" run_zsh -c true \
+DOTFILES_TEST_PATH_PREFIX="$test_home/.local/bin:" run_zsh -c true \
   > "$test_root/non-interactive.out" \
   2> "$test_root/non-interactive.err" || fail "non-interactive zsh failed"
 [ ! -s "$runtime_log" ] || fail ".zshenv invoked an external probe"
@@ -365,6 +365,10 @@ cargo_paths=$(run_zsh -c 'print -r -- "$commands[cargo]|$commands[cargo-tool]"')
   fail "cargo env overrode pinned Rust or hid cargo-installed tools"
 
 echo "check-runtime: child shells preserve activated tool precedence"
+env -i HOME="$test_home" PATH=/usr/bin:/bin zsh -c '
+  (( ! $path[(Ie)$HOME/bin] )) || exit 1
+  [[ $commands[cpy] == $HOME/.local/bin/cpy && $EDITOR == dotfiles-vim ]] || exit 1
+' || fail "default command path or editor still uses legacy bin"
 mkdir -p "$test_root/venv/bin"
 printf '%s\n' '#!/bin/sh' 'exit 0' > "$test_root/venv/bin/python"
 chmod +x "$test_root/venv/bin/python"
@@ -381,9 +385,9 @@ fresh_python=$(env -i HOME="$test_home" PATH="$test_root/venv/bin:/usr/bin:/bin"
 [ "$fresh_python" = "$test_root/venv/bin/python" ] || fail "missing defaults displaced the inherited venv"
 
 partial_path=$(env -i HOME="$test_home" \
-  PATH="$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims:/usr/bin:/bin" \
+  PATH="$test_home/.local/bin:$test_home/.local/share/mise/shims:/usr/bin:/bin" \
   zsh -c 'print -r -- $PATH') || fail "partial defaults failed"
-expected_partial="$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims"
+expected_partial="$test_home/.local/bin:$test_home/.local/share/mise/shims"
 [ ! -d /opt/homebrew/bin ] || expected_partial="$expected_partial:/opt/homebrew/bin"
 expected_partial="$expected_partial:/usr/local/bin:/usr/bin:/bin:$test_home/.local/share/npm/bin:$test_home/.cargo/bin"
 [ "$partial_path" = "$expected_partial" ] || \
@@ -398,7 +402,7 @@ env -i HOME="$test_home" PATH=/usr/bin:/bin zsh -c '
   (( ! $path[(Ie)$HOME/.ghcup/bin] )) || exit 1
 ' || fail "default startup implicitly activated ghcup"
 inherited_ghcup=$(env -i HOME="$test_home" \
-  PATH="$test_home/.ghcup/bin:$test_home/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims:/usr/bin:/bin" \
+  PATH="$test_home/.ghcup/bin:$test_home/.local/bin:$test_home/.local/share/mise/shims:/usr/bin:/bin" \
   zsh -c 'print -r -- $path[1]') || fail "inherited ghcup path failed"
 [ "$inherited_ghcup" = "$test_home/.ghcup/bin" ] || fail "explicit inherited ghcup position moved"
 cp "$test_home/.config/zsh/hooks/env.zsh" "$test_root/env.before-ghcup.zsh"
@@ -417,7 +421,7 @@ for shim_override in XDG_DATA_HOME MISE_DATA_DIR MISE_SHIMS_DIR; do
     MISE_SHIMS_DIR) expected_shims=$test_root/custom ;;
   esac
   shim_path=$(env -i HOME="$test_home" PATH=/usr/bin:/bin \
-    "$shim_override=$test_root/custom" zsh -c 'print -r -- $path[3]') || fail "shim override failed"
+    "$shim_override=$test_root/custom" zsh -c 'print -r -- $path[2]') || fail "shim override failed"
   [ "$shim_path" = "$expected_shims" ] || fail "$shim_override was ignored"
 done
 
@@ -429,10 +433,10 @@ profile_paths=$(env -i HOME="$test_home" PATH=/usr/bin:/bin \
     source "$DOTFILES_REPO/zsh/.zshenv"
     path=(/usr/bin /bin /new-system/bin $path)
     source "$DOTFILES_REPO/osx/.zprofile"
-    print -r -- "$path[1]|$path[2]|$path[3]|$LOCAL_PROFILE_MARKER|$path[-2]|$path[-1]"
+    print -r -- "$path[1]|$path[2]|$LOCAL_PROFILE_MARKER|$path[-2]|$path[-1]"
   ') || fail "macOS login profile failed"
 [ "$profile_paths" = \
-  "$test_home/bin|$test_home/.local/bin|$test_home/.local/share/mise/shims|loaded|/legacy/bin|/new-system/bin" ] || \
+  "$test_home/.local/bin|$test_home/.local/share/mise/shims|loaded|/legacy/bin|/new-system/bin" ] || \
   fail "macOS login profile lost inherited order, new system paths, or existing profile"
 
 printf '%s\n' 'path=("$HOME/.pyenv/shims" /opt/homebrew/sbin $path)' > "$test_home/.zprofile.local"
@@ -451,7 +455,7 @@ profile_prefix=$(env -i HOME="$test_home" PATH=/usr/bin:/bin DOTFILES_REPO="$rep
 
 echo "check-runtime: interactive startup uses command presence without probes"
 : > "$runtime_log"
-startup_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
+startup_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/.local/bin:" \
   DOTFILES_TEST_TMUX=stub-session run_zsh -i -c \
   'print -r -- "$MANPAGER|$GIT_PAGER|$MANROFFOPT|$ATUIN_TMUX_POPUP"' \
   2> "$test_root/startup-probes.err") || fail "interactive zsh failed with available tools"
@@ -460,15 +464,15 @@ startup_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
 if grep -Eq '/(bat|delta|mise|tmux) ' "$runtime_log"; then
   fail "interactive startup ran a version, mise or tmux capability probe"
 fi
-cat > "$test_home/bin/fzf-tmux" <<'EOF'
+cat > "$test_home/.local/bin/fzf-tmux" <<'EOF'
 #!/bin/sh
 printf '%s\n' 'fzf-tmux invoked' >> "$DOTFILES_RUNTIME_LOG"
 exit 97
 EOF
-chmod +x "$test_home/bin/fzf-tmux"
+chmod +x "$test_home/.local/bin/fzf-tmux"
 echo "check-runtime: native history popups and older tmux fallback"
 for test_version in 3.2 3.3 3.3a 4.0 unavailable; do
-  widget_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" \
+  widget_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/.local/bin:" \
     DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
     test_tmux_version=$1
     function tmux() {
@@ -500,7 +504,7 @@ before|6' ] || fail "tmux $test_version lost selection or changed cancellation"
       fi ;;
   esac
 done
-DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
+DOTFILES_TEST_PATH_PREFIX="$test_home/.local/bin:" DOTFILES_TEST_TMUX=stub-session run_zsh -i -c '
   function tmux() { print "3.3"; }
   function zle() { :; }
   ATUIN_TMUX_POPUP_WIDTH=80%; ATUIN_TMUX_POPUP_HEIGHT=55%
@@ -516,7 +520,7 @@ if grep -Fq 'fzf-tmux invoked' "$runtime_log"; then
 fi
 
 echo "check-runtime: prompt redraw reuses git status"
-cat > "$test_home/bin/git" <<'EOF'
+cat > "$test_home/.local/bin/git" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >> "$DOTFILES_RUNTIME_LOG"
 [ "$1" = --no-optional-locks ] || exit 98
@@ -531,9 +535,9 @@ case $1 in
   status) printf '%s\n' ' M tracked' ;;
 esac
 EOF
-chmod +x "$test_home/bin/git"
+chmod +x "$test_home/.local/bin/git"
 for command_name in sed basename hostname; do
-  stub=$test_home/bin/$command_name
+  stub=$test_home/.local/bin/$command_name
   printf '%s\n' \
     '#!/bin/sh' \
     'printf "%s %s\n" "${0##*/}" "$*" >> "$DOTFILES_RUNTIME_LOG"' \
@@ -542,7 +546,7 @@ for command_name in sed basename hostname; do
 done
 mkdir -p "$test_home/other"
 : > "$runtime_log"
-prompt_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/bin:" run_zsh -i -c '
+prompt_state=$(DOTFILES_TEST_PATH_PREFIX="$test_home/.local/bin:" run_zsh -i -c '
   source "$HOME/.config/zsh/themes/minimal.zsh-theme"
   _mnml_git_precmd
   mnml_git; mnml_git
@@ -564,7 +568,7 @@ if grep -Eq '^(sed|basename|hostname) ' "$runtime_log"; then
   fail "prompt component spawned a basic command"
 fi
 for command_name in sed basename hostname; do
-  rm "$test_home/bin/$command_name"
+  rm "$test_home/.local/bin/$command_name"
 done
 
 echo "check-runtime: prompt hooks preserve existing widgets on reload"
@@ -613,7 +617,7 @@ run_zsh -c 'export FZF_TMUX=1; exec zsh -i -c "(( ! \${+FZF_TMUX} )) && [[ \$FZF
   2> "$test_root/fzf-inherited.err" || fail "fzf retained an inherited tmux-helper setting"
 
 if [ -n "$nvim_bin" ]; then
-  git_stub=$test_home/bin/git
+  git_stub=$test_home/.local/bin/git
   printf '%s\n' \
     '#!/bin/sh' \
     'printf "%s\\n" "$0 $*" >> "$DOTFILES_RUNTIME_LOG"' \
@@ -622,7 +626,7 @@ if [ -n "$nvim_bin" ]; then
   echo "check-runtime: Neovim without lazy.nvim"
   : > "$runtime_log"
   lock_before=$(cksum < "$repo/nvim/.config/nvim/lazy-lock.json")
-  if ! env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+  if ! env -i HOME="$test_home" PATH="$test_home/.local/bin:/usr/local/bin:/usr/bin:/bin" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C DOTFILES_RUNTIME_LOG="$runtime_log" \
     HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
     ALL_PROXY=http://127.0.0.1:9 "$nvim_bin" --headless +qa \
@@ -644,7 +648,7 @@ if [ -n "$nvim_bin" ]; then
     mkdir -p "$(dirname "$lazy_dir")"
     cp -R "$lazy_source" "$lazy_dir"
     : > "$runtime_log"
-    if ! env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+    if ! env -i HOME="$test_home" PATH="$test_home/.local/bin:/usr/local/bin:/usr/bin:/bin" \
       SHELL=/bin/sh TERM=xterm LC_ALL=C DOTFILES_RUNTIME_LOG="$runtime_log" \
       HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
       ALL_PROXY=http://127.0.0.1:9 "$nvim_bin" --headless +qa \
@@ -662,7 +666,7 @@ if [ -n "$nvim_bin" ]; then
     echo "check-runtime: partial Neovim plugin state stays offline"
     mkdir -p "$test_home/.local/share/nvim/lazy/plenary.nvim"
     : > "$runtime_log"
-    env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+    env -i HOME="$test_home" PATH="$test_home/.local/bin:/usr/local/bin:/usr/bin:/bin" \
       SHELL=/bin/sh TERM=xterm LC_ALL=C DOTFILES_RUNTIME_LOG="$runtime_log" \
       HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
       ALL_PROXY=http://127.0.0.1:9 "$nvim_bin" --headless +qa \
@@ -692,9 +696,9 @@ if [ -n "$nvim_bin" ]; then
       'printf "%s\n" "$count" > "$DOTFILES_TEST_RESTORE_COUNT"' \
       '[ "$count" -eq 1 ] && exit 0' \
       'printf "%s\n" corrupted > "$DOTFILES_TEST_RESTORE_LOCK"' \
-      'exit 42' > "$test_home/bin/nvim"
-    chmod +x "$test_home/bin/nvim"
-    if env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+      'exit 42' > "$test_home/.local/bin/nvim"
+    chmod +x "$test_home/.local/bin/nvim"
+    if env -i HOME="$test_home" PATH="$test_home/.local/bin:/usr/local/bin:/usr/bin:/bin" \
       DOTFILES_TEST_RESTORE_COUNT="$restore_count" \
       DOTFILES_TEST_RESTORE_LOCK="$restore_lock" \
       make -s -C "$repo" MISE_BIN="$test_home/missing-mise" \
@@ -725,14 +729,14 @@ fi
 
 if [ -n "$tmux_bin" ]; then
   echo "check-runtime: tmux configuration"
-  git_stub=$test_home/bin/git
+  git_stub=$test_home/.local/bin/git
   printf '%s\n' \
     '#!/bin/sh' \
     'printf "%s\\n" "$0 $*" >> "$DOTFILES_RUNTIME_LOG"' \
     'exit 97' > "$git_stub"
   chmod +x "$git_stub"
   : > "$runtime_log"
-  env -i HOME="$test_home" PATH="$test_home/bin:/usr/local/bin:/usr/bin:/bin" \
+  env -i HOME="$test_home" PATH="$test_home/.local/bin:/usr/local/bin:/usr/bin:/bin" \
     SHELL=/bin/sh TERM=xterm LC_ALL=C \
     DOTFILES_RUNTIME_LOG="$runtime_log" \
     "$tmux_bin" -S "$tmux_test_socket" \

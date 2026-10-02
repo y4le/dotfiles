@@ -13,8 +13,8 @@ cleanup() {
 trap cleanup EXIT
 trap 'cleanup; exit 1' HUP INT TERM
 mkdir -p "$test_root/bin" "$test_root/entry"
-ln -s "$repo/scripts/bin/cpy" "$test_root/entry/cpy"
-ln -s "$repo/scripts/bin/pst" "$test_root/entry/pst"
+ln -s "$repo/scripts/.local/bin/cpy" "$test_root/entry/cpy"
+ln -s "$repo/scripts/.local/bin/pst" "$test_root/entry/pst"
 printf 'text\n\n' > "$test_root/text"
 for command_name in pbcopy pbpaste wl-copy wl-paste xclip tmux; do
   cat > "$test_root/bin/$command_name" <<'STUB'
@@ -108,7 +108,7 @@ if [ -n "$tmux_bin" ]; then
 fi
 
 if command -v python3 >/dev/null 2>&1; then
-  python3 -I "$repo/mk/test-cpst-pty.py" "$repo/scripts/bin/cpy" "$test_root"
+  python3 -I "$repo/mk/test-cpst-pty.py" "$repo/scripts/.local/bin/cpy" "$test_root"
 elif [ -n "${CI:-}" ]; then
   fail "python3 required for isolated OSC 52 tests"
 else

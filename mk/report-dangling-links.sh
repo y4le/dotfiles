@@ -47,5 +47,6 @@ find "$home" \( -type d ! -path "$home" \
   ! -path "$home/.vim" ! -path "$home/.vim/*" \
   ! -path "$home/.agents" ! -path "$home/.agents/*" \
   ! -path "$home/.funcs" ! -path "$home/.funcs/*" \
+  ! -path "$home/.local" ! -path "$home/.local/bin" ! -path "$home/.local/bin/*" \
   ! -path "$home/bin" ! -path "$home/bin/*" \) -prune \
   -o -type l -exec sh "$0" --inspect "$repo" "$home" {} + || :

@@ -36,14 +36,14 @@ JSON
 run_picker() {
   env -i PATH="$test_root/bin" DOTFILES_WORKSPACES="$test_root/workspaces" \
     DOTFILES_COMMAND="$test_root/command" DOTFILES_NOTIFICATION="$test_root/notification" \
-    "$@" /bin/bash "$repo/linux-desktop/bin/i3_switch_workspaces.sh"
+    "$@" /bin/bash "$repo/linux-desktop/.local/bin/i3_switch_workspaces.sh"
 }
 pick() {
   env -i PATH="$test_root/bin" DOTFILES_WORKSPACES="$test_root/workspaces" \
     DOTFILES_COMMAND="$test_root/command" DOTFILES_NOTIFICATION="$test_root/notification" \
     "$@"
 }
-picker=$repo/linux-desktop/bin/i3_switch_workspaces.sh
+picker=$repo/linux-desktop/.local/bin/i3_switch_workspaces.sh
 
 echo 'check-workspace-picker: workspace JSON, names, and row metadata'
 run_picker > "$test_root/list"

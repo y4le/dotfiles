@@ -173,8 +173,8 @@ bindsym Shift+Control+$mod+Left move container to workspace prev
 bindsym Shift+Control+$mod+Right move container to workspace next
 
 # show workspace switcher
-bindsym $mod+b exec rofi -show workspace -modi workspace:~/bin/i3_switch_workspaces.sh
-bindsym Control+Up exec rofi -show workspace -modi workspace:~/bin/i3_switch_workspaces.sh
+bindsym $mod+b exec rofi -show workspace -modi workspace:~/.local/bin/i3_switch_workspaces.sh
+bindsym Control+Up exec rofi -show workspace -modi workspace:~/.local/bin/i3_switch_workspaces.sh
 
 
 ###############################################################################

@@ -1,4 +1,4 @@
-.PHONY: setup setup-user tools plugins system-packages plan link link-plan _link _link-plan _remove-legacy-functions _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages _mise-preflight
+.PHONY: setup setup-user tools plugins system-packages plan link link-plan _link _link-plan _remove-legacy-functions _remove-legacy-bin _remove-legacy-ideavimrc _remove-legacy-vim-profiler _remove-legacy-tmux-config _remove-legacy-zsh-hooks _ensure-git-local-config _print-packages _mise-preflight
 
 setup: ## [sudo, network] full bootstrap including system packages
 	@$(MAKE) system-packages
@@ -123,7 +123,12 @@ _link: _link-plan
 		sh mk/select-mise.sh --apply "$(CURDIR)" "$(HOME)" "$(MISE_CONFIG_FILE)" "$(PROFILE_TOOLS)" || exit $$?; \
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' scripts '; then \
-		$(MAKE) _remove-legacy-functions; \
+		$(MAKE) _remove-legacy-functions _remove-legacy-bin; \
+	fi
+	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' linux-desktop '; then \
+		sh mk/remove-legacy-link.sh "$(HOME)/bin/i3_switch_workspaces.sh" "$(CURDIR)" "linux-desktop/bin/i3_switch_workspaces.sh" || exit $$?; \
+		sh mk/remove-legacy-link.sh "$(HOME)/bin" "$(CURDIR)" "linux-desktop/bin" || exit $$?; \
+		rmdir "$(HOME)/bin" 2>/dev/null || :; \
 	fi
 	@if printf '%s\n' " $(LINK_PACKAGES) " | grep -q ' vim '; then \
 		$(MAKE) _remove-legacy-ideavimrc _remove-legacy-vim-profiler; \
@@ -150,6 +155,13 @@ _remove-legacy-functions:
 	@for name in compair.sh benchmark.sh; do \
 		sh mk/remove-legacy-link.sh "$(HOME)/bin/$$name" "$(CURDIR)" "scripts/bin/$$name" || exit $$?; \
 	done
+
+_remove-legacy-bin:
+	@for name in cpy pst filez dotfiles-tool dotfiles-vim; do \
+		sh mk/remove-legacy-link.sh "$(HOME)/bin/$$name" "$(CURDIR)" "scripts/bin/$$name" || exit $$?; \
+	done
+	@sh mk/remove-legacy-link.sh "$(HOME)/bin" "$(CURDIR)" "scripts/bin"
+	@rmdir "$(HOME)/bin" 2>/dev/null || :
 
 _remove-legacy-ideavimrc:
 	@sh mk/remove-legacy-link.sh "$(HOME)/.ideavimrc" "$(CURDIR)" "vim/.ideavimrc"

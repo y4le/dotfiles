@@ -25,7 +25,7 @@ Existing machines need to save optional development packs before the next link.
 Lite machines using Node-based CLIs can select `WITH=node`.
 
 Zsh is the primary shell; `bash` contains fallback Readline configuration.
-`scripts` supplies standalone `~/bin` commands and the sourced Yazi wrapper
+`scripts` supplies standalone `~/.local/bin` commands and the sourced Yazi wrapper
 at `~/.config/shell/functions/y`. Local shell functions can also live in
 `~/.config/shell/functions/` for Zsh to source.
 
@@ -341,7 +341,7 @@ does not relocate them.
 | Agents | `~/.agents/` | Public and optional private files share the directory |
 | Bash/Readline | `~/.inputrc` | No repo-managed state |
 | npm | Environment in `~/.zshenv` | Global packages under `~/.local/share/npm/` |
-| Scripts | `~/bin/`, `~/.config/shell/functions/y` | No shared state directory |
+| Scripts | `~/.local/bin/`, `~/.config/shell/functions/y` | No shared state directory |
 | Linux desktop | `~/.config/{i3,i3blocks,rofi}/`, X11 dotfiles | No repo-managed state |
 | macOS desktop | `~/.config/karabiner/karabiner.json` | No repo-managed state |
 
