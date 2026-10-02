@@ -610,20 +610,23 @@ run_make "$private_home" PRIVATE_AGENTS_DIR="$private_dir" \
 rmdir "$private_dir/agents/.agents/skills/empty-runtime"
 
 echo "check-link: rejected clean preserves links and active tools"
-clean_conflict_home=$test_root/clean-conflict-home
-mkdir -p "$clean_conflict_home"
-run_make "$clean_conflict_home" PROFILE=lite WITH= link >/dev/null 2>&1 || \
-  fail "clean conflict setup link failed"
-mv "$clean_conflict_home/.config/tmux" "$clean_conflict_home/.config/tmux.saved"
-printf 'keep me\n' > "$clean_conflict_home/.config/tmux"
-snapshot_home "$clean_conflict_home" > "$test_root/clean-conflict-before"
-if run_make "$clean_conflict_home" clean > "$test_root/clean-conflict.log" 2>&1; then
-  fail "clean accepted a Stow conflict"
+clean_failure_home=$test_root/clean-failure-home
+mkdir -p "$clean_failure_home"
+run_make "$clean_failure_home" PROFILE=lite WITH= link >/dev/null 2>&1 || \
+  fail "clean failure setup link failed"
+[ -f "$clean_failure_home/.config/mise/conf.d/dotfiles.toml" ] || \
+  fail "clean failure setup did not activate tools"
+snapshot_home "$clean_failure_home" > "$test_root/clean-failure-before"
+# Stow 2.4 skips regular target files during unstow; 2.3 rejects them.
+# A missing package makes the real Stow preflight fail on both versions.
+if run_make "$clean_failure_home" KNOWN_CLEAN_PACKAGES='tmux dotfiles-test-missing-package' \
+  clean > "$test_root/clean-failure.log" 2>&1; then
+  fail "clean accepted a missing Stow package"
 fi
-grep -Fq 'existing target is neither a link nor a directory: .config/tmux' \
-  "$test_root/clean-conflict.log" || fail "clean did not report the Stow conflict"
-snapshot_home "$clean_conflict_home" > "$test_root/clean-conflict-after"
-cmp -s "$test_root/clean-conflict-before" "$test_root/clean-conflict-after" || \
+grep -Fq 'does not contain package dotfiles-test-missing-package' \
+  "$test_root/clean-failure.log" || fail "clean did not report the missing Stow package"
+snapshot_home "$clean_failure_home" > "$test_root/clean-failure-after"
+cmp -s "$test_root/clean-failure-before" "$test_root/clean-failure-after" || \
   fail "rejected clean changed HOME"
 
 echo "check-link: clean removes managed links and active tools"
