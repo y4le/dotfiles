@@ -777,8 +777,14 @@ fragment=$profile_home/.config/mise/conf.d/dotfiles.toml
 run_make "$profile_home" PROFILE=full WITH=node link >/dev/null 2>&1 || fail 'web deselection failed'
 grep -q '^node = ' "$fragment" || fail 'web deselection lost standalone Node'
 if grep -q '^"npm:typescript-language-server" = ' "$fragment"; then fail 'web server remained active'; fi
-run_make "$profile_home" PROFILE=full WITH= link >/dev/null 2>&1 || fail 'Node deselection failed'
-if grep -q '^node = ' "$fragment"; then fail 'Node remained globally active'; fi
+run_make "$profile_home" PROFILE=full WITH= link >/dev/null 2>&1 || fail 'clearing full add-ons failed'
+grep -q '^node = ' "$fragment" || fail 'full without add-ons dropped baseline Node'
+run_make "$profile_home" PROFILE=lite WITH=node link >/dev/null 2>&1 || fail 'lite Node opt-in failed'
+grep -q '^node = ' "$fragment" || fail 'lite Node opt-in did not activate Node'
+run_make "$profile_home" PROFILE=lite WITH= link >/dev/null 2>&1 || fail 'lite Node deselection failed'
+if grep -q '^node = ' "$fragment"; then fail 'lite retained unselected Node'; fi
+run_make "$profile_home" PROFILE=full WITH= link >/dev/null 2>&1 || fail 'return to full failed'
+grep -q '^node = ' "$fragment" || fail 'return to full did not restore Node'
 
 run_make "$profile_home" PROFILE=lite WITH='yazi herdr' profile-set \
   >/dev/null 2>&1 || fail "saving profile failed"

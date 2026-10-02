@@ -110,8 +110,9 @@ packs. Pass `WITH=` to drop saved add-ons for one command. To return to the
 default full setup, run
 `make profile-set PROFILE=full WITH=""`, then `make plan` and `make setup-user`.
 
-The default `full` profile contains core, Atuin, Yazi, Neovim with LuaLS, and
-Herdr. Other language runtimes and servers are optional; `dev` restores the
+The default `full` profile contains core, Atuin, Yazi, Neovim with LuaLS,
+Herdr, and Node for locally installed CLIs such as npm-installed Codex and
+Gemini. Language development runtimes and servers are optional; `dev` restores the
 previous broad development tool selection for compatibility. Profiles select
 Stow links, mise tools, and plugin steps; `make setup` still installs the same
 native package list for the platform. Use `make setup-user` when native
@@ -121,23 +122,26 @@ time you link desktop files. `local/` and private agent links remain separate.
 
 ## Enable optional tools
 
-Save the packs you need before linking. On a machine running Node-based CLIs
-such as npm-installed Codex or Gemini, select `node` even without web development:
+Save the packs you need before linking. `full` already includes the Node
+runtime needed by npm-installed Codex, Gemini, and other local CLIs. To add
+that runtime to `lite` without web development tools:
 
 ```sh
-make profile-set PROFILE=full WITH=node
+make profile-set PROFILE=lite WITH=node
 make plan
 make mise-tools
 make link
 ```
 
 `WITH` replaces the complete saved add-on list. For example, use
-`WITH="node python-dev"` for both; use `WITH=dev` to retain all previous language
+`PROFILE=full WITH=python-dev` for the everyday setup plus Python development,
+or `PROFILE=lite WITH="node python-dev"` for a smaller setup with both runtimes.
+Use `WITH=dev` to retain all previous language
 tools. On a fresh machine, use `make setup-user` after saving and previewing.
 
 | Pack | Tools and behavior |
 | --- | --- |
-| `node` | Node runtime for locally installed CLIs; no language server |
+| `node` | Node runtime for locally installed CLIs, included in `full`; no language server |
 | `web-dev` | Node and TypeScript language server; the project supplies its TypeScript dependency |
 | `python-dev` | Python, uv, basedpyright, and Ruff; enables Python LSP, linting, and formatting |
 | `go-dev` | Go compiler and standard tools; no Go language server is configured |

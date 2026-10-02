@@ -39,4 +39,4 @@ components:
     tools: [go, node, python, rust, aqua:astral-sh/uv, npm:typescript-language-server, pipx:basedpyright, pipx:ruff, aqua:LuaLS/lua-language-server]
 profiles:
   lite: [core]
-  full: [core, atuin, yazi, nvim, herdr]
+  full: [core, atuin, yazi, nvim, herdr, node]

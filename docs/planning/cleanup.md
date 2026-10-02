@@ -13,8 +13,9 @@ The [local/private configuration guide](../local-config.md) and
 - keep `make` as the command surface
 - keep `mise` for pinned runtimes and tools
 - keep new optional features out of default bootstrap unless explicitly
-  enabled; `full` includes every profile component, so use explicit targets or
-  flags (such as `herdr-integrations` or `DESKTOP`) for new opt-in features
+  enabled; `full` is a curated preset, so new packs stay outside it unless
+  selected. Use explicit targets or flags (such as `herdr-integrations` or
+  `DESKTOP`) for separate setup phases
 - prefer small, reviewable changes
 - smoke-test bootstrap-affecting changes on a clean machine, container, or VM
 

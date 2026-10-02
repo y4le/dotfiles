@@ -7,11 +7,12 @@ language packs. Current behavior and recipes live in [setup](../setup.md) and
 [design](../design.md). Native/OS providers and Haskell remain future design
 work; this document preserves the decisions behind that boundary.
 
-The agreed `full` preset is core, Atuin, Yazi, Neovim with LuaLS, and Herdr.
-`node`, `web-dev`, `python-dev`, `go-dev`, and `rust-dev` are optional.
+The agreed `full` preset is core, Atuin, Yazi, Neovim with LuaLS, Herdr, and
+`node`. Node supports everyday CLI runtimes such as npm-installed Codex and
+Gemini; web, Python, Go, and Rust development packs remain optional.
 `WITH=dev` preserves the previous development bundle. On existing machines,
-save needed optional packs before the next link; Node-based CLIs need `node`
-or `web-dev`. Selection applies to active defaults as well as installation.
+save needed optional development packs before the next link. Lite machines using
+Node-based CLIs need `node` or `web-dev`. Selection applies to active defaults as well as installation.
 
 ## Recommendation
 
@@ -83,7 +84,8 @@ dependency resolution.
 
 The proposed `prose` pack was withdrawn: Prettier and its editor formatting
 wiring have been retired from the public setup. No replacement prose formatter
-is planned. Node is optional through `node`, `web-dev`, or the compatibility `dev` bundle.
+is planned. Node belongs to `full` through `node` and is also shared with
+`web-dev` and the compatibility `dev` bundle.
 All use the same mise pin and restore path; see the
 [optional-tool recipes](../setup.md#enable-optional-tools).
 

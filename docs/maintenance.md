@@ -44,12 +44,13 @@ in `~/.config/mise/config.local.toml` instead. Foreign files, symlinks, and a
 fragment owned by another checkout are rejected before tools are downloaded.
 `make clean` removes only this checkout's marked fragment and preserves others.
 
-The new `full` preset omits Node, Python, Go, and Rust development tools.
-Before your next `make link` or `make setup-user`, save any optional packs you
-need. Node-based CLIs require `make profile-set PROFILE=full WITH=node`;
-`WITH="node python-dev"` keeps both packs, and `WITH=dev` keeps the old broad
-development bundle. `WITH` is the complete add-on list, so include existing
-add-ons you want to retain. Preview with `make plan` before applying.
+The `full` preset includes Node for locally installed CLIs such as npm-installed
+Codex and Gemini. Python, Go, Rust, and web development tools are optional.
+Before your next `make link` or `make setup-user`, save any development packs
+you need: `make profile-set PROFILE=full WITH=python-dev` adds Python,
+and `WITH=dev` keeps the old broad development bundle. `WITH` is the complete
+add-on list, so include existing add-ons you want to retain. Lite machines using
+Node-based CLIs need `WITH=node`. Preview with `make plan` before applying.
 
 The linked global config now contains settings only. Pins come from the
 selected fragment; the full version catalog lives in `setup/tools.toml`.
@@ -299,8 +300,8 @@ configured language formatters and LSP formatting fallback. JavaScript and
 TypeScript can still format on save through their language server, using
 TypeScript's style rather than project Prettier settings. Markdown/wiki/book,
 JSON, YAML, CSS, and HTML have no configured formatting provider. Restart Neovim
-to load the updated configuration. Node is available through the optional
-`node` or `web-dev` pack; see [optional tools](setup.md#enable-optional-tools).
+to load the updated configuration. Node is included in `full` through the
+`node` pack, which lite machines can select independently; see [optional tools](setup.md#enable-optional-tools).
 
 Existing Prettier versions remain installed. An old mise shim may report
 "No version is set for shim" after the global pin is removed. Inspect and

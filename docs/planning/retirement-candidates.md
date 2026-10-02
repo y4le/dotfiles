@@ -36,8 +36,9 @@ Prettier was retired from the public tool catalog and Neovim formatting setup.
 This removes its formatting integration for Markdown/wiki/book, JSON/YAML, and
 web filetypes. The proposed `prose` pack was withdrawn rather than replaced with
 another formatter. Filetypes, note-editing plugins, other language formatters,
-and LSP formatting fallback remain. Node is retained for the TypeScript language
-server; runtime selection is a separate optional-pack decision. See the
+and LSP formatting fallback remain. Node is retained in `full` for everyday CLI
+runtimes such as npm-installed Codex and Gemini, and is shared with the optional
+web development pack. See the
 [Prettier migration notes](../maintenance.md#retired-prettier-formatting).
 
 ## Retained editor behavior
@@ -67,9 +68,9 @@ candidate; no Haskell component or installer is provided today. Occasional
 standalone commands (`fd`, `wget`, `rclone`) remain local installations as
 previously decided.
 
-The [optional packs proposal](optional-packs.md) explores shared tool membership,
-selected mise configuration, and how other tools and OS setup could fit without
-changing the current defaults.
+The [optional packs design](optional-packs.md) records implemented shared tool
+membership, selected mise configuration, and the revised defaults, plus future
+possibilities for other tools and OS setup.
 
 The unused `link-linux` / `link-macos` shortcuts and the theme's redundant
 `autoload colors` were retired. Explicit `PLATFORM` arguments select linking;

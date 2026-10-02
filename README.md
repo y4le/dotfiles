@@ -20,8 +20,9 @@ cd ~/dev/dotfiles
 ```
 
 The default `full` profile includes core shell/Git/Vim/tmux/agent configuration,
-Atuin, Yazi, Neovim with LuaLS, and Herdr. Language development tools are optional
-packs: `node`, `web-dev`, `python-dev`, `go-dev`, and `rust-dev`. `dev` retains
+Atuin, Yazi, Neovim with LuaLS, Herdr, and Node for locally installed CLI tools
+such as npm-installed Codex and Gemini. Language development tools are optional
+packs: `web-dev`, `python-dev`, `go-dev`, and `rust-dev`. `dev` retains
 the previous broad development bundle. `lite` keeps core configuration and fzf,
 ripgrep, bat, delta, and zoxide. To choose a smaller
 setup, optionally save `lite` with any add-ons before linking:
@@ -39,8 +40,8 @@ make setup-user
 ```
 
 On an existing machine, save needed optional packs before the next link or
-setup. For Node-based CLIs, use `make profile-set PROFILE=full WITH=node`;
-`WITH` is the complete add-on list. Review the plan before setup. To apply only the links, run `make link` instead;
+setup. `full` includes Node; lite machines using Node-based CLIs can add
+`WITH=node`. `WITH` is the complete add-on list. Review the plan before setup. To apply only the links, run `make link` instead;
 that step is offline, and shell and editor config remain usable before optional
 plugins are restored. Keep the checkout in place; the links point into it.
 

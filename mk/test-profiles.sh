@@ -24,7 +24,7 @@ actual_full=$(printf '%s\n' $full_packages | sort)
 [ "$actual_full" = "$expected_full" ] || fail "full package set differs from the old default"
 
 full_tools=$(sh mk/profile.sh tools full) || fail "full tools did not resolve"
-[ "$full_tools" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim aqua:LuaLS/lua-language-server" ] || \
+[ "$full_tools" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim node aqua:LuaLS/lua-language-server" ] || \
   fail "full tool set changed: $full_tools"
 legacy_full="$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim go node python rust aqua:astral-sh/uv npm:typescript-language-server pipx:basedpyright pipx:ruff aqua:LuaLS/lua-language-server"
 [ "$(sh mk/profile.sh tools full dev)" = "$legacy_full" ] || fail 'dev compatibility lost old defaults'
@@ -33,8 +33,8 @@ legacy_full="$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim 
 [ "$(sh mk/profile.sh tools lite node)" = "$lite_tools node" ] || fail 'Node pack pulls development tools'
 [ "$(sh mk/profile.sh tools lite python-dev)" = "$lite_tools python aqua:astral-sh/uv pipx:basedpyright pipx:ruff" ] || \
   fail 'Python pack lost its runtime prerequisites or leaked other languages'
-[ "$(sh mk/profile.sh tools full node)" = "$lite_tools aqua:atuinsh/atuin aqua:sxyazi/yazi aqua:neovim/neovim node aqua:LuaLS/lua-language-server" ] || \
-  fail 'Node opt-in changed unrelated default tools'
+[ "$(sh mk/profile.sh tools full node)" = "$full_tools" ] || \
+  fail 'redundant Node selection changed full tool membership'
 sh mk/profile.sh tool-users full dev | grep -Fxq 'aqua:LuaLS/lua-language-server: nvim dev' || \
   fail 'Lua server shared ownership is wrong'
 

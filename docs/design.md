@@ -22,10 +22,11 @@ explicit. Discovery remains available when an old saved selection is stale.
 Switching profiles reconciles managed links; installed binaries
 and user data remain, so profile selection is reversible without deleting state.
 
-`full` includes core, Atuin, Yazi, Neovim with LuaLS, and Herdr. Language
-runtimes and servers are optional packs; `dev` preserves the broad development
-bundle for existing users. Node is independently selectable for agent or other
-CLI runtimes. Native packages, desktop selection, and private overlays stay
+`full` includes core, Atuin, Yazi, Neovim with LuaLS, Herdr, and Node. Node is
+a runtime dependency of locally installed CLI tools such as npm-installed Codex
+and Gemini, so it belongs in the everyday preset. Language development runtimes
+and servers are optional packs; `dev` preserves the broad development bundle
+for existing users. Lite machines can select Node independently. Native packages, desktop selection, and private overlays stay
 separate until a concrete setup needs a broader pack backend.
 
 Make owns target dependencies, selected steps, and configuration overrides.
