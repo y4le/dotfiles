@@ -2,7 +2,7 @@
 function y() {
   emulate -L zsh
   if ! command -v yazi >/dev/null 2>&1; then
-    print -u2 "yazi not found - run 'make WITH=yazi mise-tools' from your dotfiles repo"
+    print -u2 "yazi not found - add yazi to your saved WITH list, keeping existing packs, then run 'make setup-user' from your dotfiles repo (see docs/setup.md)"
     return 127
   fi
 

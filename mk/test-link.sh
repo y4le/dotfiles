@@ -809,6 +809,18 @@ if grep -q '^node = ' "$fragment"; then fail 'lite retained unselected Node'; fi
 run_make "$profile_home" PROFILE=full WITH= link >/dev/null 2>&1 || fail 'return to full failed'
 grep -q '^node = ' "$fragment" || fail 'return to full did not restore Node'
 
+echo "check-link: adding saved Yazi preserves existing optional tools"
+run_make "$profile_home" PROFILE=lite WITH=node profile-set >/dev/null 2>&1 || \
+  fail "saving lite Node selection failed"
+run_make "$profile_home" link >/dev/null 2>&1 || fail "saved Node activation failed"
+grep -q '^node = ' "$fragment" || fail "saved selection did not activate Node"
+if grep -q '^"aqua:sxyazi/yazi" = ' "$fragment"; then fail "saved Node selection activated Yazi"; fi
+run_make "$profile_home" PROFILE=lite WITH='node yazi' profile-set >/dev/null 2>&1 || \
+  fail "adding Yazi to the saved selection failed"
+run_make "$profile_home" link >/dev/null 2>&1 || fail "saved Yazi activation failed"
+grep -q '^node = ' "$fragment" || fail "adding Yazi dropped existing Node"
+grep -q '^"aqua:sxyazi/yazi" = ' "$fragment" || fail "saved selection did not activate Yazi"
+
 run_make "$profile_home" PROFILE=lite WITH='yazi herdr' profile-set \
   >/dev/null 2>&1 || fail "saving profile failed"
 saved_profile=$(run_make "$profile_home" profile) || fail "reading saved profile failed"

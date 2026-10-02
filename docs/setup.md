@@ -139,6 +139,22 @@ or `PROFILE=lite WITH="node python-dev"` for a smaller setup with both runtimes.
 Use `WITH=dev` to retain all previous language
 tools. On a fresh machine, use `make setup-user` after saving and previewing.
 
+To enable Yazi on a machine that omitted it, run `make profile` to inspect the
+current profile and add-ons. Keep that profile and the complete existing
+`WITH` list when adding `yazi`. For example, if the output shows `profile: lite`
+and `add-ons: node`:
+
+```sh
+make profile-set PROFILE=lite WITH="node yazi"
+make plan
+make setup-user
+```
+
+This retains Node, installs Yazi, and activates both. If your selection already
+includes Yazi (as `full` does), run `make setup-user` to install the missing
+tool. `make WITH=yazi mise-tools` installs selected tools without activating
+the pack or saving your selection.
+
 | Pack | Tools and behavior |
 | --- | --- |
 | `node` | Node runtime for locally installed CLIs, included in `full`; no language server |

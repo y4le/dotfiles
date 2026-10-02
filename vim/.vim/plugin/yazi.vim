@@ -1,7 +1,7 @@
 function! s:YaziOpen(...) abort
   if !executable('yazi')
     echohl ErrorMsg
-    echomsg "yazi not found - run 'make WITH=yazi mise-tools' from your dotfiles repo"
+    echomsg "yazi not found - add yazi to your saved WITH list, keeping existing packs, then run 'make setup-user' from your dotfiles repo (see docs/setup.md)"
     echohl None
     return
   endif

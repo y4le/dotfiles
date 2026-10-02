@@ -56,4 +56,6 @@ if run_y DOTFILES_YAZI_CWD= > "$test_root/stdout" 2> "$test_root/error"; then
 else [ "$?" -eq 127 ] || fail "missing Yazi returned wrong status"; fi
 [ ! -s "$test_root/stdout" ] || fail "missing tool diagnostic went to stdout"
 grep -q 'yazi not found' "$test_root/error" || fail "missing tool diagnostic absent"
+grep -Fq 'make setup-user' "$test_root/error" || fail "missing tool guidance omitted activation"
+grep -Fq 'saved WITH' "$test_root/error" || fail "missing tool guidance omitted saved pack selection"
 echo 'check-yazi: ok'

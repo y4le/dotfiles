@@ -158,6 +158,29 @@ for picker_shell in sh bash; do
     }
 done
 
+echo 'check-vim-pickers: missing Yazi gives setup guidance without opening a window'
+cat > "$test_root/yazi-missing-test.vim" <<'EOF'
+execute 'source ' . fnameescape($DOTFILES_REPO . '/vim/.vim/plugin/yazi.vim')
+call assert_false(executable('yazi'))
+let origin = win_getid()
+let windows = winnr('$')
+Yazi
+call assert_equal(origin, win_getid())
+call assert_equal(windows, winnr('$'))
+let diagnostic = execute('messages')
+call assert_match('yazi not found', diagnostic)
+call assert_match('make setup-user', diagnostic)
+call assert_match('saved WITH', diagnostic)
+if !empty(v:errors) | call writefile(v:errors, $DOTFILES_RESULT) | cquit | endif
+qa!
+EOF
+env -i HOME="$test_root/home" PATH="$test_root/bin" LC_ALL=C \
+  DOTFILES_REPO="$repo" DOTFILES_RESULT="$test_root/result" \
+  "$vim_bin" -Nu NONE -i NONE -n -es -S "$test_root/yazi-missing-test.vim" || {
+    [ ! -f "$test_root/result" ] || cat "$test_root/result" >&2
+    fail "missing Yazi guidance failed";
+  }
+
 cat > "$test_root/bin/yazi" <<'EOF'
 #!/bin/sh
 cwd=$2
